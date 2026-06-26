@@ -16,10 +16,10 @@ let localUsers = {};
 let localConfigs = {};
 
 if (connectionString && connectionString !== 'YOUR_SUPABASE_DATABASE_URL_HERE') {
-  pool = new Pool({
-    connectionString,
-    ssl: { rejectUnauthorized: false } // Required for Supabase cloud db connections
-  });
+  const pgConnectionString = require('pg-connection-string');
+  const parsedConfig = pgConnectionString.parse(connectionString);
+  parsedConfig.ssl = { rejectUnauthorized: false };
+  pool = new Pool(parsedConfig);
   console.log('[Database] Configured connection pool for Supabase PostgreSQL.');
 } else {
   useLocalFallback = true;
