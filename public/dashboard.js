@@ -109,6 +109,8 @@ const configForm = document.getElementById('config-form');
 const btnForceSpawn = document.getElementById('btn-force-spawn');
 const btnResetDb = document.getElementById('btn-reset-db');
 const btnLogout = document.getElementById('btn-logout');
+const obsOverlayUrl = document.getElementById('obs-overlay-url');
+const btnCopyUrl = document.getElementById('btn-copy-url');
 
 const simUserSelect = document.getElementById('sim-user');
 const newUserInput = document.getElementById('new-user-input');
@@ -193,6 +195,23 @@ btnResetDb.addEventListener('click', () => {
 btnLogout.addEventListener('click', () => {
   localStorage.removeItem('admin_password_' + channelId);
   window.location.href = 'index.html';
+});
+
+// OBS Browser Source Link copy handler
+if (channelId) {
+  const host = window.location.origin;
+  obsOverlayUrl.value = `${host}/overlay.html?channel=${channelId}`;
+}
+
+btnCopyUrl.addEventListener('click', () => {
+  obsOverlayUrl.select();
+  navigator.clipboard.writeText(obsOverlayUrl.value);
+  btnCopyUrl.textContent = 'Copied!';
+  btnCopyUrl.style.background = 'var(--color-success)';
+  setTimeout(() => {
+    btnCopyUrl.textContent = 'Copy';
+    btnCopyUrl.style.background = 'var(--color-primary)';
+  }, 2000);
 });
 
 // Simulator custom user creation

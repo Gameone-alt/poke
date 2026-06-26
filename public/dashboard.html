@@ -63,7 +63,16 @@
             </div>
           </div>
           
-          <button type="submit" class="btn btn-primary">Save Settings</button>
+          <div class="form-group" style="margin-top: 15px;">
+            <label>Your OBS Browser Source URL</label>
+            <div class="copy-link-group" style="display: flex; gap: 8px;">
+              <input type="text" id="obs-overlay-url" readonly style="flex: 1; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: var(--text-muted); padding: 10px 12px; border-radius: 8px; font-family: inherit; font-size: 13px; cursor: pointer;" onclick="this.select()">
+              <button type="button" id="btn-copy-url" style="padding: 10px 15px; border-radius: 8px; border: none; background: var(--color-primary); color: #fff; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; transition: background 0.2s;">Copy</button>
+            </div>
+            <small>Copy and paste this link as a Browser Source in OBS Studio (Resolution: 1920x1080).</small>
+          </div>
+          
+          <button type="submit" class="btn btn-primary" style="margin-top: 15px;">Save Settings</button>
         </form>
 
         <div class="quick-actions">
