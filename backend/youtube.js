@@ -41,7 +41,7 @@ function extractChannelId(input) {
  */
 function startYoutubeChat(streamerId, config, onMessageCallback) {
   const streamer = streamerId.toLowerCase().trim();
-  const rawChannelId = config.channelId;
+  const rawChannelId = config.youtubeChannelId;
   const rawVideoId = config.videoId;
   
   const videoId = extractVideoId(rawVideoId);

@@ -79,7 +79,7 @@ socket.on('password_verified', (data) => {
     localStorage.setItem('admin_password_' + channelId, adminPassword);
     
     if (config) {
-      channelIdInput.value = config.channelId || '';
+      channelIdInput.value = config.youtubeChannelId || '';
       videoIdInput.value = config.videoId || '';
       spawnIntervalInput.value = Math.round(config.spawnIntervalMs / 1000);
       despawnTimeoutInput.value = Math.round(config.wildDespawnTimeoutMs / 1000);
@@ -140,7 +140,7 @@ socket.on('disconnect', () => {
 
 // Load Config from server
 socket.on('config_updated', (config) => {
-  channelIdInput.value = config.channelId || '';
+  channelIdInput.value = config.youtubeChannelId || '';
   videoIdInput.value = config.videoId || '';
   spawnIntervalInput.value = Math.round(config.spawnIntervalMs / 1000);
   despawnTimeoutInput.value = Math.round(config.wildDespawnTimeoutMs / 1000);
@@ -169,7 +169,7 @@ configForm.addEventListener('submit', (e) => {
   }
 
   const updatedConfig = {
-    channelId: channelIdInput.value.trim(),
+    youtubeChannelId: channelIdInput.value.trim(),
     videoId: videoId,
     spawnIntervalMs: parseInt(spawnIntervalInput.value) * 1000,
     wildDespawnTimeoutMs: parseInt(despawnTimeoutInput.value) * 1000,

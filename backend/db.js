@@ -632,6 +632,7 @@ async function getStreamerConfig(streamerId) {
     if (!localConfigs[streamer]) {
       localConfigs[streamer] = {
         channelId: streamerId,
+        youtubeChannelId: '',
         videoId: '',
         spawnIntervalMs: 60000,
         wildDespawnTimeoutMs: 45000,
@@ -650,6 +651,7 @@ async function getStreamerConfig(streamerId) {
   if (res.rows.length === 0) {
     const defaultConfig = {
       channelId: streamer,
+      youtubeChannelId: '',
       videoId: '',
       spawnIntervalMs: 60000,
       wildDespawnTimeoutMs: 45000,
@@ -659,9 +661,9 @@ async function getStreamerConfig(streamerId) {
     };
     
     await query(
-      `INSERT INTO streamer_configs (channel_id, video_id, spawn_interval_ms, wild_despawn_timeout_ms, catch_cooldown_ms, shiny_chance, admin_password)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [defaultConfig.channelId, defaultConfig.videoId, defaultConfig.spawnIntervalMs, defaultConfig.wildDespawnTimeoutMs, defaultConfig.catchCooldownMs, defaultConfig.shinyChance, defaultConfig.adminPassword]
+      `INSERT INTO streamer_configs (channel_id, youtube_channel_id, video_id, spawn_interval_ms, wild_despawn_timeout_ms, catch_cooldown_ms, shiny_chance, admin_password)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [defaultConfig.channelId, defaultConfig.youtubeChannelId, defaultConfig.videoId, defaultConfig.spawnIntervalMs, defaultConfig.wildDespawnTimeoutMs, defaultConfig.catchCooldownMs, defaultConfig.shinyChance, defaultConfig.adminPassword]
     );
     
     return defaultConfig;
@@ -670,7 +672,8 @@ async function getStreamerConfig(streamerId) {
   const row = res.rows[0];
   return {
     channelId: row.channel_id,
-    videoId: row.video_id,
+    youtubeChannelId: row.youtube_channel_id || '',
+    videoId: row.video_id || '',
     spawnIntervalMs: row.spawn_interval_ms,
     wildDespawnTimeoutMs: row.wild_despawn_timeout_ms,
     catchCooldownMs: row.catch_cooldown_ms,
@@ -695,8 +698,8 @@ async function saveStreamerConfig(streamerId, config) {
   await query(
     `UPDATE streamer_configs 
      SET video_id = $1, spawn_interval_ms = $2, wild_despawn_timeout_ms = $3, 
-         catch_cooldown_ms = $4, shiny_chance = $5, admin_password = $6
-     WHERE channel_id = $7`,
+         catch_cooldown_ms = $4, shiny_chance = $5, admin_password = $6, youtube_channel_id = $7
+     WHERE channel_id = $8`,
     [
       config.videoId || '',
       config.spawnIntervalMs,
@@ -704,6 +707,7 @@ async function saveStreamerConfig(streamerId, config) {
       config.catchCooldownMs,
       config.shinyChance,
       config.adminPassword || '',
+      config.youtubeChannelId || '',
       streamer
     ]
   );

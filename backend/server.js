@@ -749,8 +749,8 @@ io.on('connection', async (socket) => {
       if (newConfig.videoId) {
         newConfig.videoId = youtube.extractVideoId(newConfig.videoId);
       }
-      if (newConfig.channelId) {
-        newConfig.channelId = youtube.extractChannelId(newConfig.channelId);
+      if (newConfig.youtubeChannelId) {
+        newConfig.youtubeChannelId = youtube.extractChannelId(newConfig.youtubeChannelId);
       }
 
       const oldPassword = session.config.adminPassword;
