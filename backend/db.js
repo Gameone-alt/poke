@@ -648,7 +648,12 @@ async function getStreamerConfig(streamerId) {
         spawnCatchGuide: 'Type catch in chat!',
         showBattleArena: true,
         primaryColor: '#3b82f6',
-        customCss: ''
+        customCss: '',
+        spawnCardScale: 1.0,
+        spawnCardPosition: 'bottom-left',
+        showCardSprite: true,
+        showCardTypes: true,
+        showCardInstructions: true
       };
       saveLocalConfigs();
     }
@@ -677,15 +682,21 @@ async function getStreamerConfig(streamerId) {
       spawnCatchGuide: 'Type catch in chat!',
       showBattleArena: true,
       primaryColor: '#3b82f6',
-      customCss: ''
+      customCss: '',
+      spawnCardScale: 1.0,
+      spawnCardPosition: 'bottom-left',
+      showCardSprite: true,
+      showCardTypes: true,
+      showCardInstructions: true
     };
     
     await query(
-      `INSERT INTO streamer_configs (channel_id, youtube_channel_id, video_id, spawn_interval_ms, wild_despawn_timeout_ms, catch_cooldown_ms, shiny_chance, admin_password, theme, sfx_volume, show_live_feed, live_feed_title, show_spawn_alert, spawn_alert_title, spawn_catch_guide, show_battle_arena, primary_color, custom_css)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)`,
+      `INSERT INTO streamer_configs (channel_id, youtube_channel_id, video_id, spawn_interval_ms, wild_despawn_timeout_ms, catch_cooldown_ms, shiny_chance, admin_password, theme, sfx_volume, show_live_feed, live_feed_title, show_spawn_alert, spawn_alert_title, spawn_catch_guide, show_battle_arena, primary_color, custom_css, spawn_card_scale, spawn_card_position, show_card_sprite, show_card_types, show_card_instructions)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)`,
       [
         defaultConfig.channelId, defaultConfig.youtubeChannelId, defaultConfig.videoId, defaultConfig.spawnIntervalMs, defaultConfig.wildDespawnTimeoutMs, defaultConfig.catchCooldownMs, defaultConfig.shinyChance, defaultConfig.adminPassword,
-        defaultConfig.theme, defaultConfig.sfxVolume, defaultConfig.showLiveFeed, defaultConfig.liveFeedTitle, defaultConfig.showSpawnAlert, defaultConfig.spawnAlertTitle, defaultConfig.spawnCatchGuide, defaultConfig.showBattleArena, defaultConfig.primaryColor, defaultConfig.customCss
+        defaultConfig.theme, defaultConfig.sfxVolume, defaultConfig.showLiveFeed, defaultConfig.liveFeedTitle, defaultConfig.showSpawnAlert, defaultConfig.spawnAlertTitle, defaultConfig.spawnCatchGuide, defaultConfig.showBattleArena, defaultConfig.primaryColor, defaultConfig.customCss,
+        defaultConfig.spawnCardScale, defaultConfig.spawnCardPosition, defaultConfig.showCardSprite, defaultConfig.showCardTypes, defaultConfig.showCardInstructions
       ]
     );
     
@@ -711,7 +722,12 @@ async function getStreamerConfig(streamerId) {
     spawnCatchGuide: row.spawn_catch_guide || 'Type catch in chat!',
     showBattleArena: row.show_battle_arena !== false,
     primaryColor: row.primary_color || '#3b82f6',
-    customCss: row.custom_css || ''
+    customCss: row.custom_css || '',
+    spawnCardScale: row.spawn_card_scale !== null && row.spawn_card_scale !== undefined ? Number(row.spawn_card_scale) : 1.0,
+    spawnCardPosition: row.spawn_card_position || 'bottom-left',
+    showCardSprite: row.show_card_sprite !== false,
+    showCardTypes: row.show_card_types !== false,
+    showCardInstructions: row.show_card_instructions !== false
   };
 }
 
@@ -734,8 +750,10 @@ async function saveStreamerConfig(streamerId, config) {
          catch_cooldown_ms = $4, shiny_chance = $5, admin_password = $6, youtube_channel_id = $7,
          theme = $8, sfx_volume = $9, show_live_feed = $10, live_feed_title = $11,
          show_spawn_alert = $12, spawn_alert_title = $13, spawn_catch_guide = $14,
-         show_battle_arena = $15, primary_color = $16, custom_css = $17
-     WHERE channel_id = $18`,
+         show_battle_arena = $15, primary_color = $16, custom_css = $17,
+         spawn_card_scale = $18, spawn_card_position = $19, show_card_sprite = $20,
+         show_card_types = $21, show_card_instructions = $22
+     WHERE channel_id = $23`,
     [
       config.videoId || '',
       config.spawnIntervalMs,
@@ -754,6 +772,11 @@ async function saveStreamerConfig(streamerId, config) {
       config.showBattleArena !== false,
       config.primaryColor || '#3b82f6',
       config.customCss || '',
+      config.spawnCardScale !== undefined ? config.spawnCardScale : 1.0,
+      config.spawnCardPosition || 'bottom-left',
+      config.showCardSprite !== false,
+      config.showCardTypes !== false,
+      config.showCardInstructions !== false,
       streamer
     ]
   );

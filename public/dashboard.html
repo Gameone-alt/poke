@@ -117,6 +117,41 @@
             <input type="text" id="spawn-catch-guide" placeholder="e.g. Type catch in chat!">
           </div>
 
+          
+          <h4 style="margin-top: 15px; font-size: 13px; color: var(--color-primary); letter-spacing: 0.5px; border-top: 1px dashed var(--border-color); padding-top: 10px;">🎴 Wild Spawn Card Layout</h4>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="spawn-card-scale">Card Scale / Size</label>
+              <input type="number" id="spawn-card-scale" step="0.05" min="0.5" max="2.0" value="1.0">
+            </div>
+            <div class="form-group">
+              <label for="spawn-card-position">Card Position</label>
+              <select id="spawn-card-position" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
+                <option value="bottom-left">Bottom Left</option>
+                <option value="bottom-right">Bottom Right</option>
+                <option value="top-left">Top Left</option>
+                <option value="top-right">Top Right</option>
+                <option value="center">Center Screen</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px; margin-bottom: 15px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; color: var(--text-muted);">
+              <input type="checkbox" id="show-card-sprite" checked style="width: auto;">
+              Show Sprite Image
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; color: var(--text-muted);">
+              <input type="checkbox" id="show-card-types" checked style="width: auto;">
+              Show Type Badges
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; color: var(--text-muted);">
+              <input type="checkbox" id="show-card-instructions" checked style="width: auto;">
+              Show Catch Guide
+            </label>
+          </div>
+
           <div class="form-group">
             <label for="custom-css">Custom CSS Overrides</label>
             <textarea id="custom-css" rows="4" placeholder="/* CSS styles here, e.g. .feed-entry { font-size: 14px; } */" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: 'Courier New', Courier, monospace; font-size: 12px; resize: vertical;"></textarea>

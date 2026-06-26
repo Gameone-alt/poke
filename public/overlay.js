@@ -150,13 +150,52 @@ function applyConfig(config) {
       spawnHeaderElement.textContent = config.spawnAlertTitle || 'WILD SPAWN';
     }
     
+    // Positioning
+    const positionClasses = ['pos-bottom-left', 'pos-bottom-right', 'pos-top-left', 'pos-top-right', 'pos-center'];
+    positionClasses.forEach(cls => wildSpawnContainer.classList.remove(cls));
+    const pos = config.spawnCardPosition || 'bottom-left';
+    wildSpawnContainer.classList.add(`pos-${pos}`);
+
+    // Scaling
+    const scale = config.spawnCardScale !== undefined ? config.spawnCardScale : 1.0;
+    if (pos === 'center') {
+      wildSpawnContainer.style.transform = `translate(-50%, -50%) scale(${scale})`;
+    } else {
+      wildSpawnContainer.style.transform = `scale(${scale})`;
+    }
+
+    // Sprite Visibility
+    const spriteContainer = wildSpawnContainer.querySelector('.sprite-container');
+    if (spriteContainer) {
+      if (config.showCardSprite === false) {
+        spriteContainer.classList.add('hidden');
+      } else {
+        spriteContainer.classList.remove('hidden');
+      }
+    }
+
+    // Types Visibility
+    if (wildPokemonTypes) {
+      if (config.showCardTypes === false) {
+        wildPokemonTypes.classList.add('hidden');
+      } else {
+        wildPokemonTypes.classList.remove('hidden');
+      }
+    }
+
+    // Catch Instruction Guide & Visibility
     const catchInstruction = wildSpawnContainer.querySelector('.catch-instruction');
     if (catchInstruction) {
-      let guideHtml = config.spawnCatchGuide || 'Type <span class="cmd-text">catch</span> in chat!';
-      if (!guideHtml.includes('<span') && (guideHtml.toLowerCase().includes('catch') || guideHtml.toLowerCase().includes('!catch'))) {
-        guideHtml = guideHtml.replace(/(catch|!catch)/i, '<span class="cmd-text">$1</span>');
+      if (config.showCardInstructions === false) {
+        catchInstruction.classList.add('hidden');
+      } else {
+        catchInstruction.classList.remove('hidden');
+        let guideHtml = config.spawnCatchGuide || 'Type <span class="cmd-text">catch</span> in chat!';
+        if (!guideHtml.includes('<span') && (guideHtml.toLowerCase().includes('catch') || guideHtml.toLowerCase().includes('!catch'))) {
+          guideHtml = guideHtml.replace(/(catch|!catch)/i, '<span class="cmd-text">$1</span>');
+        }
+        catchInstruction.innerHTML = guideHtml;
       }
-      catchInstruction.innerHTML = guideHtml;
     }
   }
 

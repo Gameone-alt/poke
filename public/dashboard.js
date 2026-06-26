@@ -114,6 +114,13 @@ const spawnAlertTitleInput = document.getElementById('spawn-alert-title');
 const spawnCatchGuideInput = document.getElementById('spawn-catch-guide');
 const customCssInput = document.getElementById('custom-css');
 
+// Spawn Card Specific Elements
+const spawnCardScaleInput = document.getElementById('spawn-card-scale');
+const spawnCardPositionSelect = document.getElementById('spawn-card-position');
+const showCardSpriteCheckbox = document.getElementById('show-card-sprite');
+const showCardTypesCheckbox = document.getElementById('show-card-types');
+const showCardInstructionsCheckbox = document.getElementById('show-card-instructions');
+
 // Sync color inputs
 if (primaryColorInput && primaryColorTextInput) {
   primaryColorInput.addEventListener('input', () => {
@@ -147,6 +154,13 @@ function populateConfig(config) {
   spawnAlertTitleInput.value = config.spawnAlertTitle || 'WILD SPAWN';
   spawnCatchGuideInput.value = config.spawnCatchGuide || 'Type catch in chat!';
   customCssInput.value = config.customCss || '';
+  
+  // Card layout customization
+  spawnCardScaleInput.value = config.spawnCardScale !== undefined ? config.spawnCardScale : 1.0;
+  spawnCardPositionSelect.value = config.spawnCardPosition || 'bottom-left';
+  showCardSpriteCheckbox.checked = config.showCardSprite !== false;
+  showCardTypesCheckbox.checked = config.showCardTypes !== false;
+  showCardInstructionsCheckbox.checked = config.showCardInstructions !== false;
 }
 
 const btnForceSpawn = document.getElementById('btn-force-spawn');
@@ -224,7 +238,14 @@ configForm.addEventListener('submit', (e) => {
     showSpawnAlert: showSpawnAlertInput.checked,
     spawnAlertTitle: spawnAlertTitleInput.value.trim(),
     spawnCatchGuide: spawnCatchGuideInput.value.trim(),
-    customCss: customCssInput.value
+    customCss: customCssInput.value,
+    
+    // Spawn Card Customization
+    spawnCardScale: parseFloat(spawnCardScaleInput.value),
+    spawnCardPosition: spawnCardPositionSelect.value,
+    showCardSprite: showCardSpriteCheckbox.checked,
+    showCardTypes: showCardTypesCheckbox.checked,
+    showCardInstructions: showCardInstructionsCheckbox.checked
   };
   
   socket.emit('update_config', { newConfig: updatedConfig, password: adminPassword });
