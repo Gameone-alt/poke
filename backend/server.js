@@ -663,10 +663,16 @@ io.on('connection', async (socket) => {
   }
 
   // Send current session state to joining client
+  let leaderboard = [];
+  try {
+    leaderboard = await db.getLeaderboard(channelId);
+  } catch (err) {
+    console.error(`[Session] [${channelId}] Failed to fetch leaderboard:`, err.message);
+  }
   socket.emit('init_state', {
     activeWildPokemon: session.activeWildPokemon,
     activeBattle: session.activeBattle,
-    leaderboard: await db.getLeaderboard(channelId)
+    leaderboard
   });
 
   // Check if streamer has a password set. If not, they can access configurations.
@@ -777,4 +783,13 @@ server.listen(PORT, () => {
   console.log(`📺 Local OBS Overlay URL: http://localhost:${PORT}/overlay?channel=simulator`);
   console.log(`🎛️ Local Streamer Dashboard URL: http://localhost:${PORT}/dashboard?channel=simulator`);
   console.log(`===================================================`);
+});
+
+// Global safety net: prevent unhandled DB/async errors from killing the process
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[Process] Unhandled Promise Rejection (will not crash):', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[Process] Uncaught Exception (will not crash):', err.message);
 });
