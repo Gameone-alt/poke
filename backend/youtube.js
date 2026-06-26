@@ -130,5 +130,6 @@ module.exports = {
   startYoutubeChat,
   stopYoutubeChat,
   extractVideoId,
-  extractChannelId
+  extractChannelId,
+  activeChats
 };
