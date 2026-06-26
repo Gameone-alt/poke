@@ -16,11 +16,22 @@ let localUsers = {};
 let localConfigs = {};
 
 if (connectionString && connectionString !== 'YOUR_SUPABASE_DATABASE_URL_HERE') {
-  const pgConnectionString = require('pg-connection-string');
-  const parsedConfig = pgConnectionString.parse(connectionString);
-  parsedConfig.ssl = { rejectUnauthorized: false };
-  pool = new Pool(parsedConfig);
-  console.log('[Database] Configured connection pool for Supabase PostgreSQL.');
+  // Parse connection string using Node's built-in URL — no extra dependency needed
+  try {
+    const parsed = new URL(connectionString);
+    pool = new Pool({
+      host: parsed.hostname,
+      port: parseInt(parsed.port) || 5432,
+      database: parsed.pathname.replace('/', ''),
+      user: decodeURIComponent(parsed.username),
+      password: decodeURIComponent(parsed.password),
+      ssl: { rejectUnauthorized: false }
+    });
+    console.log('[Database] Configured connection pool for Supabase PostgreSQL.');
+  } catch (e) {
+    console.error('[Database] Failed to parse DATABASE_URL, falling back to local JSON:', e.message);
+    useLocalFallback = true;
+  }
 } else {
   useLocalFallback = true;
   console.log('[Database] WARNING: DATABASE_URL is not set. Falling back to multi-tenant LOCAL JSON files.');
