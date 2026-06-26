@@ -10,9 +10,42 @@ const activeChats = new Map();
  * @param {Object} config - Config details containing channelId or videoId.
  * @param {Function} onMessageCallback - Callback format: onMessageCallback(streamerId, username, displayName, messageText)
  */
+function extractVideoId(input) {
+  if (!input) return '';
+  const cleanInput = input.trim();
+  const match = cleanInput.match(/(?:\/live\/|v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
+  if (match) return match[1];
+  if (cleanInput.length === 11 && /^[a-zA-Z0-9_-]{11}$/.test(cleanInput)) {
+    return cleanInput;
+  }
+  return cleanInput;
+}
+
+function extractChannelId(input) {
+  if (!input) return '';
+  const cleanInput = input.trim();
+  const match = cleanInput.match(/(?:\/channel\/)(UC[a-zA-Z0-9_-]{22})/i);
+  if (match) return match[1];
+  if (cleanInput.startsWith('UC') && cleanInput.length === 24) {
+    return cleanInput;
+  }
+  return cleanInput;
+}
+
+/**
+ * Initializes a YouTube live chat listener for a specific streamer session.
+ * 
+ * @param {String} streamerId - The unique channel identifier for the streamer.
+ * @param {Object} config - Config details containing channelId or videoId.
+ * @param {Function} onMessageCallback - Callback format: onMessageCallback(streamerId, username, displayName, messageText)
+ */
 function startYoutubeChat(streamerId, config, onMessageCallback) {
-  const { channelId, videoId } = config;
   const streamer = streamerId.toLowerCase().trim();
+  const rawChannelId = config.channelId;
+  const rawVideoId = config.videoId;
+  
+  const videoId = extractVideoId(rawVideoId);
+  const channelId = extractChannelId(rawChannelId);
   
   if (!channelId && !videoId) {
     console.log(`[YouTube Chat] [${streamer}] No channelId or videoId configured. Chat Bot running in SIMULATOR-ONLY mode.`);
@@ -95,5 +128,7 @@ function stopYoutubeChat(streamerId) {
 
 module.exports = {
   startYoutubeChat,
-  stopYoutubeChat
+  stopYoutubeChat,
+  extractVideoId,
+  extractChannelId
 };

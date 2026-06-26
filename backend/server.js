@@ -744,6 +744,15 @@ io.on('connection', async (socket) => {
     
     try {
       console.log(`[Server] [${channelId}] Configuration updating...`);
+      
+      // Clean inputs: extract IDs from full URLs if pasted
+      if (newConfig.videoId) {
+        newConfig.videoId = youtube.extractVideoId(newConfig.videoId);
+      }
+      if (newConfig.channelId) {
+        newConfig.channelId = youtube.extractChannelId(newConfig.channelId);
+      }
+
       const oldPassword = session.config.adminPassword;
       session.config = { ...session.config, ...newConfig, adminPassword: oldPassword };
       
