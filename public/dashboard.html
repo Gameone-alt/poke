@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokémon Overlay - Streamer Dashboard</title>
+  <link rel="stylesheet" href="dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="dashboard-app">
+    
+    <header class="app-header">
+      <div class="header-logo">
+        <span class="logo-ball">🔴</span>
+        <h1>Pokémon Stream Dashboard</h1>
+      </div>
+      <div class="header-status">
+        <span class="status-indicator online"></span>
+        <span id="server-status">Connected to Server</span>
+      </div>
+    </header>
+
+    <main class="dashboard-grid">
+      
+      <!-- Left Panel: Configuration & Quick Actions -->
+      <section class="grid-card config-card">
+        <h2>🔧 Streamer Settings</h2>
+        
+        <form id="config-form" class="settings-form">
+          <div class="form-group">
+            <label for="channel-id">YouTube Channel ID</label>
+            <input type="text" id="channel-id" placeholder="e.g. UCxxxxxxxxx">
+            <small>Leave empty to use Video ID or Simulator only.</small>
+          </div>
+          
+          <div class="form-group">
+            <label for="video-id">Active Stream Video ID</label>
+            <input type="text" id="video-id" placeholder="e.g. youtube.com/watch?v=VIDEO_ID">
+            <small>Specifying the exact Video ID connects to chat faster.</small>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="spawn-interval">Spawn Loop (seconds)</label>
+              <input type="number" id="spawn-interval" min="10" value="60">
+            </div>
+            <div class="form-group">
+              <label for="despawn-timeout">Flee Timer (seconds)</label>
+              <input type="number" id="despawn-timeout" min="5" value="45">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="catch-cooldown">Catch Cooldown (s)</label>
+              <input type="number" id="catch-cooldown" min="0" value="15">
+            </div>
+            <div class="form-group">
+              <label for="shiny-chance">Shiny Rate (%)</label>
+              <input type="number" id="shiny-chance" step="0.1" min="0" max="100" value="1">
+            </div>
+          </div>
+          
+          <button type="submit" class="btn btn-primary">Save Settings</button>
+        </form>
+
+        <div class="quick-actions">
+          <h3>⚡ Quick Actions</h3>
+          <div class="action-buttons">
+            <button id="btn-force-spawn" class="btn btn-action">Force Spawn Pokémon</button>
+            <button id="btn-reset-db" class="btn btn-danger">Reset Player Database</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Center Panel: Chat Command Simulator -->
+      <section class="grid-card simulator-card">
+        <h2>💬 YouTube Chat Simulator</h2>
+        <p class="section-desc">Simulate viewer messages to test the bot's catch and battle rules offline.</p>
+        
+        <div class="simulator-controls">
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="sim-user">Simulated Username</label>
+              <select id="sim-user">
+                <option value="ash_ketchum">Ash Ketchum</option>
+                <option value="misty_water">Misty</option>
+                <option value="brock_rock">Brock</option>
+                <option value="gary_oak">Gary Oak</option>
+                <option value="streamer_host">Streamer (You)</option>
+              </select>
+            </div>
+            <div class="form-group flex-1">
+              <label for="new-user-input">Add Custom User</label>
+              <div class="add-user-wrap">
+                <input type="text" id="new-user-input" placeholder="Name...">
+                <button type="button" id="btn-add-user" class="btn btn-small">+</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="preset-commands">
+            <label>Quick Command Templates</label>
+            <div class="preset-buttons">
+              <button class="btn btn-preset" data-cmd="!daily">🎁 Claim Daily (!daily)</button>
+              <button class="btn btn-preset" data-cmd="catch">🔴 Catch with Pokéball (catch)</button>
+              <button class="btn btn-preset" data-cmd="catch great">🔵 Catch with Great Ball (catch great)</button>
+              <button class="btn btn-preset" data-cmd="catch ultra">🟡 Catch with Ultra Ball (catch ultra)</button>
+              <button class="btn btn-preset" data-cmd="!inventory">🎒 View Inventory (!inventory)</button>
+            </div>
+            <label style="font-size:11px; color:#64748b; margin-top:8px;">⚔️ Battle commands require a Pokémon name. Type them manually below:</label>
+            <div style="font-size:11px; color:#475569; line-height:1.6; background:rgba(255,255,255,0.02); padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
+              <code>!fight @username [your_pokemon]</code> — Challenge a player<br>
+              <code>!fight wild [your_pokemon]</code> — Fight the wild spawn<br>
+              <code>!accept [your_pokemon]</code> — Accept a challenge
+            </div>
+          </div>
+
+          <div class="chat-input-row">
+            <input type="text" id="sim-chat-message" placeholder="e.g. !fight gary_oak pikachu or !accept charizard">
+            <button id="btn-send-sim" class="btn btn-primary">Send Message</button>
+          </div>
+        </div>
+
+        <div class="live-chat-box">
+          <h3>💬 Chat Simulator Feed</h3>
+          <div id="sim-chat-feed" class="feed-log">
+            <!-- Simulated logs -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Panel: Game States & Leaderboard -->
+      <section class="grid-card state-card">
+        <h2>📊 Game State & Leaderboard</h2>
+        
+        <div class="state-blocks">
+          <div class="state-block">
+            <h3>Active Wild Spawn</h3>
+            <div id="active-wild-details" class="state-detail-box">
+              <span class="muted">No Pokémon currently spawned.</span>
+            </div>
+          </div>
+          
+          <div class="state-block">
+            <h3>Active Combat Sequence</h3>
+            <div id="active-combat-details" class="state-detail-box">
+              <span class="muted">No battle currently in progress.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="leaderboard-section">
+          <h3>🏆 Top Players (Pokedex Size)</h3>
+          <div class="table-wrap">
+            <table class="leaderboard-table">
+              <thead>
+                <tr>
+                  <th>Player</th>
+                  <th>Pokémon Caught</th>
+                  <th>Combat Wins</th>
+                  <th>Active Pokémon</th>
+                </tr>
+              </thead>
+              <tbody id="leaderboard-body">
+                <tr>
+                  <td colspan="4" class="text-center muted">No players registered. Sim a catch to start!</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>

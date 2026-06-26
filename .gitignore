@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+
+# Local databases
+backend/data/users.json
+backend/data/configs.json
+backend/data/config.json
+*.tmp
+
+# Environment secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
