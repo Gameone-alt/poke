@@ -6,6 +6,27 @@
   <title>Pokémon Stream Overlay</title>
   <link rel="stylesheet" href="overlay.css">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <script>
+    // Global fallback image handler for broken showdown animated sprites
+    function handleImageError(img) {
+      if (!img.src.includes('official-artwork')) {
+        // Extract id from the url (e.g., /showdown/1.gif or similar)
+        const parts = img.src.split('/');
+        const file = parts[parts.length - 1];
+        const id = file.split('.')[0];
+        const isShiny = img.src.includes('/shiny/');
+        
+        if (id && !isNaN(id)) {
+          console.warn(`[Overlay] Animated sprite failed for ID ${id}. Switching to static artwork.`);
+          if (isShiny) {
+            img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/${id}.png`;
+          } else {
+            img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
+          }
+        }
+      }
+    }
+  </script>
 </head>
 <body>
   <div id="overlay-container">
@@ -127,28 +148,7 @@
   <audio id="sfx-evolve" src="https://assets.mixkit.co/active_storage/sfx/2013/2013-84.wav" preload="auto"></audio>
 
   <!-- Connect standard browser sockets and local controller -->
-  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-  <script>
-    // Global fallback image handler for broken showdown animated sprites
-    function handleImageError(img) {
-      if (!img.src.includes('official-artwork')) {
-        // Extract id from the url (e.g., /showdown/1.gif or similar)
-        const parts = img.src.split('/');
-        const file = parts[parts.length - 1];
-        const id = file.split('.')[0];
-        const isShiny = img.src.includes('/shiny/');
-        
-        if (id && !isNaN(id)) {
-          console.warn(`[Overlay] Animated sprite failed for ID ${id}. Switching to static artwork.`);
-          if (isShiny) {
-            img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/${id}.png`;
-          } else {
-            img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
-          }
-        }
-      }
-    }
-  </script>
+  <script src="socket.io.min.js"></script>
   <script src="overlay.js"></script>
 </body>
 </html>
