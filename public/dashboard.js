@@ -1,6 +1,10 @@
-// Parse streamer channel query from URL or default to simulator
+// Parse streamer channel query from URL or redirect to landing page
 const urlParams = new URLSearchParams(window.location.search);
-const channelId = urlParams.get('channel') || 'simulator';
+const channelId = urlParams.get('channel');
+
+if (!channelId) {
+  window.location.href = 'index.html';
+}
 
 // If deployed on Vercel, replace this string with your hosted Render URL
 const BACKEND_URL = window.location.origin.includes('localhost') ? '' : 'https://pokemon-overlay-backend-hfpf.onrender.com';
@@ -104,6 +108,7 @@ const configForm = document.getElementById('config-form');
 
 const btnForceSpawn = document.getElementById('btn-force-spawn');
 const btnResetDb = document.getElementById('btn-reset-db');
+const btnLogout = document.getElementById('btn-logout');
 
 const simUserSelect = document.getElementById('sim-user');
 const newUserInput = document.getElementById('new-user-input');
@@ -183,6 +188,11 @@ btnResetDb.addEventListener('click', () => {
   if (confirm('Are you sure you want to reset all player stats, inventories, and scores? This cannot be undone.')) {
     socket.emit('reset_db', { password: adminPassword });
   }
+});
+
+btnLogout.addEventListener('click', () => {
+  localStorage.removeItem('admin_password_' + channelId);
+  window.location.href = 'index.html';
 });
 
 // Simulator custom user creation

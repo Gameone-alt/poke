@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokémon Live Stream Overlay - Home</title>
+  <link rel="stylesheet" href="index.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="background-decorations">
+    <div class="glow-orb orb-red"></div>
+    <div class="glow-orb orb-blue"></div>
+  </div>
+
+  <div class="landing-container">
+    <header class="landing-header">
+      <div class="logo">
+        <span class="logo-icon">🔴</span>
+        <h1>Pokémon Streamer Portal</h1>
+      </div>
+      <p class="subtitle">Turn your YouTube live stream chat into an interactive Pokémon game overlay instantly.</p>
+    </header>
+
+    <main class="portal-card">
+      <div class="tab-headers">
+        <button id="tab-login" class="tab-btn active">Log In</button>
+        <button id="tab-register" class="tab-btn">Register Channel</button>
+      </div>
+
+      <div class="form-container">
+        <!-- Log In Form -->
+        <form id="login-form" class="portal-form">
+          <div class="form-group">
+            <label for="login-channel">YouTube Channel ID / Key</label>
+            <input type="text" id="login-channel" placeholder="e.g. UCxxxxxxxxx or your channel name" required>
+            <small>Enter the channel ID or unique key you registered with.</small>
+          </div>
+          <div class="form-group">
+            <label for="login-password">Admin Password</label>
+            <input type="password" id="login-password" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="btn-submit">Launch Dashboard 🚀</button>
+        </form>
+
+        <!-- Register Form -->
+        <form id="register-form" class="portal-form hidden">
+          <div class="form-group">
+            <label for="register-channel">Choose a Channel ID / Key</label>
+            <input type="text" id="register-channel" placeholder="e.g. UCxxxxxxxxx or channel name" required>
+            <small>We recommend using your exact YouTube Channel ID so the bot connects automatically.</small>
+          </div>
+          <div class="form-group">
+            <label for="register-password">Create Admin Password</label>
+            <input type="password" id="register-password" placeholder="Choose a strong password" required>
+            <small>Required to protect your dashboard settings from viewers.</small>
+          </div>
+          <button type="submit" class="btn-submit btn-register">Create Account & Dashboard ✨</button>
+        </form>
+
+        <div id="portal-feedback" class="feedback-msg"></div>
+      </div>
+    </main>
+
+    <footer class="landing-footer">
+      <p>Need help? View the <a href="overlay.html?channel=simulator" target="_blank">Overlay Demo</a> or see how to setup.</p>
+    </footer>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="index.js"></script>
+</body>
+</html>
