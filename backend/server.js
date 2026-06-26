@@ -698,12 +698,18 @@ io.on('connection', async (socket) => {
       socket.emit('password_verified', { success: false, message: 'Password has already been set!' });
       return;
     }
-    session.config.adminPassword = password;
-    await db.saveStreamerConfig(channelId, session.config);
-    
-    socket.emit('password_status', { hasPassword: true });
-    socket.emit('password_verified', { success: true, config: session.config });
-    console.log(`[Server] [${channelId}] Admin password set successfully.`);
+    try {
+      session.config.adminPassword = password;
+      await db.saveStreamerConfig(channelId, session.config);
+      
+      socket.emit('password_status', { hasPassword: true });
+      socket.emit('password_verified', { success: true, config: session.config });
+      console.log(`[Server] [${channelId}] Admin password set successfully.`);
+    } catch (err) {
+      console.error(`[Server] [${channelId}] Failed to set password:`, err.message);
+      session.config.adminPassword = ''; // Rollback in-memory state
+      socket.emit('password_verified', { success: false, message: 'Server error saving password. Please try again.' });
+    }
   });
 
   // Handle mock messages from dashboard simulator
@@ -721,18 +727,23 @@ io.on('connection', async (socket) => {
       return;
     }
     
-    console.log(`[Server] [${channelId}] Configuration updating...`);
-    const oldPassword = session.config.adminPassword;
-    session.config = { ...session.config, ...newConfig, adminPassword: oldPassword };
-    
-    await db.saveStreamerConfig(channelId, session.config);
-    
-    startSpawnLoop(channelId);
-    
-    youtube.stopYoutubeChat(channelId);
-    youtube.startYoutubeChat(channelId, session.config, processCommand);
-    
-    io.to(channelId).emit('config_updated', session.config);
+    try {
+      console.log(`[Server] [${channelId}] Configuration updating...`);
+      const oldPassword = session.config.adminPassword;
+      session.config = { ...session.config, ...newConfig, adminPassword: oldPassword };
+      
+      await db.saveStreamerConfig(channelId, session.config);
+      
+      startSpawnLoop(channelId);
+      
+      youtube.stopYoutubeChat(channelId);
+      youtube.startYoutubeChat(channelId, session.config, processCommand);
+      
+      io.to(channelId).emit('config_updated', session.config);
+    } catch (err) {
+      console.error(`[Server] [${channelId}] Failed to update config:`, err.message);
+      socket.emit('command_feedback', { text: '❌ Server error saving settings. Please try again.' });
+    }
   });
 
   // Force spawn button from dashboard
@@ -755,10 +766,15 @@ io.on('connection', async (socket) => {
       return;
     }
     
-    console.log(`[Server] [${channelId}] Resetting database...`);
-    await db.resetDatabase(channelId);
-    io.to(channelId).emit('leaderboard_update', await db.getLeaderboard(channelId));
-    sendGameLog(channelId, 'system', '⚠️ Streamer has reset all player databases!');
+    try {
+      console.log(`[Server] [${channelId}] Resetting database...`);
+      await db.resetDatabase(channelId);
+      io.to(channelId).emit('leaderboard_update', await db.getLeaderboard(channelId));
+      sendGameLog(channelId, 'system', '⚠️ Streamer has reset all player databases!');
+    } catch (err) {
+      console.error(`[Server] [${channelId}] Failed to reset database:`, err.message);
+      socket.emit('command_feedback', { text: '❌ Server error resetting database. Please try again.' });
+    }
   });
 
   // Clean up timers/listeners on complete disconnect
