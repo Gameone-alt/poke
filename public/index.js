@@ -40,17 +40,19 @@ loginForm.addEventListener('submit', (e) => {
   e.preventDefault();
   clearFeedback();
   
-  const channelId = document.getElementById('login-channel').value.trim();
+  const username = document.getElementById('login-username').value.trim();
   const password = document.getElementById('login-password').value.trim();
   
-  if (!channelId || !password) {
+  if (!username || !password) {
     showFeedback('Please fill out all fields.');
     return;
   }
   
   showFeedback('Authenticating...', true);
   
-  // Establish room-scoped connection
+  // Use username as the channelId internally
+  const channelId = username.toLowerCase().replace(/[^a-z0-9_-]/g, '');
+  
   const socket = io(BACKEND_URL, {
     query: { channelId },
     forceNew: true
@@ -62,16 +64,19 @@ loginForm.addEventListener('submit', (e) => {
 
   socket.on('password_verified', (data) => {
     if (data.success) {
-      // Save password and redirect
       localStorage.setItem('admin_password_' + channelId, password);
       showFeedback('Logged in successfully! Redirecting...', true);
       setTimeout(() => {
         window.location.href = `dashboard.html?channel=${channelId}`;
       }, 800);
     } else {
-      showFeedback(data.message || 'Incorrect password for this channel.');
+      showFeedback(data.message || 'Incorrect username or password.');
       socket.disconnect();
     }
+  });
+
+  socket.on('connect_error', () => {
+    showFeedback('Cannot connect to server. Please try again later.');
   });
 });
 
@@ -80,17 +85,34 @@ registerForm.addEventListener('submit', (e) => {
   e.preventDefault();
   clearFeedback();
   
-  const channelId = document.getElementById('register-channel').value.trim();
+  const username = document.getElementById('register-username').value.trim();
   const password = document.getElementById('register-password').value.trim();
+  const confirmPassword = document.getElementById('register-confirm-password').value.trim();
   
-  if (!channelId || !password) {
+  if (!username || !password || !confirmPassword) {
     showFeedback('Please fill out all fields.');
     return;
   }
+
+  if (username.length < 3) {
+    showFeedback('Username must be at least 3 characters.');
+    return;
+  }
   
-  showFeedback('Checking availability...', true);
+  if (password.length < 4) {
+    showFeedback('Password must be at least 4 characters.');
+    return;
+  }
   
-  // Establish room connection to query status
+  if (password !== confirmPassword) {
+    showFeedback('Passwords do not match.');
+    return;
+  }
+  
+  showFeedback('Creating your account...', true);
+  
+  const channelId = username.toLowerCase().replace(/[^a-z0-9_-]/g, '');
+  
   const socket = io(BACKEND_URL, {
     query: { channelId },
     forceNew: true
@@ -98,25 +120,27 @@ registerForm.addEventListener('submit', (e) => {
   
   socket.on('password_status', (data) => {
     if (data.hasPassword) {
-      showFeedback('This channel ID is already registered! Please log in instead.');
+      showFeedback('This username is already taken! Please choose another or log in.');
       socket.disconnect();
     } else {
-      showFeedback('Creating your dashboard...', true);
       socket.emit('set_password', { password });
     }
   });
 
   socket.on('password_verified', (data) => {
     if (data.success) {
-      // Save password and redirect
       localStorage.setItem('admin_password_' + channelId, password);
-      showFeedback('Account created successfully! Launching dashboard...', true);
+      showFeedback('Account created! Launching dashboard...', true);
       setTimeout(() => {
         window.location.href = `dashboard.html?channel=${channelId}`;
       }, 800);
     } else {
-      showFeedback(data.message || 'Error creating account.');
+      showFeedback(data.message || 'Error creating account. Please try again.');
       socket.disconnect();
     }
+  });
+
+  socket.on('connect_error', () => {
+    showFeedback('Cannot connect to server. Please try again later.');
   });
 });

@@ -25,20 +25,19 @@
     <main class="portal-card">
       <div class="tab-headers">
         <button id="tab-login" class="tab-btn active">Log In</button>
-        <button id="tab-register" class="tab-btn">Register Channel</button>
+        <button id="tab-register" class="tab-btn">Register</button>
       </div>
 
       <div class="form-container">
         <!-- Log In Form -->
         <form id="login-form" class="portal-form">
           <div class="form-group">
-            <label for="login-channel">YouTube Channel ID / Key</label>
-            <input type="text" id="login-channel" placeholder="e.g. UCxxxxxxxxx or your channel name" required>
-            <small>Enter the channel ID or unique key you registered with.</small>
+            <label for="login-username">Username</label>
+            <input type="text" id="login-username" placeholder="Enter your username" required>
           </div>
           <div class="form-group">
-            <label for="login-password">Admin Password</label>
-            <input type="password" id="login-password" placeholder="••••••••" required>
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" placeholder="Enter your password" required>
           </div>
           <button type="submit" class="btn-submit">Launch Dashboard 🚀</button>
         </form>
@@ -46,16 +45,19 @@
         <!-- Register Form -->
         <form id="register-form" class="portal-form hidden">
           <div class="form-group">
-            <label for="register-channel">Choose a Channel ID / Key</label>
-            <input type="text" id="register-channel" placeholder="e.g. UCxxxxxxxxx or channel name" required>
-            <small>We recommend using your exact YouTube Channel ID so the bot connects automatically.</small>
+            <label for="register-username">Username</label>
+            <input type="text" id="register-username" placeholder="Choose a username" required>
+            <small>This will be your unique identifier. You can use your YouTube Channel ID or any name.</small>
           </div>
           <div class="form-group">
-            <label for="register-password">Create Admin Password</label>
-            <input type="password" id="register-password" placeholder="Choose a strong password" required>
-            <small>Required to protect your dashboard settings from viewers.</small>
+            <label for="register-password">Password</label>
+            <input type="password" id="register-password" placeholder="Create a password" required>
           </div>
-          <button type="submit" class="btn-submit btn-register">Create Account & Dashboard ✨</button>
+          <div class="form-group">
+            <label for="register-confirm-password">Confirm Password</label>
+            <input type="password" id="register-confirm-password" placeholder="Re-enter your password" required>
+          </div>
+          <button type="submit" class="btn-submit btn-register">Create Account ✨</button>
         </form>
 
         <div id="portal-feedback" class="feedback-msg"></div>
