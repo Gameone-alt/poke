@@ -53,6 +53,23 @@ app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'dashboard.html'));
 });
 
+// HTTP POST endpoint for external chat relays (like Streamer.bot C# actions)
+app.post('/api/chat', async (req, res) => {
+  const { channelId, username, displayName, messageText } = req.body;
+  if (!channelId || !username || !messageText) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+  
+  try {
+    console.log(`[API Chat Relay] [${channelId}] ${displayName || username}: ${messageText}`);
+    await processCommand(channelId.toLowerCase().trim(), username, displayName || username, messageText);
+    res.status(200).json({ success: true });
+  } catch (err) {
+    console.error('[API Chat Relay] Error processing command:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Load Static Pokémon Database
 let pokemonDb = {};
 const POKEMON_DB_FILE = path.join(__dirname, 'data', 'pokemon.json');
