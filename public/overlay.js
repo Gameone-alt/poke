@@ -2,8 +2,8 @@
 const urlParams = new URLSearchParams(window.location.search);
 const channelId = urlParams.get('channel') || 'simulator';
 
-// If deployed on Vercel, replace this string with your hosted Render URL
-const BACKEND_URL = window.location.origin.includes('localhost') ? '' : 'https://pokemon-overlay-backend-hfpf.onrender.com';
+// Backend URL: always use same origin — Vercel proxies /socket.io/ to Render in production
+const BACKEND_URL = '';
 const socket = io(BACKEND_URL, {
   query: { channelId }
 });

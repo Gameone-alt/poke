@@ -1,5 +1,5 @@
-// Determine backend URL based on local vs production environment
-const BACKEND_URL = window.location.origin.includes('localhost') ? '' : 'https://pokemon-overlay-backend-hfpf.onrender.com';
+// Backend URL: always use same origin — Vercel proxies /socket.io/ to Render in production
+const BACKEND_URL = '';
 
 // DOM References
 const tabLogin = document.getElementById('tab-login');

@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/socket.io/:path*",
+      "destination": "https://pokemon-overlay-backend-hfpf.onrender.com/socket.io/:path*"
+    },
+    {
+      "source": "/health",
+      "destination": "https://pokemon-overlay-backend-hfpf.onrender.com/health"
+    }
+  ]
+}
