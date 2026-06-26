@@ -20,9 +20,25 @@ const io = new Server(server, {
 
 const PORT = process.env.PORT || 3000;
 
+// CORS middleware — required for cross-origin requests from Vercel to Render
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  next();
+});
+
 // Serve public directory
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use(express.json());
+
+// Health check endpoint for Render
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', uptime: process.uptime() });
+});
 
 // Routes to explicitly serve overlay and dashboard (for local testing)
 app.get('/overlay', (req, res) => {
