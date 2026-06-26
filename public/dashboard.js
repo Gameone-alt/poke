@@ -8,6 +8,91 @@ const socket = io(BACKEND_URL, {
   query: { channelId }
 });
 
+let adminPassword = '';
+
+// Security Lock DOM Elements
+const securityOverlay = document.getElementById('security-overlay');
+const securityTitle = document.getElementById('security-title');
+const securityDesc = document.getElementById('security-desc');
+const adminPassInput = document.getElementById('admin-pass-input');
+const btnSubmitPass = document.getElementById('btn-submit-pass');
+const passFeedback = document.getElementById('pass-feedback');
+
+let isSettingPassword = false;
+
+// Listen to password status on connection
+socket.on('password_status', (data) => {
+  const { hasPassword } = data;
+  
+  if (!hasPassword) {
+    isSettingPassword = true;
+    securityTitle.textContent = '🔒 Create Admin Password';
+    securityDesc.textContent = 'This is a public dashboard. Please create a secret password to prevent others from modifying your settings.';
+    btnSubmitPass.textContent = 'Create Password';
+    securityOverlay.classList.remove('hidden');
+  } else {
+    isSettingPassword = false;
+    const cachedPass = localStorage.getItem('admin_password_' + channelId);
+    if (cachedPass) {
+      socket.emit('verify_password', { password: cachedPass });
+    } else {
+      securityTitle.textContent = '🔒 Admin Authentication Required';
+      securityDesc.textContent = 'Please enter your secret password to unlock streamer settings and controls.';
+      btnSubmitPass.textContent = 'Unlock Dashboard';
+      securityOverlay.classList.remove('hidden');
+    }
+  }
+});
+
+// Submit password button action
+btnSubmitPass.addEventListener('click', () => {
+  const password = adminPassInput.value.trim();
+  if (!password) {
+    passFeedback.textContent = 'Password cannot be empty!';
+    return;
+  }
+  
+  passFeedback.textContent = '';
+  if (isSettingPassword) {
+    socket.emit('set_password', { password });
+  } else {
+    socket.emit('verify_password', { password });
+  }
+});
+
+adminPassInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    btnSubmitPass.click();
+  }
+});
+
+// Verify/Set reply from server
+socket.on('password_verified', (data) => {
+  const { success, config, message } = data;
+  
+  if (success) {
+    adminPassword = adminPassInput.value.trim() || localStorage.getItem('admin_password_' + channelId);
+    localStorage.setItem('admin_password_' + channelId, adminPassword);
+    
+    if (config) {
+      channelIdInput.value = config.channelId || '';
+      videoIdInput.value = config.videoId || '';
+      spawnIntervalInput.value = Math.round(config.spawnIntervalMs / 1000);
+      despawnTimeoutInput.value = Math.round(config.wildDespawnTimeoutMs / 1000);
+      catchCooldownInput.value = Math.round(config.catchCooldownMs / 1000);
+      shinyChanceInput.value = config.shinyChance * 100;
+    }
+    
+    securityOverlay.classList.add('hidden');
+    passFeedback.textContent = '';
+    adminPassInput.value = '';
+  } else {
+    passFeedback.textContent = message || 'Invalid credentials!';
+    localStorage.removeItem('admin_password_' + channelId);
+    securityOverlay.classList.remove('hidden');
+  }
+});
+
 // DOM elements
 const channelIdInput = document.getElementById('channel-id');
 const videoIdInput = document.getElementById('video-id');
@@ -85,18 +170,18 @@ configForm.addEventListener('submit', (e) => {
     shinyChance: parseFloat(shinyChanceInput.value) / 100
   };
   
-  socket.emit('update_config', updatedConfig);
+  socket.emit('update_config', { newConfig: updatedConfig, password: adminPassword });
   alert('Configuration updated successfully!');
 });
 
 // Button triggers
 btnForceSpawn.addEventListener('click', () => {
-  socket.emit('force_spawn');
+  socket.emit('force_spawn', { password: adminPassword });
 });
 
 btnResetDb.addEventListener('click', () => {
   if (confirm('Are you sure you want to reset all player stats, inventories, and scores? This cannot be undone.')) {
-    socket.emit('reset_db');
+    socket.emit('reset_db', { password: adminPassword });
   }
 });
 

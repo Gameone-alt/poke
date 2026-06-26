@@ -625,7 +625,8 @@ async function getStreamerConfig(streamerId) {
         spawnIntervalMs: 60000,
         wildDespawnTimeoutMs: 45000,
         catchCooldownMs: 15000,
-        shinyChance: 0.01
+        shinyChance: 0.01,
+        adminPassword: ''
       };
       saveLocalConfigs();
     }
@@ -642,13 +643,14 @@ async function getStreamerConfig(streamerId) {
       spawnIntervalMs: 60000,
       wildDespawnTimeoutMs: 45000,
       catchCooldownMs: 15000,
-      shinyChance: 0.01
+      shinyChance: 0.01,
+      adminPassword: ''
     };
     
     await query(
-      `INSERT INTO streamer_configs (channel_id, video_id, spawn_interval_ms, wild_despawn_timeout_ms, catch_cooldown_ms, shiny_chance)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [defaultConfig.channelId, defaultConfig.videoId, defaultConfig.spawnIntervalMs, defaultConfig.wildDespawnTimeoutMs, defaultConfig.catchCooldownMs, defaultConfig.shinyChance]
+      `INSERT INTO streamer_configs (channel_id, video_id, spawn_interval_ms, wild_despawn_timeout_ms, catch_cooldown_ms, shiny_chance, admin_password)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [defaultConfig.channelId, defaultConfig.videoId, defaultConfig.spawnIntervalMs, defaultConfig.wildDespawnTimeoutMs, defaultConfig.catchCooldownMs, defaultConfig.shinyChance, defaultConfig.adminPassword]
     );
     
     return defaultConfig;
@@ -661,7 +663,8 @@ async function getStreamerConfig(streamerId) {
     spawnIntervalMs: row.spawn_interval_ms,
     wildDespawnTimeoutMs: row.wild_despawn_timeout_ms,
     catchCooldownMs: row.catch_cooldown_ms,
-    shinyChance: Number(row.shiny_chance)
+    shinyChance: Number(row.shiny_chance),
+    adminPassword: row.admin_password || ''
   };
 }
 
@@ -681,14 +684,15 @@ async function saveStreamerConfig(streamerId, config) {
   await query(
     `UPDATE streamer_configs 
      SET video_id = $1, spawn_interval_ms = $2, wild_despawn_timeout_ms = $3, 
-         catch_cooldown_ms = $4, shiny_chance = $5
-     WHERE channel_id = $6`,
+         catch_cooldown_ms = $4, shiny_chance = $5, admin_password = $6
+     WHERE channel_id = $7`,
     [
       config.videoId || '',
       config.spawnIntervalMs,
       config.wildDespawnTimeoutMs,
       config.catchCooldownMs,
       config.shinyChance,
+      config.adminPassword || '',
       streamer
     ]
   );

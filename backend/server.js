@@ -653,8 +653,36 @@ io.on('connection', async (socket) => {
     leaderboard: await db.getLeaderboard(channelId)
   });
 
-  // Prefill configuration inputs on client dashboards
-  socket.emit('config_updated', session.config);
+  // Check if streamer has a password set. If not, they can access configurations.
+  socket.emit('password_status', { hasPassword: !!session.config.adminPassword });
+  if (!session.config.adminPassword) {
+    socket.emit('config_updated', session.config);
+  }
+
+  // Handle password verification
+  socket.on('verify_password', (data) => {
+    const { password } = data;
+    if (password === session.config.adminPassword) {
+      socket.emit('password_verified', { success: true, config: session.config });
+    } else {
+      socket.emit('password_verified', { success: false, message: 'Incorrect admin password!' });
+    }
+  });
+
+  // Handle creating the admin password initially
+  socket.on('set_password', async (data) => {
+    const { password } = data;
+    if (session.config.adminPassword) {
+      socket.emit('password_verified', { success: false, message: 'Password has already been set!' });
+      return;
+    }
+    session.config.adminPassword = password;
+    await db.saveStreamerConfig(channelId, session.config);
+    
+    socket.emit('password_status', { hasPassword: true });
+    socket.emit('password_verified', { success: true, config: session.config });
+    console.log(`[Server] [${channelId}] Admin password set successfully.`);
+  });
 
   // Handle mock messages from dashboard simulator
   socket.on('simulate_chat', (data) => {
@@ -664,9 +692,16 @@ io.on('connection', async (socket) => {
   });
 
   // Handle configuration updates from dashboard
-  socket.on('update_config', async (newConfig) => {
+  socket.on('update_config', async (data) => {
+    const { newConfig, password } = data;
+    if (session.config.adminPassword && password !== session.config.adminPassword) {
+      socket.emit('command_feedback', { text: '❌ Unauthorized: Incorrect admin password!' });
+      return;
+    }
+    
     console.log(`[Server] [${channelId}] Configuration updating...`);
-    session.config = { ...session.config, ...newConfig };
+    const oldPassword = session.config.adminPassword;
+    session.config = { ...session.config, ...newConfig, adminPassword: oldPassword };
     
     await db.saveStreamerConfig(channelId, session.config);
     
@@ -679,13 +714,25 @@ io.on('connection', async (socket) => {
   });
 
   // Force spawn button from dashboard
-  socket.on('force_spawn', () => {
+  socket.on('force_spawn', (data) => {
+    const { password } = data || {};
+    if (session.config.adminPassword && password !== session.config.adminPassword) {
+      socket.emit('command_feedback', { text: '❌ Unauthorized: Incorrect admin password!' });
+      return;
+    }
+    
     console.log(`[Server] [${channelId}] Forcing wild Pokemon spawn...`);
     spawnWildPokemon(channelId);
   });
 
   // Reset database button from dashboard
-  socket.on('reset_db', async () => {
+  socket.on('reset_db', async (data) => {
+    const { password } = data || {};
+    if (session.config.adminPassword && password !== session.config.adminPassword) {
+      socket.emit('command_feedback', { text: '❌ Unauthorized: Incorrect admin password!' });
+      return;
+    }
+    
     console.log(`[Server] [${channelId}] Resetting database...`);
     await db.resetDatabase(channelId);
     io.to(channelId).emit('leaderboard_update', await db.getLeaderboard(channelId));

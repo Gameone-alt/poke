@@ -176,6 +176,20 @@
     </main>
   </div>
 
+  <!-- Security Lock Overlay -->
+  <div id="security-overlay" class="security-overlay hidden">
+    <div class="security-card">
+      <span class="lock-icon" id="security-icon">🔒</span>
+      <h2 id="security-title">Admin Authentication Required</h2>
+      <p id="security-desc">Please enter your secret password to unlock streamer settings and controls.</p>
+      <div class="form-group">
+        <input type="password" id="admin-pass-input" placeholder="Enter password...">
+      </div>
+      <button id="btn-submit-pass">Unlock Dashboard</button>
+      <div id="pass-feedback" class="feedback-error"></div>
+    </div>
+  </div>
+
   <script src="/socket.io/socket.io.js"></script>
   <script src="dashboard.js"></script>
 </body>
