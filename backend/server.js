@@ -92,7 +92,9 @@ function getOrCreateSession(channelId) {
         catchCooldownMs: 15000,
         shinyChance: 0.01
       },
-      isInitialized: false
+      isInitialized: false,
+      isInitializing: false,
+      initializationPromise: null
     });
   }
   return activeSessions.get(cid);
@@ -648,17 +650,26 @@ io.on('connection', async (socket) => {
 
   // Lazy Initialization: Spin up loops/readers if this is the first connected client for this room
   if (!session.isInitialized) {
-    session.isInitialized = true;
-    console.log(`[Session] [${channelId}] Initializing multi-tenant stream session...`);
-    try {
-      const dbConfig = await db.getStreamerConfig(channelId);
-      session.config = dbConfig;
-      
-      startSpawnLoop(channelId);
-      youtube.startYoutubeChat(channelId, session.config, processCommand);
-    } catch (err) {
-      console.error(`[Session] [${channelId}] Initialization failed:`, err.message);
-      session.isInitialized = false;
+    if (session.isInitializing) {
+      await session.initializationPromise;
+    } else {
+      session.isInitializing = true;
+      session.initializationPromise = (async () => {
+        console.log(`[Session] [${channelId}] Initializing multi-tenant stream session...`);
+        try {
+          const dbConfig = await db.getStreamerConfig(channelId);
+          session.config = dbConfig;
+          
+          startSpawnLoop(channelId);
+          youtube.startYoutubeChat(channelId, session.config, processCommand);
+          session.isInitialized = true;
+        } catch (err) {
+          console.error(`[Session] [${channelId}] Initialization failed:`, err.message);
+        } finally {
+          session.isInitializing = false;
+        }
+      })();
+      await session.initializationPromise;
     }
   }
 
