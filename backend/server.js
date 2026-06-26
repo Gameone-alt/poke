@@ -742,7 +742,8 @@ io.on('connection', async (socket) => {
   socket.emit('init_state', {
     activeWildPokemon: session.activeWildPokemon,
     activeBattle: session.activeBattle,
-    leaderboard
+    leaderboard,
+    config: session.config
   });
 
   // Check if streamer has a password set. If not, they can access configurations.

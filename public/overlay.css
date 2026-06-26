@@ -679,3 +679,180 @@ body {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+:root {
+  --color-primary: #3b82f6; /* Default Blue */
+}
+
+/* Accent Color overrides */
+.cmd-text {
+  color: var(--color-primary) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid var(--color-primary) !important;
+}
+
+/* ==========================================================================
+   6. Classic 8-Bit Retro Theme Overrides (.theme-retro)
+   ========================================================================== */
+
+#overlay-container.theme-retro {
+  font-family: 'Press Start 2P', monospace;
+  image-rendering: pixelated;
+}
+
+/* Headings and generic typography scale corrections for retro font */
+#overlay-container.theme-retro .feed-header {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  background: #1e293b;
+  border-bottom: 2px solid #fff;
+}
+
+#overlay-container.theme-retro .feed-entry {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  border-radius: 0;
+  border: 2px solid #fff;
+  border-left: 6px solid #64748b;
+  box-shadow: 2px 2px 0px #000;
+  background: #0f172a;
+}
+
+#overlay-container.theme-retro .feed-entry.spawn { border-left-color: #f59e0b; }
+#overlay-container.theme-retro .feed-entry.capture { border-left-color: #10b981; }
+#overlay-container.theme-retro .feed-entry.battle { border-left-color: #ef4444; }
+#overlay-container.theme-retro .feed-entry.evolution { border-left-color: #a855f7; }
+
+#overlay-container.theme-retro #game-feed-container {
+  border: 4px solid #fff;
+  border-radius: 0;
+  box-shadow: 6px 6px 0px #000;
+  background: #0f172a;
+}
+
+#overlay-container.theme-retro .pokemon-card-wrapper {
+  background: #0f172a;
+  border: 4px solid #fff;
+  border-radius: 0;
+  box-shadow: 8px 8px 0px #000;
+}
+
+#overlay-container.theme-retro .glow-background {
+  display: none;
+}
+
+#overlay-container.theme-retro .wild-tag {
+  border-radius: 0;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  background: #fff;
+  color: #000;
+}
+
+#overlay-container.theme-retro .shiny-tag {
+  border-radius: 0;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+}
+
+#overlay-container.theme-retro .pokemon-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+  letter-spacing: 0;
+  margin-top: 10px;
+}
+
+#overlay-container.theme-retro .type-badge {
+  border-radius: 0;
+  border: 2px solid #fff;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+}
+
+#overlay-container.theme-retro .catch-instruction {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  border-top: 2px solid #fff;
+  color: #94a3b8;
+}
+
+#overlay-container.theme-retro .cmd-text {
+  border-radius: 0;
+  border: 2px solid var(--color-primary);
+  padding: 1px 3px;
+}
+
+#overlay-container.theme-retro .catch-box {
+  background: #0f172a;
+  border: 4px solid #fff;
+  border-radius: 0;
+  box-shadow: 10px 10px 0px #000;
+  padding: 30px;
+}
+
+#overlay-container.theme-retro #catch-anim-overlay {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+#overlay-container.theme-retro .battle-field {
+  background: #0f172a;
+  border: 4px solid #fff;
+  border-radius: 0;
+  box-shadow: 10px 10px 0px #000;
+}
+
+#overlay-container.theme-retro .battle-header-bar {
+  background: #fff;
+  border-radius: 0;
+  border: 4px solid #fff;
+  border-bottom: none;
+}
+
+#overlay-container.theme-retro .arena-tag {
+  color: #000;
+}
+
+#overlay-container.theme-retro .trainer-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+}
+
+#overlay-container.theme-retro .fighter-poke-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+}
+
+#overlay-container.theme-retro .battle-vs-badge {
+  text-shadow: 4px 4px 0px #000;
+  font-size: 24px;
+}
+
+#overlay-container.theme-retro .battle-status {
+  border-top: 2px solid #fff;
+  background: #1e293b;
+  font-size: 10px;
+}
+
+#overlay-container.theme-retro .evo-card {
+  background: #0f172a;
+  border: 6px solid #fff;
+  border-radius: 0;
+  box-shadow: 12px 12px 0px #000;
+  padding: 30px;
+}
+
+#overlay-container.theme-retro .evo-circle {
+  border-radius: 0;
+  border: 4px dashed #fff;
+}
+
+#overlay-container.theme-retro .evo-glow-ring {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+#overlay-container.theme-retro .evo-announcement {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px;
+  line-height: 1.6;
+}

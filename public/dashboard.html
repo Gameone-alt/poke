@@ -63,6 +63,65 @@
             </div>
           </div>
           
+          <h3 style="margin-top: 20px; font-size: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--color-primary); letter-spacing: 0.5px;">🎨 Overlay Customization</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="theme">Overlay Theme</label>
+              <select id="theme" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
+                <option value="modern">Modern Glassmorphism</option>
+                <option value="retro">Classic 8-Bit Retro</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="primary-color">Primary Accent Color</label>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="color" id="primary-color" value="#3b82f6" style="width: 40px; height: 38px; padding: 0; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; background: transparent; display: block;">
+                <input type="text" id="primary-color-text" value="#3b82f6" placeholder="#3b82f6" style="flex: 1; text-align: center; text-transform: uppercase;">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="sfx-volume">SFX Volume (%)</label>
+              <input type="number" id="sfx-volume" min="0" max="100" value="50">
+            </div>
+            <div class="form-group" style="justify-content: center;">
+              <label for="show-battle-arena" style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 15px;">
+                <input type="checkbox" id="show-battle-arena" checked style="width: auto;">
+                Show Battle Arena Overlay
+              </label>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="show-live-feed" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="checkbox" id="show-live-feed" checked style="width: auto;">
+                Show Live Game Feed
+              </label>
+              <input type="text" id="live-feed-title" placeholder="Title, e.g. LIVE GAME FEED" style="margin-top: 5px;">
+            </div>
+            <div class="form-group">
+              <label for="show-spawn-alert" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="checkbox" id="show-spawn-alert" checked style="width: auto;">
+                Show Wild Spawn Card
+              </label>
+              <input type="text" id="spawn-alert-title" placeholder="Title, e.g. WILD SPAWN" style="margin-top: 5px;">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="spawn-catch-guide">Wild Spawn Catch Guide Text</label>
+            <input type="text" id="spawn-catch-guide" placeholder="e.g. Type catch in chat!">
+          </div>
+
+          <div class="form-group">
+            <label for="custom-css">Custom CSS Overrides</label>
+            <textarea id="custom-css" rows="4" placeholder="/* CSS styles here, e.g. .feed-entry { font-size: 14px; } */" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: 'Courier New', Courier, monospace; font-size: 12px; resize: vertical;"></textarea>
+          </div>
+          
           <div class="form-group" style="margin-top: 15px;">
             <label>Your OBS Browser Source URL</label>
             <div class="copy-link-group" style="display: flex; gap: 8px;">

@@ -79,12 +79,7 @@ socket.on('password_verified', (data) => {
     localStorage.setItem('admin_password_' + channelId, adminPassword);
     
     if (config) {
-      channelIdInput.value = config.youtubeChannelId || '';
-      videoIdInput.value = config.videoId || '';
-      spawnIntervalInput.value = Math.round(config.spawnIntervalMs / 1000);
-      despawnTimeoutInput.value = Math.round(config.wildDespawnTimeoutMs / 1000);
-      catchCooldownInput.value = Math.round(config.catchCooldownMs / 1000);
-      shinyChanceInput.value = config.shinyChance * 100;
+      populateConfig(config);
     }
     
     securityOverlay.classList.add('hidden');
@@ -105,6 +100,54 @@ const despawnTimeoutInput = document.getElementById('despawn-timeout');
 const catchCooldownInput = document.getElementById('catch-cooldown');
 const shinyChanceInput = document.getElementById('shiny-chance');
 const configForm = document.getElementById('config-form');
+
+// UI Customization DOM elements
+const themeSelect = document.getElementById('theme');
+const primaryColorInput = document.getElementById('primary-color');
+const primaryColorTextInput = document.getElementById('primary-color-text');
+const sfxVolumeInput = document.getElementById('sfx-volume');
+const showBattleArenaInput = document.getElementById('show-battle-arena');
+const showLiveFeedInput = document.getElementById('show-live-feed');
+const liveFeedTitleInput = document.getElementById('live-feed-title');
+const showSpawnAlertInput = document.getElementById('show-spawn-alert');
+const spawnAlertTitleInput = document.getElementById('spawn-alert-title');
+const spawnCatchGuideInput = document.getElementById('spawn-catch-guide');
+const customCssInput = document.getElementById('custom-css');
+
+// Sync color inputs
+if (primaryColorInput && primaryColorTextInput) {
+  primaryColorInput.addEventListener('input', () => {
+    primaryColorTextInput.value = primaryColorInput.value;
+  });
+  primaryColorTextInput.addEventListener('input', () => {
+    const val = primaryColorTextInput.value.trim();
+    if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+      primaryColorInput.value = val;
+    }
+  });
+}
+
+function populateConfig(config) {
+  channelIdInput.value = config.youtubeChannelId || '';
+  videoIdInput.value = config.videoId || '';
+  spawnIntervalInput.value = Math.round(config.spawnIntervalMs / 1000);
+  despawnTimeoutInput.value = Math.round(config.wildDespawnTimeoutMs / 1000);
+  catchCooldownInput.value = Math.round(config.catchCooldownMs / 1000);
+  shinyChanceInput.value = config.shinyChance * 100;
+  
+  // Customization fields
+  themeSelect.value = config.theme || 'modern';
+  primaryColorInput.value = config.primaryColor || '#3b82f6';
+  primaryColorTextInput.value = config.primaryColor || '#3b82f6';
+  sfxVolumeInput.value = config.sfxVolume !== undefined ? config.sfxVolume : 50;
+  showBattleArenaInput.checked = config.showBattleArena !== false;
+  showLiveFeedInput.checked = config.showLiveFeed !== false;
+  liveFeedTitleInput.value = config.liveFeedTitle || 'LIVE GAME FEED';
+  showSpawnAlertInput.checked = config.showSpawnAlert !== false;
+  spawnAlertTitleInput.value = config.spawnAlertTitle || 'WILD SPAWN';
+  spawnCatchGuideInput.value = config.spawnCatchGuide || 'Type catch in chat!';
+  customCssInput.value = config.customCss || '';
+}
 
 const btnForceSpawn = document.getElementById('btn-force-spawn');
 const btnResetDb = document.getElementById('btn-reset-db');
@@ -140,12 +183,7 @@ socket.on('disconnect', () => {
 
 // Load Config from server
 socket.on('config_updated', (config) => {
-  channelIdInput.value = config.youtubeChannelId || '';
-  videoIdInput.value = config.videoId || '';
-  spawnIntervalInput.value = Math.round(config.spawnIntervalMs / 1000);
-  despawnTimeoutInput.value = Math.round(config.wildDespawnTimeoutMs / 1000);
-  catchCooldownInput.value = Math.round(config.catchCooldownMs / 1000);
-  shinyChanceInput.value = config.shinyChance * 100;
+  populateConfig(config);
 });
 
 // Initial state sync
@@ -174,7 +212,19 @@ configForm.addEventListener('submit', (e) => {
     spawnIntervalMs: parseInt(spawnIntervalInput.value) * 1000,
     wildDespawnTimeoutMs: parseInt(despawnTimeoutInput.value) * 1000,
     catchCooldownMs: parseInt(catchCooldownInput.value) * 1000,
-    shinyChance: parseFloat(shinyChanceInput.value) / 100
+    shinyChance: parseFloat(shinyChanceInput.value) / 100,
+    
+    // UI Customization
+    theme: themeSelect.value,
+    primaryColor: primaryColorInput.value,
+    sfxVolume: parseInt(sfxVolumeInput.value),
+    showBattleArena: showBattleArenaInput.checked,
+    showLiveFeed: showLiveFeedInput.checked,
+    liveFeedTitle: liveFeedTitleInput.value.trim(),
+    showSpawnAlert: showSpawnAlertInput.checked,
+    spawnAlertTitle: spawnAlertTitleInput.value.trim(),
+    spawnCatchGuide: spawnCatchGuideInput.value.trim(),
+    customCss: customCssInput.value
   };
   
   socket.emit('update_config', { newConfig: updatedConfig, password: adminPassword });

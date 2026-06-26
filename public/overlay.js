@@ -99,6 +99,82 @@ function triggerShinySparkles() {
   }
 }
 
+let currentOverlayConfig = {};
+
+function applyConfig(config) {
+  if (!config) return;
+  currentOverlayConfig = config;
+
+  // 1. Theme Configuration
+  const container = document.getElementById('overlay-container');
+  if (container) {
+    if (config.theme === 'retro') {
+      container.classList.add('theme-retro');
+    } else {
+      container.classList.remove('theme-retro');
+    }
+  }
+
+  // 2. Sound Effects Volume (0 to 1)
+  const volume = config.sfxVolume !== undefined ? config.sfxVolume / 100 : 0.5;
+  [sfxSpawn, sfxThrow, sfxCatchSuccess, sfxCatchFail, sfxHit, sfxEvolve].forEach(audio => {
+    if (audio) audio.volume = volume;
+  });
+
+  // 3. Live Game Feed Visibility & Header Title
+  const feedContainer = document.getElementById('game-feed-container');
+  if (feedContainer) {
+    if (config.showLiveFeed === false) {
+      feedContainer.classList.add('hidden');
+    } else {
+      feedContainer.classList.remove('hidden');
+    }
+    const feedHeader = feedContainer.querySelector('.feed-header');
+    if (feedHeader) {
+      feedHeader.textContent = config.liveFeedTitle || 'LIVE GAME FEED';
+    }
+  }
+
+  // 4. Wild Spawn Visibility, Title & Catch Instruction Guide
+  if (wildSpawnContainer) {
+    if (config.showSpawnAlert === false) {
+      wildSpawnContainer.style.opacity = '0';
+      wildSpawnContainer.style.pointerEvents = 'none';
+    } else {
+      wildSpawnContainer.style.opacity = '1';
+      wildSpawnContainer.style.pointerEvents = 'auto';
+    }
+    
+    const spawnHeaderElement = wildSpawnContainer.querySelector('.wild-tag');
+    if (spawnHeaderElement) {
+      spawnHeaderElement.textContent = config.spawnAlertTitle || 'WILD SPAWN';
+    }
+    
+    const catchInstruction = wildSpawnContainer.querySelector('.catch-instruction');
+    if (catchInstruction) {
+      let guideHtml = config.spawnCatchGuide || 'Type <span class="cmd-text">catch</span> in chat!';
+      if (!guideHtml.includes('<span') && (guideHtml.toLowerCase().includes('catch') || guideHtml.toLowerCase().includes('!catch'))) {
+        guideHtml = guideHtml.replace(/(catch|!catch)/i, '<span class="cmd-text">$1</span>');
+      }
+      catchInstruction.innerHTML = guideHtml;
+    }
+  }
+
+  // 5. Accent Color CSS Variable Override
+  if (config.primaryColor) {
+    document.documentElement.style.setProperty('--color-primary', config.primaryColor);
+  }
+
+  // 6. Custom CSS Overrides Injection
+  let styleTag = document.getElementById('custom-theme-css');
+  if (!styleTag) {
+    styleTag = document.createElement('style');
+    styleTag.id = 'custom-theme-css';
+    document.head.appendChild(styleTag);
+  }
+  styleTag.textContent = config.customCss || '';
+}
+
 // Render Pokemon Type Badges
 function renderTypes(typesContainer, types) {
   typesContainer.innerHTML = '';
@@ -127,6 +203,10 @@ socket.on('game_log', (log) => {
 
 // Setup Init State
 socket.on('init_state', (state) => {
+  if (state.config) {
+    applyConfig(state.config);
+  }
+
   if (state.activeWildPokemon) {
     const poke = state.activeWildPokemon;
     wildPokemonSprite.src = getSafeSprite(poke.spriteUrl, poke.fallbackSpriteUrl);
@@ -139,7 +219,11 @@ socket.on('init_state', (state) => {
     } else {
       wildShinyTag.classList.add('hidden');
     }
-    wildSpawnContainer.classList.remove('hidden');
+    
+    // Check if spawn alerts are enabled
+    if (!state.config || state.config.showSpawnAlert !== false) {
+      wildSpawnContainer.classList.remove('hidden');
+    }
   }
 });
 
@@ -284,6 +368,7 @@ socket.on('catch_fail', (data) => {
 
 // Battle Start Event
 socket.on('battle_start', (data) => {
+  if (currentOverlayConfig.showBattleArena === false) return;
   playSound(sfxSpawn);
   
   // Reset all fighter classes
@@ -333,6 +418,7 @@ socket.on('battle_start', (data) => {
 
 // Battle End Event
 socket.on('battle_end', (data) => {
+  if (currentOverlayConfig.showBattleArena === false) return;
   challengerFighter.classList.remove('fight-strike-left');
   opponentFighter.classList.remove('fight-strike-right');
   
@@ -406,3 +492,8 @@ function triggerEvoSparkles() {
     }, 1000);
   }
 }
+
+// Listen for dynamic config updates
+socket.on('config_updated', (config) => {
+  applyConfig(config);
+});

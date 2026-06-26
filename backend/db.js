@@ -638,7 +638,17 @@ async function getStreamerConfig(streamerId) {
         wildDespawnTimeoutMs: 45000,
         catchCooldownMs: 15000,
         shinyChance: 0.01,
-        adminPassword: ''
+        adminPassword: '',
+        theme: 'modern',
+        sfxVolume: 50,
+        showLiveFeed: true,
+        liveFeedTitle: 'LIVE GAME FEED',
+        showSpawnAlert: true,
+        spawnAlertTitle: 'WILD SPAWN',
+        spawnCatchGuide: 'Type catch in chat!',
+        showBattleArena: true,
+        primaryColor: '#3b82f6',
+        customCss: ''
       };
       saveLocalConfigs();
     }
@@ -657,13 +667,26 @@ async function getStreamerConfig(streamerId) {
       wildDespawnTimeoutMs: 45000,
       catchCooldownMs: 15000,
       shinyChance: 0.01,
-      adminPassword: ''
+      adminPassword: '',
+      theme: 'modern',
+      sfxVolume: 50,
+      showLiveFeed: true,
+      liveFeedTitle: 'LIVE GAME FEED',
+      showSpawnAlert: true,
+      spawnAlertTitle: 'WILD SPAWN',
+      spawnCatchGuide: 'Type catch in chat!',
+      showBattleArena: true,
+      primaryColor: '#3b82f6',
+      customCss: ''
     };
     
     await query(
-      `INSERT INTO streamer_configs (channel_id, youtube_channel_id, video_id, spawn_interval_ms, wild_despawn_timeout_ms, catch_cooldown_ms, shiny_chance, admin_password)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-      [defaultConfig.channelId, defaultConfig.youtubeChannelId, defaultConfig.videoId, defaultConfig.spawnIntervalMs, defaultConfig.wildDespawnTimeoutMs, defaultConfig.catchCooldownMs, defaultConfig.shinyChance, defaultConfig.adminPassword]
+      `INSERT INTO streamer_configs (channel_id, youtube_channel_id, video_id, spawn_interval_ms, wild_despawn_timeout_ms, catch_cooldown_ms, shiny_chance, admin_password, theme, sfx_volume, show_live_feed, live_feed_title, show_spawn_alert, spawn_alert_title, spawn_catch_guide, show_battle_arena, primary_color, custom_css)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)`,
+      [
+        defaultConfig.channelId, defaultConfig.youtubeChannelId, defaultConfig.videoId, defaultConfig.spawnIntervalMs, defaultConfig.wildDespawnTimeoutMs, defaultConfig.catchCooldownMs, defaultConfig.shinyChance, defaultConfig.adminPassword,
+        defaultConfig.theme, defaultConfig.sfxVolume, defaultConfig.showLiveFeed, defaultConfig.liveFeedTitle, defaultConfig.showSpawnAlert, defaultConfig.spawnAlertTitle, defaultConfig.spawnCatchGuide, defaultConfig.showBattleArena, defaultConfig.primaryColor, defaultConfig.customCss
+      ]
     );
     
     return defaultConfig;
@@ -678,7 +701,17 @@ async function getStreamerConfig(streamerId) {
     wildDespawnTimeoutMs: row.wild_despawn_timeout_ms,
     catchCooldownMs: row.catch_cooldown_ms,
     shinyChance: Number(row.shiny_chance),
-    adminPassword: row.admin_password || ''
+    adminPassword: row.admin_password || '',
+    theme: row.theme || 'modern',
+    sfxVolume: row.sfx_volume !== undefined && row.sfx_volume !== null ? row.sfx_volume : 50,
+    showLiveFeed: row.show_live_feed !== false,
+    liveFeedTitle: row.live_feed_title || 'LIVE GAME FEED',
+    showSpawnAlert: row.show_spawn_alert !== false,
+    spawnAlertTitle: row.spawn_alert_title || 'WILD SPAWN',
+    spawnCatchGuide: row.spawn_catch_guide || 'Type catch in chat!',
+    showBattleArena: row.show_battle_arena !== false,
+    primaryColor: row.primary_color || '#3b82f6',
+    customCss: row.custom_css || ''
   };
 }
 
@@ -698,8 +731,11 @@ async function saveStreamerConfig(streamerId, config) {
   await query(
     `UPDATE streamer_configs 
      SET video_id = $1, spawn_interval_ms = $2, wild_despawn_timeout_ms = $3, 
-         catch_cooldown_ms = $4, shiny_chance = $5, admin_password = $6, youtube_channel_id = $7
-     WHERE channel_id = $8`,
+         catch_cooldown_ms = $4, shiny_chance = $5, admin_password = $6, youtube_channel_id = $7,
+         theme = $8, sfx_volume = $9, show_live_feed = $10, live_feed_title = $11,
+         show_spawn_alert = $12, spawn_alert_title = $13, spawn_catch_guide = $14,
+         show_battle_arena = $15, primary_color = $16, custom_css = $17
+     WHERE channel_id = $18`,
     [
       config.videoId || '',
       config.spawnIntervalMs,
@@ -708,6 +744,16 @@ async function saveStreamerConfig(streamerId, config) {
       config.shinyChance,
       config.adminPassword || '',
       config.youtubeChannelId || '',
+      config.theme || 'modern',
+      config.sfxVolume !== undefined ? config.sfxVolume : 50,
+      config.showLiveFeed !== false,
+      config.liveFeedTitle || 'LIVE GAME FEED',
+      config.showSpawnAlert !== false,
+      config.spawnAlertTitle || 'WILD SPAWN',
+      config.spawnCatchGuide || 'Type catch in chat!',
+      config.showBattleArena !== false,
+      config.primaryColor || '#3b82f6',
+      config.customCss || '',
       streamer
     ]
   );
