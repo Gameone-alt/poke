@@ -40,6 +40,36 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', uptime: process.uptime() });
 });
 
+// Database debug endpoint for diagnosing deployment issues
+app.get('/db-debug', async (req, res) => {
+  try {
+    const start = Date.now();
+    // Try to run a simple query through the db module
+    const dbResult = await db.getUser('simulator', 'testuser');
+    const duration = Date.now() - start;
+    res.status(200).json({
+      success: true,
+      message: 'Database query executed successfully',
+      durationMs: duration,
+      user: dbResult,
+      env: {
+        DATABASE_URL_length: process.env.DATABASE_URL ? process.env.DATABASE_URL.length : 0,
+        DATABASE_URL_defined: !!process.env.DATABASE_URL
+      }
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+      stack: err.stack,
+      env: {
+        DATABASE_URL_length: process.env.DATABASE_URL ? process.env.DATABASE_URL.length : 0,
+        DATABASE_URL_defined: !!process.env.DATABASE_URL
+      }
+    });
+  }
+});
+
 // Routes to explicitly serve overlay and dashboard (for local testing)
 app.get('/overlay', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'overlay.html'));
