@@ -23,8 +23,8 @@ if (connectionString && connectionString !== 'YOUR_SUPABASE_DATABASE_URL_HERE') 
       host: parsed.hostname,
       port: parseInt(parsed.port) || 5432,
       database: parsed.pathname.replace('/', ''),
-      user: decodeURIComponent(parsed.username),
-      password: decodeURIComponent(parsed.password),
+      user: parsed.username,
+      password: parsed.password,
       ssl: { rejectUnauthorized: false }
     });
     console.log('[Database] Configured connection pool for Supabase PostgreSQL.');
