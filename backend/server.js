@@ -62,8 +62,8 @@ app.post('/api/chat', async (req, res) => {
   
   try {
     console.log(`[API Chat Relay] [${channelId}] ${displayName || username}: ${messageText}`);
-    await processCommand(channelId.toLowerCase().trim(), username, displayName || username, messageText);
-    res.status(200).json({ success: true });
+    const reply = await processCommand(channelId.toLowerCase().trim(), username, displayName || username, messageText);
+    res.status(200).json({ success: true, reply });
   } catch (err) {
     console.error('[API Chat Relay] Error processing command:', err.message);
     res.status(500).json({ error: err.message });
@@ -408,15 +408,18 @@ async function processCommand(channelId, username, displayName, messageText) {
   if (cleanMsg === '!daily' || cleanMsg === 'daily') {
     const result = await db.claimDaily(channelId, username, displayName);
     if (result.success) {
-      sendGameLog(channelId, 'system', `🎁 @${displayName} claimed their daily allowance! Received: 10 Pokéballs, 3 Great Balls, 1 Ultra Ball.`);
+      const msg = `🎁 @${displayName} claimed their daily allowance! Received: 10 Pokéballs, 3 Great Balls, 1 Ultra Ball.`;
+      sendGameLog(channelId, 'system', msg);
       io.to(channelId).emit('balls_updated', { username, balls: result.newTotal });
+      return msg;
     } else {
+      const msg = `❌ @${displayName}, you can claim your daily reward again in ${result.hours}h ${result.minutes}m.`;
       io.to(channelId).emit('command_feedback', { 
         username, 
-        text: `❌ You can claim your daily reward again in ${result.hours}h ${result.minutes}m.` 
+        text: msg 
       });
+      return msg;
     }
-    return;
   }
 
   // 2. !inventory command
@@ -425,12 +428,13 @@ async function processCommand(channelId, username, displayName, messageText) {
     const invCount = user.inventory.length;
     const active = user.inventory.find(p => p.instanceId === user.activePokemonId);
     const activeText = active ? `Active: ${active.name} (${active.wins} wins)` : 'None';
+    const msg = `🎒 Inventory: @${displayName} owns ${invCount} Pokémon. ${activeText}. Balls: ${user.balls.pokeball} Poké, ${user.balls.greatball} Great, ${user.balls.ultraball} Ultra.`;
     
     io.to(channelId).emit('command_feedback', {
       username,
-      text: `🎒 Inventory: You own ${invCount} Pokémon. ${activeText}. Balls: ${user.balls.pokeball} Poké, ${user.balls.greatball} Great, ${user.balls.ultraball} Ultra.`
+      text: msg
     });
-    return;
+    return msg;
   }
 
   // 3. !select command
@@ -439,23 +443,28 @@ async function processCommand(channelId, username, displayName, messageText) {
     const result = await db.selectActivePokemon(channelId, username, query);
     
     if (result.success) {
+      const msg = `✅ @${displayName} selected ${result.pokemon.name} as their active combat partner!`;
       io.to(channelId).emit('command_feedback', {
         username,
-        text: `✅ Selected ${result.pokemon.name} as your active combat partner!`
+        text: msg
       });
       io.to(channelId).emit('leaderboard_update', await db.getLeaderboard(channelId));
+      return msg;
     } else {
+      const msg = `❌ @${displayName}, error: ${result.message}`;
       io.to(channelId).emit('command_feedback', {
         username,
-        text: `❌ Error: ${result.message}`
+        text: msg
       });
+      return msg;
     }
-    return;
   }
 
   // 4. !catch command
   if (cleanMsg === '!catch' || cleanMsg === 'catch' || cleanMsg.startsWith('!catch ') || cleanMsg.startsWith('catch ')) {
-    if (!session.activeWildPokemon) return; // Ignore if no spawn on screen
+    if (!session.activeWildPokemon) {
+      return `❌ @${displayName}, no wild Pokémon is active to catch right now!`;
+    }
 
     const user = await db.getUser(channelId, username, displayName);
     const now = Date.now();
@@ -463,11 +472,12 @@ async function processCommand(channelId, username, displayName, messageText) {
     // Check catch cooldown
     if (now - user.lastCatchAttempt < session.config.catchCooldownMs) {
       const remain = Math.ceil((session.config.catchCooldownMs - (now - user.lastCatchAttempt)) / 1000);
+      const msg = `⏳ @${displayName}, catch cooldown! Wait ${remain}s.`;
       io.to(channelId).emit('command_feedback', {
         username,
-        text: `⏳ Catch cooldown! Wait ${remain}s.`
+        text: msg
       });
-      return;
+      return msg;
     }
 
     // Determine ball type used
@@ -477,11 +487,12 @@ async function processCommand(channelId, username, displayName, messageText) {
 
     // Verify ball balance
     if (user.balls[ballType] <= 0) {
+      const msg = `❌ @${displayName}, you do not have any ${ballType}s left! Type '!daily' or wait for coins.`;
       io.to(channelId).emit('command_feedback', {
         username,
-        text: `❌ You do not have any ${ballType}s left! Type '!daily' or wait for coins.`
+        text: msg
       });
-      return;
+      return msg;
     }
 
     // Deduct ball
@@ -513,9 +524,13 @@ async function processCommand(channelId, username, displayName, messageText) {
         fallbackSpriteUrl: session.activeWildPokemon.fallbackSpriteUrl
       });
       
-      sendGameLog(channelId, 'capture', `🎉 @${displayName} captured the wild ${isShiny ? '✨ Shiny ' : ''}${session.activeWildPokemon.name} using a ${ballType}!`);
+      const msg = `🎉 @${displayName} captured the wild ${isShiny ? '✨ Shiny ' : ''}${session.activeWildPokemon.name} using a ${ballType}!`;
+      sendGameLog(channelId, 'capture', msg);
       
       session.activeWildPokemon = null; // Clear wild slot
+      io.to(channelId).emit('balls_updated', { username, balls: user.balls });
+      io.to(channelId).emit('leaderboard_update', await db.getLeaderboard(channelId));
+      return msg;
     } else {
       io.to(channelId).emit('catch_fail', {
         username,
@@ -523,29 +538,32 @@ async function processCommand(channelId, username, displayName, messageText) {
         pokemonName: session.activeWildPokemon.name,
         ballType: ballType
       });
-      sendGameLog(channelId, 'capture', `💨 @${displayName} threw a ${ballType} but the wild ${session.activeWildPokemon.name} broke free!`);
+      const msg = `💨 @${displayName} threw a ${ballType} but the wild ${session.activeWildPokemon.name} broke free!`;
+      sendGameLog(channelId, 'capture', msg);
+      
+      io.to(channelId).emit('balls_updated', { username, balls: user.balls });
+      io.to(channelId).emit('leaderboard_update', await db.getLeaderboard(channelId));
+      return msg;
     }
-
-    io.to(channelId).emit('balls_updated', { username, balls: user.balls });
-    io.to(channelId).emit('leaderboard_update', await db.getLeaderboard(channelId));
-    return;
   }
 
   // 5. !fight command
   if (cleanMsg.startsWith('!fight') || cleanMsg.startsWith('fight')) {
     if (session.activeBattle) {
-      io.to(channelId).emit('command_feedback', { username, text: '❌ A battle is already in progress on screen!' });
-      return;
+      const msg = `❌ @${displayName}, a battle is already in progress on screen!`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
     }
 
     // Parse parameters
     const parts = messageText.trim().split(/\s+/);
     if (parts.length < 3) {
+      const msg = `❌ @${displayName}, syntax: !fight @username [pokemon_name] OR !fight wild [pokemon_name]`;
       io.to(channelId).emit('command_feedback', { 
         username, 
-        text: '❌ Syntax: !fight @username [pokemon_name] OR !fight wild [pokemon_name]' 
+        text: msg 
       });
-      return;
+      return msg;
     }
 
     const rawTarget = parts[1].replace('@', '').toLowerCase().trim();
@@ -558,33 +576,37 @@ async function processCommand(channelId, username, displayName, messageText) {
     );
 
     if (!foundPokeA) {
+      const msg = `❌ @${displayName}, you do not have a "${pokemonQuery}" in your inventory to fight with!`;
       io.to(channelId).emit('command_feedback', { 
         username, 
-        text: `❌ You do not have a "${pokemonQuery}" in your inventory to fight with!` 
+        text: msg 
       });
-      return;
+      return msg;
     }
 
     // Handle fight wild
     if (rawTarget === 'wild') {
       if (!session.activeWildPokemon) {
-        io.to(channelId).emit('command_feedback', { username, text: '❌ There is no wild Pokémon active to fight right now.' });
-        return;
+        const msg = `❌ @${displayName}, there is no wild Pokémon active to fight right now.`;
+        io.to(channelId).emit('command_feedback', { username, text: msg });
+        return msg;
       }
       runBattle(channelId, { username, displayName, pokemonInstanceId: foundPokeA.instanceId }, 'wild');
-      return;
+      return `⚔️ Battle Started: @${displayName}'s ${foundPokeA.name} vs wild ${session.activeWildPokemon.name}!`;
     }
 
     // Handle fight player
     const targetUser = await db.getUser(channelId, rawTarget);
     if (!targetUser || targetUser.inventory.length === 0) {
-      io.to(channelId).emit('command_feedback', { username, text: `❌ Could not find player @${rawTarget} or they have no Pokémon.` });
-      return;
+      const msg = `❌ @${displayName}, could not find player @${rawTarget} or they have no Pokémon.`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
     }
 
     if (targetUser.username === challenger.username) {
-      io.to(channelId).emit('command_feedback', { username, text: '❌ You cannot fight yourself!' });
-      return;
+      const msg = `❌ @${displayName}, you cannot fight yourself!`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
     }
 
     if (session.activeChallenge) {
@@ -605,29 +627,36 @@ async function processCommand(channelId, username, displayName, messageText) {
       timeoutId
     };
 
-    sendGameLog(channelId, 'battle', `⚔️ Challenge: @${displayName} challenged @${targetUser.displayName} to a fight using their ${foundPokeA.name}! @${targetUser.displayName}, type '!accept [your_pokemon]' to battle.`);
-    return;
+    const msg = `⚔️ Challenge: @${displayName} challenged @${targetUser.displayName} to a fight using their ${foundPokeA.name}! @${targetUser.displayName}, type '!accept [your_pokemon]' to battle.`;
+    sendGameLog(channelId, 'battle', msg);
+    return msg;
   }
 
   // 6. !accept command
   if (cleanMsg.startsWith('!accept') || cleanMsg.startsWith('accept')) {
-    if (!session.activeChallenge) return;
+    if (!session.activeChallenge) {
+      return `❌ @${displayName}, you do not have any pending battle challenges.`;
+    }
 
-    if (session.activeChallenge.opponent.username !== username) return; // Only opponent can accept
+    if (session.activeChallenge.opponent.username !== username) {
+      return `❌ @${displayName}, you are not the opponent of this challenge.`;
+    }
 
     if (session.activeBattle) {
-      io.to(channelId).emit('command_feedback', { username, text: '❌ A battle is already in progress on screen!' });
-      return;
+      const msg = `❌ @${displayName}, a battle is already in progress on screen!`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
     }
 
     // Parse parameters
     const parts = messageText.trim().split(/\s+/);
     if (parts.length < 2) {
+      const msg = `❌ @${displayName}, you must specify which Pokémon you want to battle with! Syntax: !accept [pokemon_name]`;
       io.to(channelId).emit('command_feedback', { 
         username, 
-        text: '❌ You must specify which Pokémon you want to battle with! Syntax: !accept [pokemon_name]' 
+        text: msg 
       });
-      return;
+      return msg;
     }
 
     const pokemonQuery = parts.slice(1).join(' ').toLowerCase().trim();
@@ -639,11 +668,12 @@ async function processCommand(channelId, username, displayName, messageText) {
     );
 
     if (!foundPokeB) {
+      const msg = `❌ @${displayName}, you do not have a "${pokemonQuery}" in your inventory to fight with!`;
       io.to(channelId).emit('command_feedback', { 
         username, 
-        text: `❌ You do not have a "${pokemonQuery}" in your inventory to fight with!` 
+        text: msg 
       });
-      return;
+      return msg;
     }
 
     clearTimeout(session.activeChallenge.timeoutId);
@@ -655,8 +685,16 @@ async function processCommand(channelId, username, displayName, messageText) {
     };
     
     runBattle(channelId, challenger, opponent);
-    return;
+    const msg = `⚔️ Battle accepted! @${displayName}'s ${foundPokeB.name} is entering the arena against @${challenger.displayName}'s ${session.activeChallenge.challengerPokeName}!`;
+    return msg;
   }
+
+  // 7. !help / !commands command
+  if (cleanMsg === '!help' || cleanMsg === 'help' || cleanMsg === '!commands' || cleanMsg === 'commands') {
+    return `🎮 Pokémon Game: !daily (claim balls) | !inventory (check items/balls) | !select [name] (choose partner) | !catch [great/ultra] (catch wild) | !fight [wild/@user] [your_pokemon] (start battle) | !accept [your_pokemon] (accept challenge)`;
+  }
+
+  return null;
 }
 
 // Websocket Events (for Overlay and Control Dashboard)
