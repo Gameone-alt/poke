@@ -52,7 +52,9 @@ app.get('/youtube-status', (req, res) => {
       activeList.push({
         streamerId: streamer,
         options: liveChat.options,
-        id: liveChat.id
+        id: liveChat.id,
+        status: liveChat.status,
+        lastError: liveChat.lastError
       });
     }
   } catch (err) {
