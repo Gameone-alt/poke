@@ -66,23 +66,17 @@ function startYoutubeChat(streamerId, config, onMessageCallback) {
     }
 
     const liveChat = new LiveChat(options);
-    liveChat.status = 'connecting';
-    liveChat.lastError = null;
 
     liveChat.on('start', (liveId) => {
-      liveChat.status = 'connected';
       console.log(`[YouTube Chat] [${streamer}] Connection established. Listening to stream: ${liveId}`);
     });
 
     liveChat.on('end', (reason) => {
-      liveChat.status = 'ended';
       console.log(`[YouTube Chat] [${streamer}] Connection ended: ${reason}`);
       activeChats.delete(streamer);
     });
 
     liveChat.on('error', (err) => {
-      liveChat.status = 'error';
-      liveChat.lastError = err.message;
       console.error(`[YouTube Chat] [${streamer}] Error:`, err.message);
     });
 
@@ -136,6 +130,5 @@ module.exports = {
   startYoutubeChat,
   stopYoutubeChat,
   extractVideoId,
-  extractChannelId,
-  activeChats
+  extractChannelId
 };

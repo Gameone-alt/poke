@@ -44,43 +44,6 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', uptime: process.uptime() });
 });
 
-// YouTube status diagnostic endpoint
-app.get('/youtube-status', (req, res) => {
-  const activeList = [];
-  try {
-    for (const [streamer, liveChat] of youtube.activeChats.entries()) {
-      activeList.push({
-        streamerId: streamer,
-        options: liveChat.options,
-        id: liveChat.id,
-        status: liveChat.status,
-        lastError: liveChat.lastError
-      });
-    }
-  } catch (err) {
-    console.error('Error fetching youtube status:', err);
-  }
-
-  const sessionDetails = [];
-  for (const [channelId, session] of activeSessions.entries()) {
-    sessionDetails.push({
-      channelId,
-      isInitialized: session.isInitialized,
-      isInitializing: session.isInitializing,
-      config: session.config,
-      activeWildPokemon: session.activeWildPokemon ? session.activeWildPokemon.name : null,
-      activeBattle: !!session.activeBattle
-    });
-  }
-
-  res.status(200).json({
-    activeChatsCount: activeList.length,
-    activeChats: activeList,
-    sessionsCount: sessionDetails.length,
-    sessions: sessionDetails
-  });
-});
-
 // Routes to explicitly serve overlay and dashboard (for local testing)
 app.get('/overlay', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'overlay.html'));
