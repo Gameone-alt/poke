@@ -118,7 +118,7 @@ registerForm.addEventListener('submit', (e) => {
     forceNew: true
   });
   
-  socket.on('password_status', (data) => {
+  socket.once('password_status', (data) => {
     if (data.hasPassword) {
       showFeedback('This username is already taken! Please choose another or log in.');
       socket.disconnect();

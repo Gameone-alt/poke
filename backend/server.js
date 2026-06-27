@@ -916,64 +916,19 @@ io.on('connection', async (socket) => {
 
   const session = getOrCreateSession(channelId);
 
-  // Lazy Initialization: Spin up loops/readers if this is the first connected client for this room
-  if (!session.isInitialized) {
-    if (session.isInitializing) {
-      await session.initializationPromise;
-    } else {
-      session.isInitializing = true;
-      session.initializationPromise = (async () => {
-        console.log(`[Session] [${channelId}] Initializing multi-tenant stream session...`);
-        try {
-          const dbConfig = await db.getStreamerConfig(channelId);
-          session.config = dbConfig;
-          
-          startSpawnLoop(channelId);
-          await youtube.startYoutubeChat(channelId, session.config, processCommand);
-          twitch.startTwitchChat(channelId, session.config, processCommand);
-          session.isInitialized = true;
-        } catch (err) {
-          console.error(`[Session] [${channelId}] Initialization failed:`, err.message);
-        } finally {
-          session.isInitializing = false;
-        }
-      })();
-      await session.initializationPromise;
-    }
-  }
-
-  // Send current session state to joining client
-  let leaderboard = [];
-  try {
-    leaderboard = await db.getLeaderboard(channelId);
-  } catch (err) {
-    console.error(`[Session] [${channelId}] Failed to fetch leaderboard:`, err.message);
-  }
-  socket.emit('init_state', {
-    activeWildPokemon: session.activeWildPokemon,
-    activeBattle: session.activeBattle,
-    leaderboard,
-    config: session.config
-  });
-
-  // Check if streamer has a password set. If not, they can access configurations.
-  socket.emit('password_status', { hasPassword: !!session.config.adminPassword });
-  if (!session.config.adminPassword) {
-    socket.emit('config_updated', session.config);
-  }
-
-  // Handle password verification
-  socket.on('verify_password', (data) => {
+  // Synchronously register all socket event handlers on connection to prevent race conditions (packet loss)
+  socket.on('verify_password', async (data) => {
+    if (session.initializationPromise) await session.initializationPromise;
     const { password } = data;
     if (password === session.config.adminPassword) {
       socket.emit('password_verified', { success: true, config: session.config });
     } else {
-      socket.emit('password_verified', { success: false, message: 'Incorrect admin password!' });
+      socket.emit('password_verified', { success: false, message: 'Incorrect username or password.' });
     }
   });
 
-  // Handle creating the admin password initially
   socket.on('set_password', async (data) => {
+    if (session.initializationPromise) await session.initializationPromise;
     const { password } = data;
     if (session.config.adminPassword) {
       socket.emit('password_verified', { success: false, message: 'Password has already been set!' });
@@ -983,25 +938,24 @@ io.on('connection', async (socket) => {
       session.config.adminPassword = password;
       await db.saveStreamerConfig(channelId, session.config);
       
-      socket.emit('password_status', { hasPassword: true });
+      // Notify only that registration/set succeeded
       socket.emit('password_verified', { success: true, config: session.config });
       console.log(`[Server] [${channelId}] Admin password set successfully.`);
     } catch (err) {
       console.error(`[Server] [${channelId}] Failed to set password:`, err.message);
-      session.config.adminPassword = ''; // Rollback in-memory state
+      session.config.adminPassword = ''; // Rollback
       socket.emit('password_verified', { success: false, message: 'Server error saving password. Please try again.' });
     }
   });
 
-  // Handle mock messages from dashboard simulator
   socket.on('simulate_chat', (data) => {
     const { username, displayName, messageText } = data;
     console.log(`[Simulator] [${channelId}] ${displayName} (${username}): ${messageText}`);
     processCommand(channelId, username, displayName, messageText);
   });
 
-  // Handle configuration updates from dashboard
   socket.on('update_config', async (data) => {
+    if (session.initializationPromise) await session.initializationPromise;
     const { newConfig, password } = data;
     if (session.config.adminPassword && password !== session.config.adminPassword) {
       socket.emit('command_feedback', { text: '❌ Unauthorized: Incorrect admin password!' });
@@ -1129,6 +1083,52 @@ io.on('connection', async (socket) => {
       }
     }, 5000);
   });
+
+  // Lazy Initialization: Spin up loops/readers if this is the first connected client for this room
+  if (!session.isInitialized) {
+    if (session.isInitializing) {
+      await session.initializationPromise;
+    } else {
+      session.isInitializing = true;
+      session.initializationPromise = (async () => {
+        console.log(`[Session] [${channelId}] Initializing multi-tenant stream session...`);
+        try {
+          const dbConfig = await db.getStreamerConfig(channelId);
+          session.config = dbConfig;
+          
+          startSpawnLoop(channelId);
+          await youtube.startYoutubeChat(channelId, session.config, processCommand);
+          twitch.startTwitchChat(channelId, session.config, processCommand);
+          session.isInitialized = true;
+        } catch (err) {
+          console.error(`[Session] [${channelId}] Initialization failed:`, err.message);
+        } finally {
+          session.isInitializing = false;
+        }
+      })();
+      await session.initializationPromise;
+    }
+  }
+
+  // Send current session state to joining client
+  let leaderboard = [];
+  try {
+    leaderboard = await db.getLeaderboard(channelId);
+  } catch (err) {
+    console.error(`[Session] [${channelId}] Failed to fetch leaderboard:`, err.message);
+  }
+  socket.emit('init_state', {
+    activeWildPokemon: session.activeWildPokemon,
+    activeBattle: session.activeBattle,
+    leaderboard,
+    config: session.config
+  });
+
+  // Check if streamer has a password set. If not, they can access configurations.
+  socket.emit('password_status', { hasPassword: !!session.config.adminPassword });
+  if (!session.config.adminPassword) {
+    socket.emit('config_updated', session.config);
+  }
 });
 
 // Start listening
