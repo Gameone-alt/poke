@@ -28,6 +28,9 @@ if (connectionString && connectionString !== 'YOUR_SUPABASE_DATABASE_URL_HERE') 
       ssl: { rejectUnauthorized: false }
     });
     console.log('[Database] Configured connection pool for Supabase PostgreSQL.');
+    
+    // Asynchronously run database migrations
+    runAutoMigrations();
   } catch (e) {
     console.error('[Database] Failed to parse DATABASE_URL, falling back to local JSON:', e.message);
     useLocalFallback = true;
@@ -57,6 +60,70 @@ if (connectionString && connectionString !== 'YOUR_SUPABASE_DATABASE_URL_HERE') 
     } catch (e) {
       console.error('[Database] Failed loading local configs:', e.message);
     }
+  }
+}
+
+/**
+ * Migration helper for local fallback JSON user objects
+ */
+function migrateLocalUser(u) {
+  if (!u) return u;
+  if (!u.balls) u.balls = {};
+  if (u.balls.pokeball === undefined) u.balls.pokeball = 10;
+  if (u.balls.greatball === undefined) u.balls.greatball = 3;
+  if (u.balls.ultraball === undefined) u.balls.ultraball = 1;
+  if (u.balls.masterball === undefined) u.balls.masterball = 0;
+  if (u.coins === undefined) u.coins = 100;
+  if (u.xp === undefined) u.xp = 0;
+  if (u.level === undefined) u.level = 1;
+  if (u.buddyInstanceId === undefined) u.buddyInstanceId = null;
+  return u;
+}
+
+/**
+ * Migration helper for local fallback JSON config objects
+ */
+function migrateLocalConfig(c) {
+  if (!c) return c;
+  if (c.twitchChannel === undefined) c.twitchChannel = '';
+  if (c.obsWebsocketUrl === undefined) c.obsWebsocketUrl = '';
+  if (c.spawnTarget === undefined) c.spawnTarget = '';
+  if (c.youtubeApiKey === undefined) c.youtubeApiKey = '';
+  return c;
+}
+
+/**
+ * Automatically applies SQL migrations to Postgres tables on start
+ */
+async function runAutoMigrations() {
+  if (useLocalFallback || !pool) return;
+  console.log('[Database] Checking schema auto-migrations...');
+  try {
+    const client = await pool.connect();
+    
+    // Add columns to players table
+    await client.query(`
+      ALTER TABLE players 
+      ADD COLUMN IF NOT EXISTS coins INTEGER DEFAULT 100,
+      ADD COLUMN IF NOT EXISTS xp INTEGER DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS level INTEGER DEFAULT 1,
+      ADD COLUMN IF NOT EXISTS masterballs INTEGER DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS buddy_instance_id VARCHAR(50) DEFAULT NULL;
+    `);
+
+    // Add columns to streamer_configs table
+    await client.query(`
+      ALTER TABLE streamer_configs 
+      ADD COLUMN IF NOT EXISTS twitch_channel VARCHAR(50) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS obs_websocket_url VARCHAR(200) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS spawn_target VARCHAR(50) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS youtube_api_key VARCHAR(200) DEFAULT '';
+    `);
+
+    client.release();
+    console.log('[Database] Auto-migrations check completed successfully.');
+  } catch (err) {
+    console.error('[Database] Auto-migrations failed:', err.message);
   }
 }
 
@@ -112,17 +179,25 @@ async function getUser(streamerId, username, displayName = null) {
         balls: {
           pokeball: 10,
           greatball: 3,
-          ultraball: 1
+          ultraball: 1,
+          masterball: 0
         },
+        coins: 100,
+        xp: 0,
+        level: 1,
+        buddyInstanceId: null,
         inventory: [],
         activePokemonId: null,
         lastCatchAttempt: 0,
         lastDaily: 0
       };
       saveLocalUsers();
-    } else if (displayName && localUsers[compositeKey].displayName !== displayName) {
-      localUsers[compositeKey].displayName = displayName;
-      saveLocalUsers();
+    } else {
+      migrateLocalUser(localUsers[compositeKey]);
+      if (displayName && localUsers[compositeKey].displayName !== displayName) {
+        localUsers[compositeKey].displayName = displayName;
+        saveLocalUsers();
+      }
     }
     return JSON.parse(JSON.stringify(localUsers[compositeKey]));
   }
@@ -134,11 +209,11 @@ async function getUser(streamerId, username, displayName = null) {
   );
   
   if (res.rows.length === 0) {
-    const defaultBalls = { pokeball: 10, greatball: 3, ultraball: 1 };
+    const defaultBalls = { pokeball: 10, greatball: 3, ultraball: 1, masterball: 0 };
     await query(
-      `INSERT INTO players (streamer_id, username, display_name, pokeballs, greatballs, ultraballs, last_daily, last_catch_attempt, active_pokemon_id)
-       VALUES ($1, $2, $3, $4, $5, $6, 0, 0, NULL)`,
-      [streamer, key, displayName || username, defaultBalls.pokeball, defaultBalls.greatball, defaultBalls.ultraball]
+      `INSERT INTO players (streamer_id, username, display_name, pokeballs, greatballs, ultraballs, masterballs, coins, xp, level, last_daily, last_catch_attempt, active_pokemon_id, buddy_instance_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 100, 0, 1, 0, 0, NULL, NULL)`,
+      [streamer, key, displayName || username, defaultBalls.pokeball, defaultBalls.greatball, defaultBalls.ultraball, defaultBalls.masterball]
     );
     res = await query(
       'SELECT * FROM players WHERE streamer_id = $1 AND username = $2',
@@ -165,8 +240,13 @@ async function getUser(streamerId, username, displayName = null) {
     balls: {
       pokeball: dbUser.pokeballs,
       greatball: dbUser.greatballs,
-      ultraball: dbUser.ultraballs
+      ultraball: dbUser.ultraballs,
+      masterball: dbUser.masterballs || 0
     },
+    coins: dbUser.coins !== undefined && dbUser.coins !== null ? dbUser.coins : 100,
+    xp: dbUser.xp || 0,
+    level: dbUser.level || 1,
+    buddyInstanceId: dbUser.buddy_instance_id || null,
     inventory: invRes.rows.map(p => ({
       instanceId: p.instance_id,
       pokemonId: p.pokemon_id,
@@ -207,14 +287,20 @@ async function saveUser(streamerId, user) {
   // PostgreSQL version
   await query(
     `UPDATE players 
-     SET display_name = $1, pokeballs = $2, greatballs = $3, ultraballs = $4, 
-         active_pokemon_id = $5, last_daily = $6, last_catch_attempt = $7
-     WHERE streamer_id = $8 AND username = $9`,
+     SET display_name = $1, pokeballs = $2, greatballs = $3, ultraballs = $4, masterballs = $5,
+         coins = $6, xp = $7, level = $8, buddy_instance_id = $9,
+         active_pokemon_id = $10, last_daily = $11, last_catch_attempt = $12
+     WHERE streamer_id = $13 AND username = $14`,
     [
       user.displayName, 
       user.balls.pokeball, 
       user.balls.greatball, 
       user.balls.ultraball, 
+      user.balls.masterball || 0,
+      user.coins || 0,
+      user.xp || 0,
+      user.level || 1,
+      user.buddyInstanceId || null,
       user.activePokemonId, 
       BigInt(user.lastDaily), 
       BigInt(user.lastCatchAttempt),
@@ -653,9 +739,15 @@ async function getStreamerConfig(streamerId) {
         spawnCardPosition: 'bottom-left',
         showCardSprite: true,
         showCardTypes: true,
-        showCardInstructions: true
+        showCardInstructions: true,
+        twitchChannel: '',
+        obsWebsocketUrl: '',
+        spawnTarget: '',
+        youtubeApiKey: ''
       };
       saveLocalConfigs();
+    } else {
+      migrateLocalConfig(localConfigs[streamer]);
     }
     return JSON.parse(JSON.stringify(localConfigs[streamer]));
   }
@@ -687,16 +779,21 @@ async function getStreamerConfig(streamerId) {
       spawnCardPosition: 'bottom-left',
       showCardSprite: true,
       showCardTypes: true,
-      showCardInstructions: true
+      showCardInstructions: true,
+      twitchChannel: '',
+      obsWebsocketUrl: '',
+      spawnTarget: '',
+      youtubeApiKey: ''
     };
     
     await query(
-      `INSERT INTO streamer_configs (channel_id, youtube_channel_id, video_id, spawn_interval_ms, wild_despawn_timeout_ms, catch_cooldown_ms, shiny_chance, admin_password, theme, sfx_volume, show_live_feed, live_feed_title, show_spawn_alert, spawn_alert_title, spawn_catch_guide, show_battle_arena, primary_color, custom_css, spawn_card_scale, spawn_card_position, show_card_sprite, show_card_types, show_card_instructions)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)`,
+      `INSERT INTO streamer_configs (channel_id, youtube_channel_id, video_id, spawn_interval_ms, wild_despawn_timeout_ms, catch_cooldown_ms, shiny_chance, admin_password, theme, sfx_volume, show_live_feed, live_feed_title, show_spawn_alert, spawn_alert_title, spawn_catch_guide, show_battle_arena, primary_color, custom_css, spawn_card_scale, spawn_card_position, show_card_sprite, show_card_types, show_card_instructions, twitch_channel, obs_websocket_url, spawn_target, youtube_api_key)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27)`,
       [
         defaultConfig.channelId, defaultConfig.youtubeChannelId, defaultConfig.videoId, defaultConfig.spawnIntervalMs, defaultConfig.wildDespawnTimeoutMs, defaultConfig.catchCooldownMs, defaultConfig.shinyChance, defaultConfig.adminPassword,
         defaultConfig.theme, defaultConfig.sfxVolume, defaultConfig.showLiveFeed, defaultConfig.liveFeedTitle, defaultConfig.showSpawnAlert, defaultConfig.spawnAlertTitle, defaultConfig.spawnCatchGuide, defaultConfig.showBattleArena, defaultConfig.primaryColor, defaultConfig.customCss,
-        defaultConfig.spawnCardScale, defaultConfig.spawnCardPosition, defaultConfig.showCardSprite, defaultConfig.showCardTypes, defaultConfig.showCardInstructions
+        defaultConfig.spawnCardScale, defaultConfig.spawnCardPosition, defaultConfig.showCardSprite, defaultConfig.showCardTypes, defaultConfig.showCardInstructions,
+        defaultConfig.twitchChannel, defaultConfig.obsWebsocketUrl, defaultConfig.spawnTarget, defaultConfig.youtubeApiKey
       ]
     );
     
@@ -727,7 +824,11 @@ async function getStreamerConfig(streamerId) {
     spawnCardPosition: row.spawn_card_position || 'bottom-left',
     showCardSprite: row.show_card_sprite !== false,
     showCardTypes: row.show_card_types !== false,
-    showCardInstructions: row.show_card_instructions !== false
+    showCardInstructions: row.show_card_instructions !== false,
+    twitchChannel: row.twitch_channel || '',
+    obsWebsocketUrl: row.obs_websocket_url || '',
+    spawnTarget: row.spawn_target || '',
+    youtubeApiKey: row.youtube_api_key || ''
   };
 }
 
@@ -752,8 +853,10 @@ async function saveStreamerConfig(streamerId, config) {
          show_spawn_alert = $12, spawn_alert_title = $13, spawn_catch_guide = $14,
          show_battle_arena = $15, primary_color = $16, custom_css = $17,
          spawn_card_scale = $18, spawn_card_position = $19, show_card_sprite = $20,
-         show_card_types = $21, show_card_instructions = $22
-     WHERE channel_id = $23`,
+         show_card_types = $21, show_card_instructions = $22,
+         twitch_channel = $23, obs_websocket_url = $24, spawn_target = $25,
+         youtube_api_key = $26
+     WHERE channel_id = $27`,
     [
       config.videoId || '',
       config.spawnIntervalMs,
@@ -777,6 +880,10 @@ async function saveStreamerConfig(streamerId, config) {
       config.showCardSprite !== false,
       config.showCardTypes !== false,
       config.showCardInstructions !== false,
+      config.twitchChannel || '',
+      config.obsWebsocketUrl || '',
+      config.spawnTarget || '',
+      config.youtubeApiKey || '',
       streamer
     ]
   );
@@ -802,6 +909,48 @@ async function resetDatabase(streamerId) {
   await query('DELETE FROM players WHERE streamer_id = $1', [streamer]);
 }
 
+/**
+ * Retrieves all players registered under a streamer.
+ */
+async function getAllPlayers(streamerId) {
+  const streamer = streamerId.toLowerCase().trim();
+  if (useLocalFallback) {
+    return Object.keys(localUsers)
+      .filter(k => k.startsWith(`${streamer}_`))
+      .map(k => migrateLocalUser(JSON.parse(JSON.stringify(localUsers[k]))));
+  }
+  
+  const res = await query('SELECT * FROM players WHERE streamer_id = $1 ORDER BY username ASC', [streamer]);
+  const list = [];
+  for (const row of res.rows) {
+    // Load inventory to count inventory items or details if needed
+    const invRes = await query(
+      'SELECT * FROM inventories WHERE streamer_id = $1 AND username = $2',
+      [streamer, row.username]
+    );
+    
+    list.push({
+      username: row.username,
+      displayName: row.display_name,
+      level: row.level || 1,
+      xp: row.xp || 0,
+      coins: row.coins !== undefined && row.coins !== null ? row.coins : 100,
+      balls: {
+        pokeball: row.pokeballs,
+        greatball: row.greatballs,
+        ultraball: row.ultraballs,
+        masterball: row.masterballs || 0
+      },
+      activePokemonId: row.active_pokemon_id,
+      buddyInstanceId: row.buddy_instance_id,
+      inventoryCount: invRes.rows.length,
+      lastCatchAttempt: Number(row.last_catch_attempt),
+      lastDaily: Number(row.last_daily)
+    });
+  }
+  return list;
+}
+
 module.exports = {
   getUser,
   saveUser,
@@ -812,5 +961,6 @@ module.exports = {
   getLeaderboard,
   getStreamerConfig,
   saveStreamerConfig,
-  resetDatabase
+  resetDatabase,
+  getAllPlayers
 };

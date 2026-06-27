@@ -22,23 +22,46 @@
       </div>
     </header>
 
-    <main class="dashboard-grid">
+    <nav class="dashboard-tabs" style="display: flex; gap: 10px; padding: 0 20px; margin-bottom: 10px; margin-top: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+      <button type="button" class="btn tab-btn active" id="btn-tab-controls" style="margin: 0; background: var(--color-primary); color: #fff; border-radius: 8px; font-weight: 600;">🎮 Live Controls & Settings</button>
+      <button type="button" class="btn tab-btn" id="btn-tab-viewers" style="margin: 0; background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid var(--border-color); border-radius: 8px; font-weight: 600;">👥 Viewer Management Database</button>
+    </nav>
+
+    <main class="dashboard-grid" id="main-controls-view">
       
       <!-- Left Panel: Configuration & Quick Actions -->
       <section class="grid-card config-card">
         <h2>🔧 Streamer Settings</h2>
         
         <form id="config-form" class="settings-form">
-          <div class="form-group">
-            <label for="channel-id">YouTube Channel ID</label>
-            <input type="text" id="channel-id" placeholder="e.g. UCxxxxxxxxx">
-            <small>Leave empty to use Video ID or Simulator only.</small>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="channel-id">YouTube Channel ID</label>
+              <input type="text" id="channel-id" placeholder="e.g. UCxxxxxxxxx">
+            </div>
+            <div class="form-group">
+              <label for="twitch-channel">Twitch Channel Name</label>
+              <input type="text" id="twitch-channel" placeholder="e.g. poketrainer">
+            </div>
           </div>
           
-          <div class="form-group">
-            <label for="video-id">Active Stream Video ID</label>
-            <input type="text" id="video-id" placeholder="e.g. youtube.com/watch?v=VIDEO_ID">
-            <small>Specifying the exact Video ID connects to chat faster.</small>
+          <div class="form-row">
+            <div class="form-group" style="flex: 1;">
+              <label for="youtube-api-key">YouTube Data API Key (Optional)</label>
+              <input type="password" id="youtube-api-key" placeholder="AIzaSy..." autocomplete="new-password" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
+              <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">Official API loop prioritizes this key to avoid web scraper IP limits. Key remains private.</small>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="video-id">Active YouTube Video ID</label>
+              <input type="text" id="video-id" placeholder="e.g. watch?v=VIDEO_ID">
+            </div>
+            <div class="form-group">
+              <label for="obs-websocket-url">OBS WebSocket Connection</label>
+              <input type="text" id="obs-websocket-url" placeholder="e.g. ws://localhost:4455">
+            </div>
           </div>
           
           <div class="form-row">
@@ -171,6 +194,14 @@
 
         <div class="quick-actions">
           <h3>⚡ Quick Actions</h3>
+          <div class="form-group" style="margin-bottom: 15px;">
+            <label for="spawn-target">Set Next Pokémon to Spawn</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="spawn-target" placeholder="e.g. Mewtwo or Pikachu" style="flex: 1;">
+              <button type="button" id="btn-save-target" class="btn btn-preset" style="margin: 0; background: var(--color-primary); border: none; color: #fff;">Set Target</button>
+            </div>
+            <small>Specifies which Pokémon spawns next. Reverts to random after one spawn.</small>
+          </div>
           <div class="action-buttons">
             <button id="btn-force-spawn" class="btn btn-action">Force Spawn Pokémon</button>
             <button id="btn-reset-db" class="btn btn-danger">Reset Player Database</button>
@@ -277,6 +308,37 @@
         </div>
       </section>
 
+    </main>
+
+    <!-- Right Panel: Viewer Management Database -->
+    <main class="dashboard-grid hidden" id="main-viewers-view" style="display: grid; grid-template-columns: 1fr; gap: 20px; padding: 0 20px 20px 20px;">
+      <section class="grid-card" style="width: 100%; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-card); padding: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px;">
+          <h2>👥 Active Viewer Database</h2>
+          <input type="text" id="viewer-search" placeholder="Search viewer by username..." style="width: 280px; padding: 10px 15px; border-radius: 8px; background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); color: #fff; font-family: inherit; font-size: 13px;">
+        </div>
+        
+        <div class="table-wrap" style="overflow-x: auto;">
+          <table class="leaderboard-table" style="width: 100%;">
+            <thead>
+              <tr>
+                <th>Viewer Name</th>
+                <th>Level</th>
+                <th>XP (Current)</th>
+                <th>Pokécoins Balance</th>
+                <th>Pokéball Stocks (Poké / Great / Ultra / Master)</th>
+                <th>Buddy Companion</th>
+                <th style="text-align: center;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="viewer-db-body">
+              <tr>
+                <td colspan="7" class="text-center muted" style="padding: 30px;">No viewers registered. Simulate active chats to register viewer accounts.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
     </main>
   </div>
 

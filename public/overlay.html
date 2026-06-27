@@ -31,6 +31,15 @@
 <body>
   <div id="overlay-container">
     
+    <!-- Rotating Leaderboard Ticker (Top Left) -->
+    <div id="leaderboard-ticker-bar" class="ticker-hidden">
+      <div class="ticker-title">👑 TOP TRAINERS</div>
+      <div class="ticker-content" id="ticker-content">
+        <!-- Will auto rotate between top players -->
+        <span class="ticker-item">Loading leaderboard...</span>
+      </div>
+    </div>
+
     <!-- Game Live Feed (top right) -->
     <div id="game-feed-container">
       <div class="feed-header">LIVE GAME FEED</div>
@@ -128,6 +137,19 @@
         <div class="evo-announcement" id="evo-desc">
           @Player's Ivysaur evolved into Venusaur!
         </div>
+      </div>
+    </div>
+
+    <!-- Level-Up Notification Overlay (Centered Popup) -->
+    <div id="levelup-overlay" class="hidden">
+      <div class="lvl-backdrop"></div>
+      <div class="lvl-card">
+        <div class="lvl-trophy">🏆</div>
+        <h2 class="lvl-header">LEVEL UP!</h2>
+        <div class="lvl-info" id="lvl-info-text">
+          @Player reached Trainer Level 2!
+        </div>
+        <div class="lvl-subtext">Received 3 Great Balls, 1 Ultra Ball, 100 Coins!</div>
       </div>
     </div>
 

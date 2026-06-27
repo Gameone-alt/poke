@@ -1,83 +1,114 @@
 using System;
-using System.Net.Http;
+using System.Net;
 using System.Text;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.IO;
 
 public class CPHInline
 {
-    private static readonly HttpClient client = new HttpClient();
-
     public bool Execute()
     {
         try
         {
             // 1. Retrieve message, user ID, and username from YouTube chat event variables
-            // In Streamer.bot, YouTube live chat triggers populate: "message", "user", and "userName"
             if (!CPH.TryGetArg("message", out string messageText)) return true;
             if (!CPH.TryGetArg("user", out string username)) return true;
             if (!CPH.TryGetArg("userName", out string displayName)) displayName = username;
 
-            // 2. Retrieve streamer channel slug (configured in Streamer.bot, defaults to 'sage')
+            // 2. Retrieve streamer channel slug
             if (!CPH.TryGetArg("pokemonChannelSlug", out string channelSlug))
             {
-                channelSlug = "sage"; // REPLACE with your channel slug if not using variables
+                channelSlug = "simulator";
             }
 
             // 3. Determine if we use Bot account or Broadcaster account
             if (!CPH.TryGetArg("useBotAccount", out bool useBotAccount))
             {
-                useBotAccount = true; // Set to false to reply as the broadcaster instead of bot
+                useBotAccount = true;
             }
 
-            // 4. Construct payload
-            var payload = new
+            // 4. Construct JSON payload manually (no Newtonsoft dependency)
+            string jsonPayload = "{" +
+                "\"channelId\":\"" + EscapeJson(channelSlug) + "\"," +
+                "\"username\":\"" + EscapeJson(username) + "\"," +
+                "\"displayName\":\"" + EscapeJson(displayName) + "\"," +
+                "\"messageText\":\"" + EscapeJson(messageText) + "\"" +
+            "}";
+
+            // 5. Send POST request to backend using WebClient
+            string backendUrl = "http://localhost:3000/api/chat";
+
+            using (WebClient wc = new WebClient())
             {
-                channelId = channelSlug,
-                username = username,
-                displayName = displayName,
-                messageText = messageText
-            };
+                wc.Encoding = Encoding.UTF8;
+                wc.Headers[HttpRequestHeader.ContentType] = "application/json; charset=utf-8";
+                string response = wc.UploadString(backendUrl, "POST", jsonPayload);
 
-            string jsonPayload = JsonConvert.SerializeObject(payload);
-            var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-
-            // 5. Send POST request to backend
-            string backendUrl = "https://pokemon-overlay-backend-hfpf.onrender.com/api/chat";
-            client.Timeout = TimeSpan.FromSeconds(5);
-            
-            var response = client.PostAsync(backendUrl, content).GetAwaiter().GetResult();
-            if (response.IsSuccessStatusCode)
-            {
-                string jsonResponse = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                var data = JsonConvert.DeserializeObject<JObject>(jsonResponse);
-
-                if (data != null && data["reply"] != null && data["reply"].Type != JTokenType.Null)
+                // 6. Parse reply from response
+                string reply = ExtractJsonValue(response, "reply");
+                if (!string.IsNullOrEmpty(reply))
                 {
-                    string replyMsg = data["reply"].ToString();
-                    if (!string.IsNullOrEmpty(replyMsg))
+                    if (useBotAccount)
                     {
-                        if (useBotAccount)
-                        {
-                            CPH.SendYouTubeMessageFromBot(replyMsg);
-                        }
-                        else
-                        {
-                            CPH.SendYouTubeMessage(replyMsg);
-                        }
+                        CPH.SendYouTubeMessage(reply, true);
+                    }
+                    else
+                    {
+                        CPH.SendYouTubeMessage(reply);
                     }
                 }
-            }
-            else
-            {
-                CPH.LogWarn($"[Pokemon overlay] API request failed: {response.StatusCode}");
             }
         }
         catch (Exception ex)
         {
-            CPH.LogError($"[Pokemon overlay] Error in chat relay script: {ex.Message}");
+            CPH.LogWarn("[Pokemon Overlay] Error: " + ex.Message);
         }
 
         return true;
+    }
+
+    // Simple JSON string escaper
+    private string EscapeJson(string s)
+    {
+        if (s == null) return "";
+        return s.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "\\r");
+    }
+
+    // Simple JSON value extractor (avoids Newtonsoft dependency)
+    private string ExtractJsonValue(string json, string key)
+    {
+        string searchKey = "\"" + key + "\"";
+        int keyIndex = json.IndexOf(searchKey);
+        if (keyIndex == -1) return null;
+
+        int colonIndex = json.IndexOf(':', keyIndex + searchKey.Length);
+        if (colonIndex == -1) return null;
+
+        // Skip whitespace after colon
+        int valueStart = colonIndex + 1;
+        while (valueStart < json.Length && json[valueStart] == ' ') valueStart++;
+
+        if (valueStart >= json.Length) return null;
+
+        // Check for null
+        if (json.Substring(valueStart).StartsWith("null")) return null;
+
+        // Check for string value
+        if (json[valueStart] == '"')
+        {
+            int strStart = valueStart + 1;
+            int strEnd = strStart;
+            while (strEnd < json.Length)
+            {
+                if (json[strEnd] == '\\') { strEnd += 2; continue; }
+                if (json[strEnd] == '"') break;
+                strEnd++;
+            }
+            return json.Substring(strStart, strEnd - strStart)
+                       .Replace("\\\"", "\"")
+                       .Replace("\\\\", "\\")
+                       .Replace("\\n", "\n");
+        }
+
+        return null;
     }
 }

@@ -252,6 +252,16 @@ socket.on('init_state', (state) => {
     wildPokemonName.textContent = poke.name;
     renderTypes(wildPokemonTypes, poke.types);
     
+    // Check if Legendary (catchRate <= 0.1)
+    const cardWrapper = wildSpawnContainer.querySelector('.pokemon-card-wrapper');
+    if (cardWrapper) {
+      if (poke.catchRate <= 0.1) {
+        cardWrapper.classList.add('legendary-theme');
+      } else {
+        cardWrapper.classList.remove('legendary-theme');
+      }
+    }
+
     if (poke.isShiny) {
       wildShinyTag.classList.remove('hidden');
       triggerShinySparkles();
@@ -264,6 +274,10 @@ socket.on('init_state', (state) => {
       wildSpawnContainer.classList.remove('hidden');
     }
   }
+
+  if (state.leaderboard) {
+    updateMarqueeTicker(state.leaderboard);
+  }
 });
 
 // Wild Spawn Event
@@ -273,6 +287,16 @@ socket.on('pokemon_spawned', (poke) => {
   wildPokemonSprite.src = getSafeSprite(poke.spriteUrl, poke.fallbackSpriteUrl);
   wildPokemonName.textContent = poke.name;
   renderTypes(wildPokemonTypes, poke.types);
+
+  // Check if Legendary (catchRate <= 0.1)
+  const cardWrapper = wildSpawnContainer.querySelector('.pokemon-card-wrapper');
+  if (cardWrapper) {
+    if (poke.catchRate <= 0.1) {
+      cardWrapper.classList.add('legendary-theme');
+    } else {
+      cardWrapper.classList.remove('legendary-theme');
+    }
+  }
   
   if (poke.isShiny) {
     wildShinyTag.classList.remove('hidden');
@@ -410,10 +434,15 @@ socket.on('battle_start', (data) => {
   if (currentOverlayConfig.showBattleArena === false) return;
   playSound(sfxSpawn);
   
-  // Reset all fighter classes
+  // Reset all fighter and arena classes
   challengerFighter.className = 'fighter left-fighter';
   opponentFighter.className = 'fighter right-fighter';
   impactFlash.classList.remove('impact-active');
+  
+  const battleField = document.querySelector('.battle-field');
+  if (battleField) {
+    battleField.classList.remove('strike-fire', 'strike-water', 'strike-grass', 'strike-electric');
+  }
   
   // Set data
   challengerTrainer.textContent = `@${data.challenger}`;
@@ -441,6 +470,15 @@ socket.on('battle_start', (data) => {
     // Trigger physical hits
     challengerFighter.classList.add('fight-strike-left');
     opponentFighter.classList.add('fight-strike-right');
+    
+    // Apply dynamic type strike style based on challenger typing
+    if (battleField && data.challengerTypes && data.challengerTypes.length > 0) {
+      const types = data.challengerTypes.map(t => t.toLowerCase());
+      if (types.includes('fire')) battleField.classList.add('strike-fire');
+      else if (types.includes('water')) battleField.classList.add('strike-water');
+      else if (types.includes('grass')) battleField.classList.add('strike-grass');
+      else if (types.includes('electric')) battleField.classList.add('strike-electric');
+    }
     
     playSound(sfxHit);
     impactFlash.classList.add('impact-active');
@@ -477,7 +515,12 @@ socket.on('battle_end', (data) => {
   // Hide battle overlay after some time
   setTimeout(() => {
     battleOverlay.classList.add('hidden');
-    // If winner evolved, evolution screen triggers next automatically
+    
+    // Clear strike overlay indicators
+    const battleField = document.querySelector('.battle-field');
+    if (battleField) {
+      battleField.classList.remove('strike-fire', 'strike-water', 'strike-grass', 'strike-electric');
+    }
   }, 2500);
 });
 
@@ -531,6 +574,94 @@ function triggerEvoSparkles() {
     }, 1000);
   }
 }
+
+// Level Up Event Listener
+socket.on('player_level_up', (data) => {
+  playSound(sfxEvolve); // Play retro jingle
+  
+  const infoText = document.getElementById('lvl-info-text');
+  if (infoText) {
+    infoText.innerHTML = `<span class="cmd-text">@${data.displayName}</span> reached Trainer Level <span class="cmd-text">${data.level}</span>!`;
+  }
+  
+  const levelupOverlay = document.getElementById('levelup-overlay');
+  if (levelupOverlay) {
+    levelupOverlay.classList.remove('hidden');
+    setTimeout(() => {
+      levelupOverlay.classList.add('hidden');
+    }, 5000);
+  }
+});
+
+// Marquee Leaderboard Ticker Logic
+let tickerInterval = null;
+let currentTickerIndex = 0;
+
+function updateMarqueeTicker(leaderboard) {
+  const tickerBar = document.getElementById('leaderboard-ticker-bar');
+  const tickerContent = document.getElementById('ticker-content');
+  
+  if (!tickerBar || !tickerContent) return;
+  
+  if (!leaderboard || leaderboard.length === 0) {
+    tickerBar.classList.add('ticker-hidden');
+    return;
+  }
+  
+  tickerBar.classList.remove('ticker-hidden');
+  
+  // Clear any existing timer
+  if (tickerInterval) clearInterval(tickerInterval);
+  
+  const slides = [];
+  
+  // Slide 1: Top Collectors (by total pokemon)
+  const topCollectors = [...leaderboard].sort((a,b) => b.totalPokemon - a.totalPokemon).slice(0, 3);
+  if (topCollectors.length > 0) {
+    const listStr = topCollectors.map((p, idx) => `#${idx+1} @${p.displayName} (${p.totalPokemon} pokes)`).join(' | ');
+    slides.push(`<div class="ticker-item">🎒 Collectors: ${listStr}</div>`);
+  }
+  
+  // Slide 2: Top Champions (by total battle wins)
+  const topWinners = [...leaderboard].sort((a,b) => b.totalWins - a.totalWins).slice(0, 3);
+  if (topWinners.length > 0) {
+    const listStr = topWinners.map((p, idx) => `#${idx+1} @${p.displayName} (${p.totalWins} wins)`).join(' | ');
+    slides.push(`<div class="ticker-item">⚔️ Champions: ${listStr}</div>`);
+  }
+  
+  // Slide 3: Active Buddy companion status
+  const buddyOwners = leaderboard.filter(p => p.activePokemon);
+  if (buddyOwners.length > 0) {
+    const listStr = buddyOwners.slice(0, 2).map(p => `@${p.displayName} buddy: ${p.activePokemon.name}`).join(' | ');
+    slides.push(`<div class="ticker-item">✨ Partner Buddies: ${listStr}</div>`);
+  }
+  
+  if (slides.length === 0) {
+    tickerBar.classList.add('ticker-hidden');
+    return;
+  }
+  
+  // Render first slide
+  currentTickerIndex = 0;
+  tickerContent.innerHTML = slides[0];
+  
+  // Rotate slides every 10 seconds
+  tickerInterval = setInterval(() => {
+    currentTickerIndex = (currentTickerIndex + 1) % slides.length;
+    
+    // Apply slide-out fade CSS animation
+    tickerContent.style.animation = 'none';
+    void tickerContent.offsetWidth; // Trigger reflow
+    tickerContent.style.animation = 'tickerFadeInOut 0.6s ease-in-out';
+    
+    tickerContent.innerHTML = slides[currentTickerIndex];
+  }, 10000);
+}
+
+// Receive updated leaderboard stats
+socket.on('leaderboard_update', (leaderboard) => {
+  updateMarqueeTicker(leaderboard);
+});
 
 // Listen for dynamic config updates
 socket.on('config_updated', (config) => {

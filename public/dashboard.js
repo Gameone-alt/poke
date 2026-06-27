@@ -94,7 +94,10 @@ socket.on('password_verified', (data) => {
 
 // DOM elements
 const channelIdInput = document.getElementById('channel-id');
+const twitchChannelInput = document.getElementById('twitch-channel');
 const videoIdInput = document.getElementById('video-id');
+const obsWebsocketUrlInput = document.getElementById('obs-websocket-url');
+const youtubeApiKeyInput = document.getElementById('youtube-api-key');
 const spawnIntervalInput = document.getElementById('spawn-interval');
 const despawnTimeoutInput = document.getElementById('despawn-timeout');
 const catchCooldownInput = document.getElementById('catch-cooldown');
@@ -121,6 +124,10 @@ const showCardSpriteCheckbox = document.getElementById('show-card-sprite');
 const showCardTypesCheckbox = document.getElementById('show-card-types');
 const showCardInstructionsCheckbox = document.getElementById('show-card-instructions');
 
+// Specific Spawn Target
+const spawnTargetInput = document.getElementById('spawn-target');
+const btnSaveTarget = document.getElementById('btn-save-target');
+
 // Sync color inputs
 if (primaryColorInput && primaryColorTextInput) {
   primaryColorInput.addEventListener('input', () => {
@@ -136,7 +143,10 @@ if (primaryColorInput && primaryColorTextInput) {
 
 function populateConfig(config) {
   channelIdInput.value = config.youtubeChannelId || '';
+  twitchChannelInput.value = config.twitchChannel || '';
   videoIdInput.value = config.videoId || '';
+  obsWebsocketUrlInput.value = config.obsWebsocketUrl || '';
+  youtubeApiKeyInput.value = config.youtubeApiKey || '';
   spawnIntervalInput.value = Math.round(config.spawnIntervalMs / 1000);
   despawnTimeoutInput.value = Math.round(config.wildDespawnTimeoutMs / 1000);
   catchCooldownInput.value = Math.round(config.catchCooldownMs / 1000);
@@ -161,6 +171,9 @@ function populateConfig(config) {
   showCardSpriteCheckbox.checked = config.showCardSprite !== false;
   showCardTypesCheckbox.checked = config.showCardTypes !== false;
   showCardInstructionsCheckbox.checked = config.showCardInstructions !== false;
+  
+  // Specific Spawn Target
+  spawnTargetInput.value = config.spawnTarget || '';
 }
 
 const btnForceSpawn = document.getElementById('btn-force-spawn');
@@ -222,7 +235,10 @@ configForm.addEventListener('submit', (e) => {
 
   const updatedConfig = {
     youtubeChannelId: channelIdInput.value.trim(),
+    twitchChannel: twitchChannelInput.value.trim(),
     videoId: videoId,
+    obsWebsocketUrl: obsWebsocketUrlInput.value.trim(),
+    youtubeApiKey: youtubeApiKeyInput.value.trim(),
     spawnIntervalMs: parseInt(spawnIntervalInput.value) * 1000,
     wildDespawnTimeoutMs: parseInt(despawnTimeoutInput.value) * 1000,
     catchCooldownMs: parseInt(catchCooldownInput.value) * 1000,
@@ -245,11 +261,56 @@ configForm.addEventListener('submit', (e) => {
     spawnCardPosition: spawnCardPositionSelect.value,
     showCardSprite: showCardSpriteCheckbox.checked,
     showCardTypes: showCardTypesCheckbox.checked,
-    showCardInstructions: showCardInstructionsCheckbox.checked
+    showCardInstructions: showCardInstructionsCheckbox.checked,
+    
+    // Retain spawn target if set
+    spawnTarget: spawnTargetInput.value.trim()
   };
   
   socket.emit('update_config', { newConfig: updatedConfig, password: adminPassword });
   alert('Configuration updated successfully!');
+});
+
+// Manual Spawn Target Override Button
+btnSaveTarget.addEventListener('click', () => {
+  const target = spawnTargetInput.value.trim();
+  if (!target) {
+    alert('Please enter a Pokémon name or ID to spawn!');
+    return;
+  }
+  
+  // Submit config setting update with only spawnTarget modified
+  const updatedConfig = {
+    youtubeChannelId: channelIdInput.value.trim(),
+    twitchChannel: twitchChannelInput.value.trim(),
+    videoId: videoIdInput.value.trim(),
+    obsWebsocketUrl: obsWebsocketUrlInput.value.trim(),
+    youtubeApiKey: youtubeApiKeyInput.value.trim(),
+    spawnIntervalMs: parseInt(spawnIntervalInput.value) * 1000,
+    wildDespawnTimeoutMs: parseInt(despawnTimeoutInput.value) * 1000,
+    catchCooldownMs: parseInt(catchCooldownInput.value) * 1000,
+    shinyChance: parseFloat(shinyChanceInput.value) / 100,
+    theme: themeSelect.value,
+    primaryColor: primaryColorInput.value,
+    sfxVolume: parseInt(sfxVolumeInput.value),
+    showBattleArena: showBattleArenaInput.checked,
+    showLiveFeed: showLiveFeedInput.checked,
+    liveFeedTitle: liveFeedTitleInput.value.trim(),
+    showSpawnAlert: showSpawnAlertInput.checked,
+    spawnAlertTitle: spawnAlertTitleInput.value.trim(),
+    spawnCatchGuide: spawnCatchGuideInput.value.trim(),
+    customCss: customCssInput.value,
+    spawnCardScale: parseFloat(spawnCardScaleInput.value),
+    spawnCardPosition: spawnCardPositionSelect.value,
+    showCardSprite: showCardSpriteCheckbox.checked,
+    showCardTypes: showCardTypesCheckbox.checked,
+    showCardInstructions: showCardInstructionsCheckbox.checked,
+    
+    spawnTarget: target
+  };
+  
+  socket.emit('update_config', { newConfig: updatedConfig, password: adminPassword });
+  alert(`Next spawn target locked to: "${target}". Check overlay or click Force Spawn!`);
 });
 
 // Button triggers
@@ -483,5 +544,153 @@ function updateLeaderboardUI(leaderboard) {
       <td>${activePokeName}</td>
     `;
     leaderboardBody.appendChild(tr);
+  });
+}
+
+// ==========================================================================
+// Tab Switching, Viewer Database Searching, & Administration Controllers
+// ==========================================================================
+const btnTabControls = document.getElementById('btn-tab-controls');
+const btnTabViewers = document.getElementById('btn-tab-viewers');
+const mainControlsView = document.getElementById('main-controls-view');
+const mainViewersView = document.getElementById('main-viewers-view');
+const viewerSearch = document.getElementById('viewer-search');
+const viewerDbBody = document.getElementById('viewer-db-body');
+
+let cachedPlayersList = [];
+
+// Tab click actions
+if (btnTabControls && btnTabViewers) {
+  btnTabControls.addEventListener('click', () => {
+    btnTabControls.classList.add('active');
+    btnTabControls.style.background = 'var(--color-primary)';
+    btnTabControls.style.color = '#fff';
+    
+    btnTabViewers.classList.remove('active');
+    btnTabViewers.style.background = 'rgba(255,255,255,0.05)';
+    btnTabViewers.style.color = 'var(--text-muted)';
+    
+    mainControlsView.classList.remove('hidden');
+    mainViewersView.classList.add('hidden');
+  });
+
+  btnTabViewers.addEventListener('click', () => {
+    btnTabViewers.classList.add('active');
+    btnTabViewers.style.background = 'var(--color-primary)';
+    btnTabViewers.style.color = '#fff';
+    
+    btnTabControls.classList.remove('active');
+    btnTabControls.style.background = 'rgba(255,255,255,0.05)';
+    btnTabControls.style.color = 'var(--text-muted)';
+    
+    mainControlsView.classList.add('hidden');
+    mainViewersView.classList.remove('hidden');
+    
+    // Trigger socket load
+    socket.emit('get_all_players');
+  });
+}
+
+// Receive all players list updates
+socket.on('all_players_data', (players) => {
+  cachedPlayersList = players;
+  renderViewersTable(players);
+});
+
+// Render table entries
+function renderViewersTable(players) {
+  if (!viewerDbBody) return;
+  
+  if (!players || players.length === 0) {
+    viewerDbBody.innerHTML = `
+      <tr>
+        <td colspan="7" class="text-center muted" style="padding:30px;">No players registered. Sim a catch to start!</td>
+      </tr>
+    `;
+    return;
+  }
+  
+  viewerDbBody.innerHTML = '';
+  
+  players.forEach(p => {
+    const tr = document.createElement('tr');
+    tr.id = `player-row-${p.username}`;
+    
+    const buddyName = p.buddyInstanceId ? 'Buddy Active' : 'None';
+    
+    tr.innerHTML = `
+      <td><strong>@${p.displayName}</strong><br><small class="muted" style="font-size:11px;">username: ${p.username}</small></td>
+      <td style="vertical-align: middle;">
+        <input type="number" id="edit-level-${p.username}" value="${p.level}" style="width:50px; padding:4px 6px; border-radius:4px; text-align:center;">
+      </td>
+      <td style="vertical-align: middle;">
+        <input type="number" id="edit-xp-${p.username}" value="${p.xp}" style="width:60px; padding:4px 6px; border-radius:4px; text-align:center;">
+      </td>
+      <td style="vertical-align: middle;">
+        <input type="number" id="edit-coins-${p.username}" value="${p.coins}" style="width:75px; padding:4px 6px; border-radius:4px; text-align:center;">
+      </td>
+      <td style="vertical-align: middle;">
+        <div style="display:flex; gap:6px; font-size:11px;">
+          <span>🔴 <input type="number" id="edit-poke-${p.username}" value="${p.balls.pokeball}" style="width:38px; padding:2px; border-radius:4px; text-align:center;"></span>
+          <span>🔵 <input type="number" id="edit-great-${p.username}" value="${p.balls.greatball}" style="width:38px; padding:2px; border-radius:4px; text-align:center;"></span>
+          <span>🟡 <input type="number" id="edit-ultra-${p.username}" value="${p.balls.ultraball}" style="width:38px; padding:2px; border-radius:4px; text-align:center;"></span>
+          <span>🟣 <input type="number" id="edit-master-${p.username}" value="${p.balls.masterball}" style="width:38px; padding:2px; border-radius:4px; text-align:center;"></span>
+        </div>
+      </td>
+      <td style="vertical-align: middle;"><span class="muted">${buddyName}</span></td>
+      <td style="vertical-align: middle; text-align: center;">
+        <button type="button" class="btn btn-preset btn-save-player" data-user="${p.username}" style="margin: 0; background:var(--color-primary); font-size:11px; padding:6px 12px; border:none; color:#fff;">Save</button>
+      </td>
+    `;
+    viewerDbBody.appendChild(tr);
+  });
+  
+  // Bind Action Buttons
+  viewerDbBody.querySelectorAll('.btn-save-player').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const username = btn.getAttribute('data-user');
+      const updatedFields = {
+        level: parseInt(document.getElementById(`edit-level-${username}`).value),
+        xp: parseInt(document.getElementById(`edit-xp-${username}`).value),
+        coins: parseInt(document.getElementById(`edit-coins-${username}`).value),
+        balls: {
+          pokeball: parseInt(document.getElementById(`edit-poke-${username}`).value),
+          greatball: parseInt(document.getElementById(`edit-great-${username}`).value),
+          ultraball: parseInt(document.getElementById(`edit-ultra-${username}`).value),
+          masterball: parseInt(document.getElementById(`edit-master-${username}`).value)
+        }
+      };
+      
+      socket.emit('admin_update_player', {
+        password: adminPassword,
+        playerUsername: username,
+        updatedFields
+      });
+    });
+  });
+}
+
+// Receive update confirmations
+socket.on('player_updated_ack', (data) => {
+  if (data.success) {
+    alert(`Player @${data.username} profile updated successfully!`);
+  } else {
+    alert(`Update failed: ${data.error}`);
+  }
+});
+
+// Bind Search Filter
+if (viewerSearch) {
+  viewerSearch.addEventListener('keyup', () => {
+    const term = viewerSearch.value.toLowerCase().trim();
+    if (!term) {
+      renderViewersTable(cachedPlayersList);
+      return;
+    }
+    const filtered = cachedPlayersList.filter(p => 
+      p.username.includes(term) || 
+      p.displayName.toLowerCase().includes(term)
+    );
+    renderViewersTable(filtered);
   });
 }
