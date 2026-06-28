@@ -116,6 +116,7 @@ const liveFeedTitleInput = document.getElementById('live-feed-title');
 const showSpawnAlertInput = document.getElementById('show-spawn-alert');
 const spawnAlertTitleInput = document.getElementById('spawn-alert-title');
 const spawnCatchGuideInput = document.getElementById('spawn-catch-guide');
+const inventoryBaseUrlInput = document.getElementById('inventory-base-url');
 const customCssInput = document.getElementById('custom-css');
 
 // Custom Economy inputs
@@ -250,6 +251,7 @@ function populateConfig(config) {
   showSpawnAlertInput.checked = config.showSpawnAlert !== false;
   spawnAlertTitleInput.value = config.spawnAlertTitle || 'WILD SPAWN';
   spawnCatchGuideInput.value = config.spawnCatchGuide || 'Type !catch in chat!';
+  inventoryBaseUrlInput.value = config.inventoryBaseUrl || '';
   customCssInput.value = config.customCss || '';
   
   // Card layout customization
@@ -450,6 +452,7 @@ configForm.addEventListener('submit', (e) => {
     showSpawnAlert: showSpawnAlertInput.checked,
     spawnAlertTitle: spawnAlertTitleInput.value.trim(),
     spawnCatchGuide: spawnCatchGuideInput.value.trim(),
+    inventoryBaseUrl: inventoryBaseUrlInput.value.trim(),
     customCss: customCssInput.value,
     
     // Spawn Card Customization
@@ -549,6 +552,7 @@ btnSaveTarget.addEventListener('click', () => {
     showSpawnAlert: showSpawnAlertInput.checked,
     spawnAlertTitle: spawnAlertTitleInput.value.trim(),
     spawnCatchGuide: spawnCatchGuideInput.value.trim(),
+    inventoryBaseUrl: inventoryBaseUrlInput.value.trim(),
     customCss: customCssInput.value,
     spawnCardScale: parseFloat(spawnCardScaleInput.value),
     spawnCardPosition: spawnCardPositionSelect.value,

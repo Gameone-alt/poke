@@ -1,16 +1,24 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Parse channel and username from URL path: /trainer/:channel/:username
   const pathParts = window.location.pathname.split('/');
-  // E.g. pathname: "/trainer/simulator/john" -> ["", "trainer", "simulator", "john"]
-  const channel = pathParts[2] || 'simulator';
-  const username = pathParts[3];
+  const urlParams = new URLSearchParams(window.location.search);
+  
+  let channel = pathParts[2] || 'simulator';
+  let username = pathParts[3];
+  
+  // Fallback to query params if not using clean /trainer/ path routing
+  if (pathParts[1] !== 'trainer' || !username) {
+    channel = urlParams.get('channel') || 'simulator';
+    username = urlParams.get('username') || urlParams.get('user');
+  }
 
   if (!username) {
     document.getElementById('pokemon-grid').innerHTML = '<div class="empty-state">Error: No trainer username specified in the URL.</div>';
     return;
   }
 
-  fetch(`/api/trainer/${channel}/${username}`)
+  const backend = urlParams.get('backend') || '';
+  const apiBase = backend.replace(/\/$/, '');
+  fetch(`${apiBase}/api/trainer/${channel}/${username}`)
     .then(res => {
       if (!res.ok) throw new Error('Trainer profile not found.');
       return res.json();

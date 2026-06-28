@@ -151,6 +151,7 @@ function migrateLocalConfig(c) {
   if (c.raidRewardCoins === undefined) c.raidRewardCoins = 250;
   if (c.raidRewardXp === undefined) c.raidRewardXp = 150;
   if (c.raidDropStoneChance === undefined) c.raidDropStoneChance = 0.15;
+  if (c.inventoryBaseUrl === undefined) c.inventoryBaseUrl = '';
   return c;
 }
 
@@ -236,7 +237,8 @@ async function runAutoMigrations() {
       ADD COLUMN IF NOT EXISTS raid_boss_hp INTEGER DEFAULT 5000,
       ADD COLUMN IF NOT EXISTS raid_reward_coins INTEGER DEFAULT 250,
       ADD COLUMN IF NOT EXISTS raid_reward_xp INTEGER DEFAULT 150,
-      ADD COLUMN IF NOT EXISTS raid_drop_stone_chance NUMERIC DEFAULT 0.15;
+      ADD COLUMN IF NOT EXISTS raid_drop_stone_chance NUMERIC DEFAULT 0.15,
+      ADD COLUMN IF NOT EXISTS inventory_base_url VARCHAR(200) DEFAULT '';
     `);
 
     client.release();
@@ -875,7 +877,8 @@ async function getStreamerConfig(streamerId) {
         twitchChannel: '',
         obsWebsocketUrl: '',
         spawnTarget: '',
-        youtubeApiKey: ''
+        youtubeApiKey: '',
+        inventoryBaseUrl: ''
       };
       saveLocalConfigs();
     } else {
@@ -916,6 +919,7 @@ async function getStreamerConfig(streamerId) {
       obsWebsocketUrl: '',
       spawnTarget: '',
       youtubeApiKey: '',
+      inventoryBaseUrl: '',
       spawnCardLeft: '',
       spawnCardRight: '',
       spawnCardTop: '',
@@ -970,12 +974,13 @@ async function getStreamerConfig(streamerId) {
       raidBossHp: 5000,
       raidRewardCoins: 250,
       raidRewardXp: 150,
-      raidDropStoneChance: 0.15
+      raidDropStoneChance: 0.15,
+      inventoryBaseUrl: ''
     };
     
     await query(
-      `INSERT INTO streamer_configs (channel_id, youtube_channel_id, video_id, spawn_interval_ms, wild_despawn_timeout_ms, catch_cooldown_ms, shiny_chance, admin_password, theme, sfx_volume, show_live_feed, live_feed_title, show_spawn_alert, spawn_alert_title, spawn_catch_guide, show_battle_arena, primary_color, custom_css, spawn_card_scale, spawn_card_position, show_card_sprite, show_card_types, show_card_instructions, twitch_channel, obs_websocket_url, spawn_target, youtube_api_key, spawn_card_left, spawn_card_right, spawn_card_top, spawn_card_bottom, ticker_position, ticker_left, ticker_right, ticker_top, ticker_bottom, feed_position, feed_left, feed_right, feed_top, feed_bottom, battle_position, battle_left, battle_right, battle_top, battle_bottom, show_leaderboard, coins_capture_normal, coins_capture_shiny, xp_capture_normal, xp_capture_shiny, level_up_coins, level_up_greatballs, level_up_ultraballs, catch_multiplier_pokeball, catch_multiplier_greatball, catch_multiplier_ultraball, price_pokeball, price_greatball, price_ultraball, price_masterball, catch_multiplier_normal, catch_multiplier_rare, catch_multiplier_legendary, price_pack_kanto, price_pack_johto, price_pack_hoenn, price_pack_sinnoh, price_pack_unova, price_pack_kalos, price_pack_alola, price_pack_legendary, price_fire_stone, price_water_stone, price_thunder_stone, price_leaf_stone, price_moon_stone, raid_chance, raid_boss_hp, raid_reward_coins, raid_reward_xp, raid_drop_stone_chance)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41, $42, $43, $44, $45, $46, $47, $48, $49, $50, $51, $52, $53, $54, $55, $56, $57, $58, $59, $60, $61, $62, $63, $64, $65, $66, $67, $68, $69, $70, $71, $72, $73, $74, $75, $76, $77, $78, $79, $80, $81, $82)`,
+      `INSERT INTO streamer_configs (channel_id, youtube_channel_id, video_id, spawn_interval_ms, wild_despawn_timeout_ms, catch_cooldown_ms, shiny_chance, admin_password, theme, sfx_volume, show_live_feed, live_feed_title, show_spawn_alert, spawn_alert_title, spawn_catch_guide, show_battle_arena, primary_color, custom_css, spawn_card_scale, spawn_card_position, show_card_sprite, show_card_types, show_card_instructions, twitch_channel, obs_websocket_url, spawn_target, youtube_api_key, spawn_card_left, spawn_card_right, spawn_card_top, spawn_card_bottom, ticker_position, ticker_left, ticker_right, ticker_top, ticker_bottom, feed_position, feed_left, feed_right, feed_top, feed_bottom, battle_position, battle_left, battle_right, battle_top, battle_bottom, show_leaderboard, coins_capture_normal, coins_capture_shiny, xp_capture_normal, xp_capture_shiny, level_up_coins, level_up_greatballs, level_up_ultraballs, catch_multiplier_pokeball, catch_multiplier_greatball, catch_multiplier_ultraball, price_pokeball, price_greatball, price_ultraball, price_masterball, catch_multiplier_normal, catch_multiplier_rare, catch_multiplier_legendary, price_pack_kanto, price_pack_johto, price_pack_hoenn, price_pack_sinnoh, price_pack_unova, price_pack_kalos, price_pack_alola, price_pack_legendary, price_fire_stone, price_water_stone, price_thunder_stone, price_leaf_stone, price_moon_stone, raid_chance, raid_boss_hp, raid_reward_coins, raid_reward_xp, raid_drop_stone_chance, inventory_base_url)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41, $42, $43, $44, $45, $46, $47, $48, $49, $50, $51, $52, $53, $54, $55, $56, $57, $58, $59, $60, $61, $62, $63, $64, $65, $66, $67, $68, $69, $70, $71, $72, $73, $74, $75, $76, $77, $78, $79, $80, $81, $82, $83)`,
       [
         defaultConfig.channelId, defaultConfig.youtubeChannelId, defaultConfig.videoId, defaultConfig.spawnIntervalMs, defaultConfig.wildDespawnTimeoutMs, defaultConfig.catchCooldownMs, defaultConfig.shinyChance, defaultConfig.adminPassword,
         defaultConfig.theme, defaultConfig.sfxVolume, defaultConfig.showLiveFeed, defaultConfig.liveFeedTitle, defaultConfig.showSpawnAlert, defaultConfig.spawnAlertTitle, defaultConfig.spawnCatchGuide, defaultConfig.showBattleArena, defaultConfig.primaryColor, defaultConfig.customCss,
@@ -992,7 +997,8 @@ async function getStreamerConfig(streamerId) {
         defaultConfig.catchMultiplierNormal, defaultConfig.catchMultiplierRare, defaultConfig.catchMultiplierLegendary,
         defaultConfig.pricePackKanto, defaultConfig.pricePackJohto, defaultConfig.pricePackHoenn, defaultConfig.pricePackSinnoh, defaultConfig.pricePackUnova, defaultConfig.pricePackKalos, defaultConfig.pricePackAlola, defaultConfig.pricePackLegendary,
         defaultConfig.priceFireStone, defaultConfig.priceWaterStone, defaultConfig.priceThunderStone, defaultConfig.priceLeafStone, defaultConfig.priceMoonStone,
-        defaultConfig.raidChance, defaultConfig.raidBossHp, defaultConfig.raidRewardCoins, defaultConfig.raidRewardXp, defaultConfig.raidDropStoneChance
+        defaultConfig.raidChance, defaultConfig.raidBossHp, defaultConfig.raidRewardCoins, defaultConfig.raidRewardXp, defaultConfig.raidDropStoneChance,
+        defaultConfig.inventoryBaseUrl
       ]
     );
     
@@ -1082,7 +1088,8 @@ async function getStreamerConfig(streamerId) {
     raidBossHp: row.raid_boss_hp !== null && row.raid_boss_hp !== undefined ? Number(row.raid_boss_hp) : 5000,
     raidRewardCoins: row.raid_reward_coins !== null && row.raid_reward_coins !== undefined ? Number(row.raid_reward_coins) : 250,
     raidRewardXp: row.raid_reward_xp !== null && row.raid_reward_xp !== undefined ? Number(row.raid_reward_xp) : 150,
-    raidDropStoneChance: row.raid_drop_stone_chance !== null && row.raid_drop_stone_chance !== undefined ? Number(row.raid_drop_stone_chance) : 0.15
+    raidDropStoneChance: row.raid_drop_stone_chance !== null && row.raid_drop_stone_chance !== undefined ? Number(row.raid_drop_stone_chance) : 0.15,
+    inventoryBaseUrl: row.inventory_base_url || ''
   };
 }
 
@@ -1120,9 +1127,12 @@ async function saveStreamerConfig(streamerId, config) {
          catch_multiplier_pokeball = $54, catch_multiplier_greatball = $55, catch_multiplier_ultraball = $56,
          price_pokeball = $57, price_greatball = $58, price_ultraball = $59, price_masterball = $60,
          catch_multiplier_normal = $61, catch_multiplier_rare = $62, catch_multiplier_legendary = $63,
-         price_pack_kanto = $64, price_pack_johto = $65, price_pack_legendary = $66,
-         raid_chance = $67, raid_boss_hp = $68, raid_reward_coins = $69, raid_reward_xp = $70, raid_drop_stone_chance = $71
-     WHERE channel_id = $72`,
+         price_pack_kanto = $64, price_pack_johto = $65, price_pack_hoenn = $66, price_pack_sinnoh = $67,
+         price_pack_unova = $68, price_pack_kalos = $69, price_pack_alola = $70, price_pack_legendary = $71,
+         price_fire_stone = $72, price_water_stone = $73, price_thunder_stone = $74, price_leaf_stone = $75, price_moon_stone = $76,
+         raid_chance = $77, raid_boss_hp = $78, raid_reward_coins = $79, raid_reward_xp = $80, raid_drop_stone_chance = $81,
+         inventory_base_url = $82
+     WHERE channel_id = $83`,
     [
       config.videoId || '',
       config.spawnIntervalMs,
@@ -1205,6 +1215,7 @@ async function saveStreamerConfig(streamerId, config) {
       config.raidRewardCoins !== undefined ? config.raidRewardCoins : 250,
       config.raidRewardXp !== undefined ? config.raidRewardXp : 150,
       config.raidDropStoneChance !== undefined ? config.raidDropStoneChance : 0.15,
+      config.inventoryBaseUrl || '',
       streamer
     ]
   );

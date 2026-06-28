@@ -97,6 +97,7 @@ app.post('/api/chat', async (req, res) => {
     console.log(`[API Chat Relay] [${channelId}] ${displayName || username}: ${messageText}`);
     const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
     const baseUrl = `${protocol}://${req.headers.host}`;
+    await ensureSessionInitialized(channelId.toLowerCase().trim());
     const reply = await processCommand(channelId.toLowerCase().trim(), username, displayName || username, messageText, baseUrl);
     res.status(200).json({ success: true, reply });
   } catch (err) {
@@ -185,6 +186,35 @@ function getOrCreateSession(channelId) {
     });
   }
   return activeSessions.get(cid);
+}
+
+async function ensureSessionInitialized(channelId) {
+  const session = getOrCreateSession(channelId);
+  if (!session.isInitialized) {
+    if (session.isInitializing) {
+      await session.initializationPromise;
+    } else {
+      session.isInitializing = true;
+      session.initializationPromise = (async () => {
+        console.log(`[Session] [${channelId}] Initializing multi-tenant stream session...`);
+        try {
+          const dbConfig = await db.getStreamerConfig(channelId);
+          session.config = dbConfig;
+          
+          startSpawnLoop(channelId);
+          await youtube.startYoutubeChat(channelId, session.config, processCommand);
+          twitch.startTwitchChat(channelId, session.config, processCommand);
+          session.isInitialized = true;
+        } catch (err) {
+          console.error(`[Session] [${channelId}] Initialization failed:`, err.message);
+        } finally {
+          session.isInitializing = false;
+        }
+      })();
+      await session.initializationPromise;
+    }
+  }
+  return session;
 }
 
 /**
@@ -654,7 +684,10 @@ async function processCommand(channelId, username, displayName, messageText, bas
     const buddy = user.inventory.find(p => p.instanceId === user.buddyInstanceId);
     const buddyText = buddy ? ` | Buddy: ${buddy.name}` : '';
 
-    const msg = `🎒 @${displayName} (Lv.${user.level} | ${user.xp}/${user.level * 100} XP): owns ${invCount} Pokémon. ${activeText}${buddyText} | Coins: 🪙 ${user.coins} | Balls: ${user.balls.pokeball} Poké, ${user.balls.greatball} Great, ${user.balls.ultraball} Ultra, ${user.balls.masterball} Master. View Inventory: ${finalBaseUrl}/trainer/${channelId}/${username}`;
+    const baseLink = session.config.inventoryBaseUrl 
+      ? `${session.config.inventoryBaseUrl.replace(/\/$/, '')}/trainer/${channelId}/${username}?backend=${finalBaseUrl}` 
+      : `${finalBaseUrl}/trainer/${channelId}/${username}`;
+    const msg = `🎒 @${displayName} (Lv.${user.level} | ${user.xp}/${user.level * 100} XP): owns ${invCount} Pokémon. ${activeText}${buddyText} | Coins: 🪙 ${user.coins} | Balls: ${user.balls.pokeball} Poké, ${user.balls.greatball} Great, ${user.balls.ultraball} Ultra, ${user.balls.masterball} Master. View Inventory (Click Here): ${baseLink}`;
     
     io.to(channelId).emit('command_feedback', {
       username,
@@ -1747,30 +1780,7 @@ io.on('connection', async (socket) => {
   });
 
   // Lazy Initialization: Spin up loops/readers if this is the first connected client for this room
-  if (!session.isInitialized) {
-    if (session.isInitializing) {
-      await session.initializationPromise;
-    } else {
-      session.isInitializing = true;
-      session.initializationPromise = (async () => {
-        console.log(`[Session] [${channelId}] Initializing multi-tenant stream session...`);
-        try {
-          const dbConfig = await db.getStreamerConfig(channelId);
-          session.config = dbConfig;
-          
-          startSpawnLoop(channelId);
-          await youtube.startYoutubeChat(channelId, session.config, processCommand);
-          twitch.startTwitchChat(channelId, session.config, processCommand);
-          session.isInitialized = true;
-        } catch (err) {
-          console.error(`[Session] [${channelId}] Initialization failed:`, err.message);
-        } finally {
-          session.isInitializing = false;
-        }
-      })();
-      await session.initializationPromise;
-    }
-  }
+  await ensureSessionInitialized(channelId);
 
   // Send current session state to joining client
   let leaderboard = [];
