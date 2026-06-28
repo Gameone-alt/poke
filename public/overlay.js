@@ -14,6 +14,7 @@ const wildPokemonSprite = document.getElementById('wild-pokemon-sprite');
 const wildPokemonName = document.getElementById('wild-pokemon-name');
 const wildPokemonTypes = document.getElementById('wild-pokemon-types');
 const wildShinyTag = document.getElementById('wild-shiny-tag');
+const wildPokemonStats = document.getElementById('wild-pokemon-stats');
 const sparkleEmitter = document.getElementById('sparkle-emitter');
 
 // Catch Anim references
@@ -108,10 +109,11 @@ function applyConfig(config) {
   // 1. Theme Configuration
   const container = document.getElementById('overlay-container');
   if (container) {
+    container.classList.remove('theme-retro', 'theme-minimal');
     if (config.theme === 'retro') {
       container.classList.add('theme-retro');
-    } else {
-      container.classList.remove('theme-retro');
+    } else if (config.theme === 'minimal') {
+      container.classList.add('theme-minimal');
     }
   }
 
@@ -337,6 +339,18 @@ function renderTypes(typesContainer, types) {
   });
 }
 
+// Render dynamic CP, Weight, and Height stats in Pokemon GO style
+function updateWildPokemonStats(poke) {
+  if (!wildPokemonStats) return;
+  const statsSum = poke.statsSum || 300;
+  const seed = (poke.id || 1) * 31;
+  const mockWeight = ((statsSum * 0.12) + (seed % 15) + 5).toFixed(1);
+  const mockHeight = ((statsSum * 0.0028) + (seed % 8) * 0.1 + 0.3).toFixed(2);
+  
+  wildPokemonStats.innerHTML = `<div style="font-weight: bold; margin-bottom: 2px;">CP ${statsSum}</div><div style="font-size: 11px; opacity: 0.85;">${mockWeight}kg / ${mockHeight}m</div>`;
+  wildPokemonStats.classList.remove('hidden');
+}
+
 // Append Game logs to scroll list
 socket.on('game_log', (log) => {
   const entry = document.createElement('div');
@@ -363,6 +377,7 @@ socket.on('init_state', (state) => {
     wildPokemonSprite.src = getSafeSprite(poke.spriteUrl, poke.fallbackSpriteUrl);
     wildPokemonName.textContent = poke.name;
     renderTypes(wildPokemonTypes, poke.types);
+    updateWildPokemonStats(poke);
     
     // Check if Legendary (catchRate <= 0.1)
     const cardWrapper = wildSpawnContainer.querySelector('.pokemon-card-wrapper');
@@ -399,6 +414,7 @@ socket.on('pokemon_spawned', (poke) => {
   wildPokemonSprite.src = getSafeSprite(poke.spriteUrl, poke.fallbackSpriteUrl);
   wildPokemonName.textContent = poke.name;
   renderTypes(wildPokemonTypes, poke.types);
+  updateWildPokemonStats(poke);
 
   // Check if Legendary (catchRate <= 0.1)
   const cardWrapper = wildSpawnContainer.querySelector('.pokemon-card-wrapper');

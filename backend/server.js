@@ -366,7 +366,8 @@ async function spawnWildPokemon(channelId) {
     isShiny: isShiny,
     spriteUrl: sprite,
     fallbackSpriteUrl: fallbackSprite,
-    catchRate: session.activeWildPokemon.catchRate
+    catchRate: session.activeWildPokemon.catchRate,
+    statsSum: session.activeWildPokemon.statsSum
   });
 
   sendGameLog(channelId, 'spawn', `🌟 A wild ${isShiny ? '✨ Shiny ' : ''}${basePoke.name} has spawned! Type '!catch' to capture it!`);
@@ -687,7 +688,7 @@ async function processCommand(channelId, username, displayName, messageText, bas
     const baseLink = session.config.inventoryBaseUrl 
       ? `${session.config.inventoryBaseUrl.replace(/\/$/, '')}/trainer/${channelId}/${username}?backend=${finalBaseUrl}` 
       : `${finalBaseUrl}/trainer/${channelId}/${username}`;
-    const msg = `🎒 @${displayName} (Lv.${user.level} | ${user.xp}/${user.level * 100} XP): owns ${invCount} Pokémon. ${activeText}${buddyText} | Coins: 🪙 ${user.coins} | Balls: ${user.balls.pokeball} Poké, ${user.balls.greatball} Great, ${user.balls.ultraball} Ultra, ${user.balls.masterball} Master. View Inventory (Click Here): ${baseLink}`;
+    const msg = `@${displayName} View Inventory (Click Here): ${baseLink}`;
     
     io.to(channelId).emit('command_feedback', {
       username,

@@ -1625,5 +1625,73 @@ body {
   100% { transform: scale(0.2) rotate(-10deg); opacity: 0; }
 }
 
+/* ==========================================================================
+   7. Minimalist Sprite-Only Borderless Theme Overrides (.theme-minimal)
+   ========================================================================== */
+#overlay-container.theme-minimal .pokemon-card-wrapper {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 10px !important;
+}
+
+#overlay-container.theme-minimal .glow-background {
+  display: none !important;
+}
+
+#overlay-container.theme-minimal .spawn-header {
+  display: none !important;
+}
+
+#overlay-container.theme-minimal .pokemon-name {
+  font-family: 'Outfit', 'Inter', sans-serif;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9), 0 0 10px rgba(0, 0, 0, 0.7) !important;
+  margin-top: 4px !important;
+  text-transform: uppercase;
+}
+
+#overlay-container.theme-minimal .pokemon-stats {
+  display: block !important;
+  text-align: center !important;
+  font-family: monospace;
+  font-size: 14px !important;
+  color: #ffffff !important;
+  background: rgba(0, 0, 0, 0.6) !important;
+  border-radius: 8px !important;
+  padding: 4px 8px !important;
+  margin: 4px 0 !important;
+  text-shadow: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  pointer-events: none;
+}
+
+#overlay-container.theme-minimal .pokemon-types {
+  gap: 4px !important;
+  justify-content: center !important;
+  margin: 2px 0 !important;
+}
+
+#overlay-container.theme-minimal .type-badge {
+  font-size: 10px !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+}
+
+#overlay-container.theme-minimal .catch-instruction {
+  background: rgba(0, 0, 0, 0.7) !important;
+  border-radius: 8px !important;
+  padding: 4px 10px !important;
+  font-size: 11px !important;
+  color: #e2e8f0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+
 
 
