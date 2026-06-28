@@ -77,6 +77,13 @@ function migrateLocalUser(u) {
   if (u.xp === undefined) u.xp = 0;
   if (u.level === undefined) u.level = 1;
   if (u.buddyInstanceId === undefined) u.buddyInstanceId = null;
+  if (!u.items) u.items = {};
+  if (u.items.fire_stone === undefined) u.items.fire_stone = 0;
+  if (u.items.water_stone === undefined) u.items.water_stone = 0;
+  if (u.items.thunder_stone === undefined) u.items.thunder_stone = 0;
+  if (u.items.leaf_stone === undefined) u.items.leaf_stone = 0;
+  if (u.items.moon_stone === undefined) u.items.moon_stone = 0;
+  if (!u.gymBadges) u.gymBadges = [];
   return u;
 }
 
@@ -89,6 +96,61 @@ function migrateLocalConfig(c) {
   if (c.obsWebsocketUrl === undefined) c.obsWebsocketUrl = '';
   if (c.spawnTarget === undefined) c.spawnTarget = '';
   if (c.youtubeApiKey === undefined) c.youtubeApiKey = '';
+  if (c.spawnCardLeft === undefined) c.spawnCardLeft = '';
+  if (c.spawnCardRight === undefined) c.spawnCardRight = '';
+  if (c.spawnCardTop === undefined) c.spawnCardTop = '';
+  if (c.spawnCardBottom === undefined) c.spawnCardBottom = '';
+  if (c.tickerPosition === undefined) c.tickerPosition = 'top-left';
+  if (c.tickerLeft === undefined) c.tickerLeft = '';
+  if (c.tickerRight === undefined) c.tickerRight = '';
+  if (c.tickerTop === undefined) c.tickerTop = '';
+  if (c.tickerBottom === undefined) c.tickerBottom = '';
+  if (c.feedPosition === undefined) c.feedPosition = 'top-right';
+  if (c.feedLeft === undefined) c.feedLeft = '';
+  if (c.feedRight === undefined) c.feedRight = '';
+  if (c.feedTop === undefined) c.feedTop = '';
+  if (c.feedBottom === undefined) c.feedBottom = '';
+  if (c.battlePosition === undefined) c.battlePosition = 'center';
+  if (c.battleLeft === undefined) c.battleLeft = '';
+  if (c.battleRight === undefined) c.battleRight = '';
+  if (c.battleTop === undefined) c.battleTop = '';
+  if (c.battleBottom === undefined) c.battleBottom = '';
+  if (c.showLeaderboard === undefined) c.showLeaderboard = true;
+  if (c.coinsCaptureNormal === undefined) c.coinsCaptureNormal = 20;
+  if (c.coinsCaptureShiny === undefined) c.coinsCaptureShiny = 100;
+  if (c.xpCaptureNormal === undefined) c.xpCaptureNormal = 15;
+  if (c.xpCaptureShiny === undefined) c.xpCaptureShiny = 50;
+  if (c.levelUpCoins === undefined) c.levelUpCoins = 100;
+  if (c.levelUpGreatballs === undefined) c.levelUpGreatballs = 3;
+  if (c.levelUpUltraballs === undefined) c.levelUpUltraballs = 1;
+  if (c.catchMultiplierPokeball === undefined) c.catchMultiplierPokeball = 1.0;
+  if (c.catchMultiplierGreatball === undefined) c.catchMultiplierGreatball = 1.5;
+  if (c.catchMultiplierUltraball === undefined) c.catchMultiplierUltraball = 2.0;
+  if (c.pricePokeball === undefined) c.pricePokeball = 10;
+  if (c.priceGreatball === undefined) c.priceGreatball = 30;
+  if (c.priceUltraball === undefined) c.priceUltraball = 80;
+  if (c.priceMasterball === undefined) c.priceMasterball = 250;
+  if (c.catchMultiplierNormal === undefined) c.catchMultiplierNormal = 1.0;
+  if (c.catchMultiplierRare === undefined) c.catchMultiplierRare = 1.0;
+  if (c.catchMultiplierLegendary === undefined) c.catchMultiplierLegendary = 1.0;
+  if (c.pricePackKanto === undefined) c.pricePackKanto = 150;
+  if (c.pricePackJohto === undefined) c.pricePackJohto = 150;
+  if (c.pricePackHoenn === undefined) c.pricePackHoenn = 150;
+  if (c.pricePackSinnoh === undefined) c.pricePackSinnoh = 150;
+  if (c.pricePackUnova === undefined) c.pricePackUnova = 150;
+  if (c.pricePackKalos === undefined) c.pricePackKalos = 150;
+  if (c.pricePackAlola === undefined) c.pricePackAlola = 150;
+  if (c.pricePackLegendary === undefined) c.pricePackLegendary = 500;
+  if (c.priceFireStone === undefined) c.priceFireStone = 150;
+  if (c.priceWaterStone === undefined) c.priceWaterStone = 150;
+  if (c.priceThunderStone === undefined) c.priceThunderStone = 150;
+  if (c.priceLeafStone === undefined) c.priceLeafStone = 150;
+  if (c.priceMoonStone === undefined) c.priceMoonStone = 150;
+  if (c.raidChance === undefined) c.raidChance = 0.05;
+  if (c.raidBossHp === undefined) c.raidBossHp = 5000;
+  if (c.raidRewardCoins === undefined) c.raidRewardCoins = 250;
+  if (c.raidRewardXp === undefined) c.raidRewardXp = 150;
+  if (c.raidDropStoneChance === undefined) c.raidDropStoneChance = 0.15;
   return c;
 }
 
@@ -108,7 +170,9 @@ async function runAutoMigrations() {
       ADD COLUMN IF NOT EXISTS xp INTEGER DEFAULT 0,
       ADD COLUMN IF NOT EXISTS level INTEGER DEFAULT 1,
       ADD COLUMN IF NOT EXISTS masterballs INTEGER DEFAULT 0,
-      ADD COLUMN IF NOT EXISTS buddy_instance_id VARCHAR(50) DEFAULT NULL;
+      ADD COLUMN IF NOT EXISTS buddy_instance_id VARCHAR(50) DEFAULT NULL,
+      ADD COLUMN IF NOT EXISTS items JSONB DEFAULT '{}',
+      ADD COLUMN IF NOT EXISTS gym_badges JSONB DEFAULT '[]';
     `);
 
     // Add columns to streamer_configs table
@@ -117,7 +181,62 @@ async function runAutoMigrations() {
       ADD COLUMN IF NOT EXISTS twitch_channel VARCHAR(50) DEFAULT '',
       ADD COLUMN IF NOT EXISTS obs_websocket_url VARCHAR(200) DEFAULT '',
       ADD COLUMN IF NOT EXISTS spawn_target VARCHAR(50) DEFAULT '',
-      ADD COLUMN IF NOT EXISTS youtube_api_key VARCHAR(200) DEFAULT '';
+      ADD COLUMN IF NOT EXISTS youtube_api_key VARCHAR(200) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS spawn_card_left VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS spawn_card_right VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS spawn_card_top VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS spawn_card_bottom VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS ticker_position VARCHAR(20) DEFAULT 'top-left',
+      ADD COLUMN IF NOT EXISTS ticker_left VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS ticker_right VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS ticker_top VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS ticker_bottom VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS feed_position VARCHAR(20) DEFAULT 'top-right',
+      ADD COLUMN IF NOT EXISTS feed_left VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS feed_right VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS feed_top VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS feed_bottom VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS battle_position VARCHAR(20) DEFAULT 'center',
+      ADD COLUMN IF NOT EXISTS battle_left VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS battle_right VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS battle_top VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS battle_bottom VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS show_leaderboard BOOLEAN DEFAULT TRUE,
+      ADD COLUMN IF NOT EXISTS coins_capture_normal INTEGER DEFAULT 20,
+      ADD COLUMN IF NOT EXISTS coins_capture_shiny INTEGER DEFAULT 100,
+      ADD COLUMN IF NOT EXISTS xp_capture_normal INTEGER DEFAULT 15,
+      ADD COLUMN IF NOT EXISTS xp_capture_shiny INTEGER DEFAULT 50,
+      ADD COLUMN IF NOT EXISTS level_up_coins INTEGER DEFAULT 100,
+      ADD COLUMN IF NOT EXISTS level_up_greatballs INTEGER DEFAULT 3,
+      ADD COLUMN IF NOT EXISTS level_up_ultraballs INTEGER DEFAULT 1,
+      ADD COLUMN IF NOT EXISTS catch_multiplier_pokeball NUMERIC DEFAULT 1.0,
+      ADD COLUMN IF NOT EXISTS catch_multiplier_greatball NUMERIC DEFAULT 1.5,
+      ADD COLUMN IF NOT EXISTS catch_multiplier_ultraball NUMERIC DEFAULT 2.0,
+      ADD COLUMN IF NOT EXISTS price_pokeball INTEGER DEFAULT 10,
+      ADD COLUMN IF NOT EXISTS price_greatball INTEGER DEFAULT 30,
+      ADD COLUMN IF NOT EXISTS price_ultraball INTEGER DEFAULT 80,
+      ADD COLUMN IF NOT EXISTS price_masterball INTEGER DEFAULT 250,
+      ADD COLUMN IF NOT EXISTS catch_multiplier_normal NUMERIC DEFAULT 1.0,
+      ADD COLUMN IF NOT EXISTS catch_multiplier_rare NUMERIC DEFAULT 1.0,
+      ADD COLUMN IF NOT EXISTS catch_multiplier_legendary NUMERIC DEFAULT 1.0,
+      ADD COLUMN IF NOT EXISTS price_pack_kanto INTEGER DEFAULT 150,
+      ADD COLUMN IF NOT EXISTS price_pack_johto INTEGER DEFAULT 150,
+      ADD COLUMN IF NOT EXISTS price_pack_hoenn INTEGER DEFAULT 150,
+      ADD COLUMN IF NOT EXISTS price_pack_sinnoh INTEGER DEFAULT 150,
+      ADD COLUMN IF NOT EXISTS price_pack_unova INTEGER DEFAULT 150,
+      ADD COLUMN IF NOT EXISTS price_pack_kalos INTEGER DEFAULT 150,
+      ADD COLUMN IF NOT EXISTS price_pack_alola INTEGER DEFAULT 150,
+      ADD COLUMN IF NOT EXISTS price_pack_legendary INTEGER DEFAULT 500,
+      ADD COLUMN IF NOT EXISTS price_fire_stone INTEGER DEFAULT 150,
+      ADD COLUMN IF NOT EXISTS price_water_stone INTEGER DEFAULT 150,
+      ADD COLUMN IF NOT EXISTS price_thunder_stone INTEGER DEFAULT 150,
+      ADD COLUMN IF NOT EXISTS price_leaf_stone INTEGER DEFAULT 150,
+      ADD COLUMN IF NOT EXISTS price_moon_stone INTEGER DEFAULT 150,
+      ADD COLUMN IF NOT EXISTS raid_chance NUMERIC DEFAULT 0.05,
+      ADD COLUMN IF NOT EXISTS raid_boss_hp INTEGER DEFAULT 5000,
+      ADD COLUMN IF NOT EXISTS raid_reward_coins INTEGER DEFAULT 250,
+      ADD COLUMN IF NOT EXISTS raid_reward_xp INTEGER DEFAULT 150,
+      ADD COLUMN IF NOT EXISTS raid_drop_stone_chance NUMERIC DEFAULT 0.15;
     `);
 
     client.release();
@@ -186,6 +305,14 @@ async function getUser(streamerId, username, displayName = null) {
         xp: 0,
         level: 1,
         buddyInstanceId: null,
+        items: {
+          fire_stone: 0,
+          water_stone: 0,
+          thunder_stone: 0,
+          leaf_stone: 0,
+          moon_stone: 0
+        },
+        gymBadges: [],
         inventory: [],
         activePokemonId: null,
         lastCatchAttempt: 0,
@@ -265,6 +392,8 @@ async function getUser(streamerId, username, displayName = null) {
       caughtAt: Number(p.caught_at)
     })),
     activePokemonId: dbUser.active_pokemon_id,
+    items: dbUser.items || {},
+    gymBadges: dbUser.gym_badges || [],
     lastCatchAttempt: Number(dbUser.last_catch_attempt),
     lastDaily: Number(dbUser.last_daily)
   };
@@ -289,8 +418,9 @@ async function saveUser(streamerId, user) {
     `UPDATE players 
      SET display_name = $1, pokeballs = $2, greatballs = $3, ultraballs = $4, masterballs = $5,
          coins = $6, xp = $7, level = $8, buddy_instance_id = $9,
-         active_pokemon_id = $10, last_daily = $11, last_catch_attempt = $12
-     WHERE streamer_id = $13 AND username = $14`,
+         active_pokemon_id = $10, last_daily = $11, last_catch_attempt = $12,
+         items = $13, gym_badges = $14
+     WHERE streamer_id = $15 AND username = $16`,
     [
       user.displayName, 
       user.balls.pokeball, 
@@ -304,6 +434,8 @@ async function saveUser(streamerId, user) {
       user.activePokemonId, 
       BigInt(user.lastDaily), 
       BigInt(user.lastCatchAttempt),
+      JSON.stringify(user.items || {}),
+      JSON.stringify(user.gymBadges || []),
       streamer, 
       key
     ]
@@ -731,7 +863,7 @@ async function getStreamerConfig(streamerId) {
         liveFeedTitle: 'LIVE GAME FEED',
         showSpawnAlert: true,
         spawnAlertTitle: 'WILD SPAWN',
-        spawnCatchGuide: 'Type catch in chat!',
+        spawnCatchGuide: 'Type !catch in chat!',
         showBattleArena: true,
         primaryColor: '#3b82f6',
         customCss: '',
@@ -771,7 +903,7 @@ async function getStreamerConfig(streamerId) {
       liveFeedTitle: 'LIVE GAME FEED',
       showSpawnAlert: true,
       spawnAlertTitle: 'WILD SPAWN',
-      spawnCatchGuide: 'Type catch in chat!',
+      spawnCatchGuide: 'Type !catch in chat!',
       showBattleArena: true,
       primaryColor: '#3b82f6',
       customCss: '',
@@ -783,17 +915,84 @@ async function getStreamerConfig(streamerId) {
       twitchChannel: '',
       obsWebsocketUrl: '',
       spawnTarget: '',
-      youtubeApiKey: ''
+      youtubeApiKey: '',
+      spawnCardLeft: '',
+      spawnCardRight: '',
+      spawnCardTop: '',
+      spawnCardBottom: '',
+      tickerPosition: 'top-left',
+      tickerLeft: '',
+      tickerRight: '',
+      tickerTop: '',
+      tickerBottom: '',
+      feedPosition: 'top-right',
+      feedLeft: '',
+      feedRight: '',
+      feedTop: '',
+      feedBottom: '',
+      battlePosition: 'center',
+      battleLeft: '',
+      battleRight: '',
+      battleTop: '',
+      battleBottom: '',
+      showLeaderboard: true,
+      coinsCaptureNormal: 20,
+      coinsCaptureShiny: 100,
+      xpCaptureNormal: 15,
+      xpCaptureShiny: 50,
+      levelUpCoins: 100,
+      levelUpGreatballs: 3,
+      levelUpUltraballs: 1,
+      catchMultiplierPokeball: 1.0,
+      catchMultiplierGreatball: 1.5,
+      catchMultiplierUltraball: 2.0,
+      pricePokeball: 10,
+      priceGreatball: 30,
+      priceUltraball: 80,
+      priceMasterball: 250,
+      catchMultiplierNormal: 1.0,
+      catchMultiplierRare: 1.0,
+      catchMultiplierLegendary: 1.0,
+      pricePackKanto: 150,
+      pricePackJohto: 150,
+      pricePackHoenn: 150,
+      pricePackSinnoh: 150,
+      pricePackUnova: 150,
+      pricePackKalos: 150,
+      pricePackAlola: 150,
+      pricePackLegendary: 500,
+      priceFireStone: 150,
+      priceWaterStone: 150,
+      priceThunderStone: 150,
+      priceLeafStone: 150,
+      priceMoonStone: 150,
+      raidChance: 0.05,
+      raidBossHp: 5000,
+      raidRewardCoins: 250,
+      raidRewardXp: 150,
+      raidDropStoneChance: 0.15
     };
     
     await query(
-      `INSERT INTO streamer_configs (channel_id, youtube_channel_id, video_id, spawn_interval_ms, wild_despawn_timeout_ms, catch_cooldown_ms, shiny_chance, admin_password, theme, sfx_volume, show_live_feed, live_feed_title, show_spawn_alert, spawn_alert_title, spawn_catch_guide, show_battle_arena, primary_color, custom_css, spawn_card_scale, spawn_card_position, show_card_sprite, show_card_types, show_card_instructions, twitch_channel, obs_websocket_url, spawn_target, youtube_api_key)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27)`,
+      `INSERT INTO streamer_configs (channel_id, youtube_channel_id, video_id, spawn_interval_ms, wild_despawn_timeout_ms, catch_cooldown_ms, shiny_chance, admin_password, theme, sfx_volume, show_live_feed, live_feed_title, show_spawn_alert, spawn_alert_title, spawn_catch_guide, show_battle_arena, primary_color, custom_css, spawn_card_scale, spawn_card_position, show_card_sprite, show_card_types, show_card_instructions, twitch_channel, obs_websocket_url, spawn_target, youtube_api_key, spawn_card_left, spawn_card_right, spawn_card_top, spawn_card_bottom, ticker_position, ticker_left, ticker_right, ticker_top, ticker_bottom, feed_position, feed_left, feed_right, feed_top, feed_bottom, battle_position, battle_left, battle_right, battle_top, battle_bottom, show_leaderboard, coins_capture_normal, coins_capture_shiny, xp_capture_normal, xp_capture_shiny, level_up_coins, level_up_greatballs, level_up_ultraballs, catch_multiplier_pokeball, catch_multiplier_greatball, catch_multiplier_ultraball, price_pokeball, price_greatball, price_ultraball, price_masterball, catch_multiplier_normal, catch_multiplier_rare, catch_multiplier_legendary, price_pack_kanto, price_pack_johto, price_pack_hoenn, price_pack_sinnoh, price_pack_unova, price_pack_kalos, price_pack_alola, price_pack_legendary, price_fire_stone, price_water_stone, price_thunder_stone, price_leaf_stone, price_moon_stone, raid_chance, raid_boss_hp, raid_reward_coins, raid_reward_xp, raid_drop_stone_chance)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41, $42, $43, $44, $45, $46, $47, $48, $49, $50, $51, $52, $53, $54, $55, $56, $57, $58, $59, $60, $61, $62, $63, $64, $65, $66, $67, $68, $69, $70, $71, $72, $73, $74, $75, $76, $77, $78, $79, $80, $81, $82)`,
       [
         defaultConfig.channelId, defaultConfig.youtubeChannelId, defaultConfig.videoId, defaultConfig.spawnIntervalMs, defaultConfig.wildDespawnTimeoutMs, defaultConfig.catchCooldownMs, defaultConfig.shinyChance, defaultConfig.adminPassword,
         defaultConfig.theme, defaultConfig.sfxVolume, defaultConfig.showLiveFeed, defaultConfig.liveFeedTitle, defaultConfig.showSpawnAlert, defaultConfig.spawnAlertTitle, defaultConfig.spawnCatchGuide, defaultConfig.showBattleArena, defaultConfig.primaryColor, defaultConfig.customCss,
         defaultConfig.spawnCardScale, defaultConfig.spawnCardPosition, defaultConfig.showCardSprite, defaultConfig.showCardTypes, defaultConfig.showCardInstructions,
-        defaultConfig.twitchChannel, defaultConfig.obsWebsocketUrl, defaultConfig.spawnTarget, defaultConfig.youtubeApiKey
+        defaultConfig.twitchChannel, defaultConfig.obsWebsocketUrl, defaultConfig.spawnTarget, defaultConfig.youtubeApiKey,
+        defaultConfig.spawnCardLeft, defaultConfig.spawnCardRight, defaultConfig.spawnCardTop, defaultConfig.spawnCardBottom,
+        defaultConfig.tickerPosition, defaultConfig.tickerLeft, defaultConfig.tickerRight, defaultConfig.tickerTop, defaultConfig.tickerBottom,
+        defaultConfig.feedPosition, defaultConfig.feedLeft, defaultConfig.feedRight, defaultConfig.feedTop, defaultConfig.feedBottom,
+        defaultConfig.battlePosition, defaultConfig.battleLeft, defaultConfig.battleRight, defaultConfig.battleTop, defaultConfig.battleBottom,
+        defaultConfig.showLeaderboard, defaultConfig.coinsCaptureNormal, defaultConfig.coinsCaptureShiny, defaultConfig.xpCaptureNormal, defaultConfig.xpCaptureShiny,
+        defaultConfig.levelUpCoins, defaultConfig.levelUpGreatballs, defaultConfig.levelUpUltraballs,
+        defaultConfig.catchMultiplierPokeball, defaultConfig.catchMultiplierGreatball, defaultConfig.catchMultiplierUltraball,
+        defaultConfig.pricePokeball, defaultConfig.priceGreatball, defaultConfig.priceUltraball, defaultConfig.priceMasterball,
+        defaultConfig.catchMultiplierNormal, defaultConfig.catchMultiplierRare, defaultConfig.catchMultiplierLegendary,
+        defaultConfig.pricePackKanto, defaultConfig.pricePackJohto, defaultConfig.pricePackHoenn, defaultConfig.pricePackSinnoh, defaultConfig.pricePackUnova, defaultConfig.pricePackKalos, defaultConfig.pricePackAlola, defaultConfig.pricePackLegendary,
+        defaultConfig.priceFireStone, defaultConfig.priceWaterStone, defaultConfig.priceThunderStone, defaultConfig.priceLeafStone, defaultConfig.priceMoonStone,
+        defaultConfig.raidChance, defaultConfig.raidBossHp, defaultConfig.raidRewardCoins, defaultConfig.raidRewardXp, defaultConfig.raidDropStoneChance
       ]
     );
     
@@ -816,7 +1015,7 @@ async function getStreamerConfig(streamerId) {
     liveFeedTitle: row.live_feed_title || 'LIVE GAME FEED',
     showSpawnAlert: row.show_spawn_alert !== false,
     spawnAlertTitle: row.spawn_alert_title || 'WILD SPAWN',
-    spawnCatchGuide: row.spawn_catch_guide || 'Type catch in chat!',
+    spawnCatchGuide: row.spawn_catch_guide || 'Type !catch in chat!',
     showBattleArena: row.show_battle_arena !== false,
     primaryColor: row.primary_color || '#3b82f6',
     customCss: row.custom_css || '',
@@ -828,7 +1027,62 @@ async function getStreamerConfig(streamerId) {
     twitchChannel: row.twitch_channel || '',
     obsWebsocketUrl: row.obs_websocket_url || '',
     spawnTarget: row.spawn_target || '',
-    youtubeApiKey: row.youtube_api_key || ''
+    youtubeApiKey: row.youtube_api_key || '',
+    spawnCardLeft: row.spawn_card_left || '',
+    spawnCardRight: row.spawn_card_right || '',
+    spawnCardTop: row.spawn_card_top || '',
+    spawnCardBottom: row.spawn_card_bottom || '',
+    tickerPosition: row.ticker_position || 'top-left',
+    tickerLeft: row.ticker_left || '',
+    tickerRight: row.ticker_right || '',
+    tickerTop: row.ticker_top || '',
+    tickerBottom: row.ticker_bottom || '',
+    feedPosition: row.feed_position || 'top-right',
+    feedLeft: row.feed_left || '',
+    feedRight: row.feed_right || '',
+    feedTop: row.feed_top || '',
+    feedBottom: row.feed_bottom || '',
+    battlePosition: row.battle_position || 'center',
+    battleLeft: row.battle_left || '',
+    battleRight: row.battle_right || '',
+    battleTop: row.battle_top || '',
+    battleBottom: row.battle_bottom || '',
+    showLeaderboard: row.show_leaderboard !== false,
+    coinsCaptureNormal: row.coins_capture_normal !== null && row.coins_capture_normal !== undefined ? Number(row.coins_capture_normal) : 20,
+    coinsCaptureShiny: row.coins_capture_shiny !== null && row.coins_capture_shiny !== undefined ? Number(row.coins_capture_shiny) : 100,
+    xpCaptureNormal: row.xp_capture_normal !== null && row.xp_capture_normal !== undefined ? Number(row.xp_capture_normal) : 15,
+    xpCaptureShiny: row.xp_capture_shiny !== null && row.xp_capture_shiny !== undefined ? Number(row.xp_capture_shiny) : 50,
+    levelUpCoins: row.level_up_coins !== null && row.level_up_coins !== undefined ? Number(row.level_up_coins) : 100,
+    levelUpGreatballs: row.level_up_greatballs !== null && row.level_up_greatballs !== undefined ? Number(row.level_up_greatballs) : 3,
+    levelUpUltraballs: row.level_up_ultraballs !== null && row.level_up_ultraballs !== undefined ? Number(row.level_up_ultraballs) : 1,
+    catchMultiplierPokeball: row.catch_multiplier_pokeball !== null && row.catch_multiplier_pokeball !== undefined ? Number(row.catch_multiplier_pokeball) : 1.0,
+    catchMultiplierGreatball: row.catch_multiplier_greatball !== null && row.catch_multiplier_greatball !== undefined ? Number(row.catch_multiplier_greatball) : 1.5,
+    catchMultiplierUltraball: row.catch_multiplier_ultraball !== null && row.catch_multiplier_ultraball !== undefined ? Number(row.catch_multiplier_ultraball) : 2.0,
+    pricePokeball: row.price_pokeball !== null && row.price_pokeball !== undefined ? Number(row.price_pokeball) : 10,
+    priceGreatball: row.price_greatball !== null && row.price_greatball !== undefined ? Number(row.price_greatball) : 30,
+    priceUltraball: row.price_ultraball !== null && row.price_ultraball !== undefined ? Number(row.price_ultraball) : 80,
+    priceMasterball: row.price_masterball !== null && row.price_masterball !== undefined ? Number(row.price_masterball) : 250,
+    catchMultiplierNormal: row.catch_multiplier_normal !== null && row.catch_multiplier_normal !== undefined ? Number(row.catch_multiplier_normal) : 1.0,
+    catchMultiplierRare: row.catch_multiplier_rare !== null && row.catch_multiplier_rare !== undefined ? Number(row.catch_multiplier_rare) : 1.0,
+    catchMultiplierLegendary: row.catch_multiplier_legendary !== null && row.catch_multiplier_legendary !== undefined ? Number(row.catch_multiplier_legendary) : 1.0,
+    pricePackKanto: row.price_pack_kanto !== null && row.price_pack_kanto !== undefined ? Number(row.price_pack_kanto) : 150,
+    pricePackJohto: row.price_pack_johto !== null && row.price_pack_johto !== undefined ? Number(row.price_pack_johto) : 150,
+    pricePackHoenn: row.price_pack_hoenn !== null && row.price_pack_hoenn !== undefined ? Number(row.price_pack_hoenn) : 150,
+    pricePackSinnoh: row.price_pack_sinnoh !== null && row.price_pack_sinnoh !== undefined ? Number(row.price_pack_sinnoh) : 150,
+    pricePackUnova: row.price_pack_unova !== null && row.price_pack_unova !== undefined ? Number(row.price_pack_unova) : 150,
+    pricePackKalos: row.price_pack_kalos !== null && row.price_pack_kalos !== undefined ? Number(row.price_pack_kalos) : 150,
+    pricePackAlola: row.price_pack_alola !== null && row.price_pack_alola !== undefined ? Number(row.price_pack_alola) : 150,
+    pricePackLegendary: row.price_pack_legendary !== null && row.price_pack_legendary !== undefined ? Number(row.price_pack_legendary) : 500,
+    priceFireStone: row.price_fire_stone !== null && row.price_fire_stone !== undefined ? Number(row.price_fire_stone) : 150,
+    priceWaterStone: row.price_water_stone !== null && row.price_water_stone !== undefined ? Number(row.price_water_stone) : 150,
+    priceThunderStone: row.price_thunder_stone !== null && row.price_thunder_stone !== undefined ? Number(row.price_thunder_stone) : 150,
+    priceLeafStone: row.price_leaf_stone !== null && row.price_leaf_stone !== undefined ? Number(row.price_leaf_stone) : 150,
+    priceMoonStone: row.price_moon_stone !== null && row.price_moon_stone !== undefined ? Number(row.price_moon_stone) : 150,
+    raidChance: row.raid_chance !== null && row.raid_chance !== undefined ? Number(row.raid_chance) : 0.05,
+    raidBossHp: row.raid_boss_hp !== null && row.raid_boss_hp !== undefined ? Number(row.raid_boss_hp) : 5000,
+    raidRewardCoins: row.raid_reward_coins !== null && row.raid_reward_coins !== undefined ? Number(row.raid_reward_coins) : 250,
+    raidRewardXp: row.raid_reward_xp !== null && row.raid_reward_xp !== undefined ? Number(row.raid_reward_xp) : 150,
+    raidDropStoneChance: row.raid_drop_stone_chance !== null && row.raid_drop_stone_chance !== undefined ? Number(row.raid_drop_stone_chance) : 0.15
   };
 }
 
@@ -855,8 +1109,20 @@ async function saveStreamerConfig(streamerId, config) {
          spawn_card_scale = $18, spawn_card_position = $19, show_card_sprite = $20,
          show_card_types = $21, show_card_instructions = $22,
          twitch_channel = $23, obs_websocket_url = $24, spawn_target = $25,
-         youtube_api_key = $26
-     WHERE channel_id = $27`,
+         youtube_api_key = $26,
+         spawn_card_left = $27, spawn_card_right = $28, spawn_card_top = $29, spawn_card_bottom = $30,
+         ticker_position = $31, ticker_left = $32, ticker_right = $33, ticker_top = $34, ticker_bottom = $35,
+         feed_position = $36, feed_left = $37, feed_right = $38, feed_top = $39, feed_bottom = $40,
+         battle_position = $41, battle_left = $42, battle_right = $43, battle_top = $44, battle_bottom = $45,
+         show_leaderboard = $46,
+         coins_capture_normal = $47, coins_capture_shiny = $48, xp_capture_normal = $49, xp_capture_shiny = $50,
+         level_up_coins = $51, level_up_greatballs = $52, level_up_ultraballs = $53,
+         catch_multiplier_pokeball = $54, catch_multiplier_greatball = $55, catch_multiplier_ultraball = $56,
+         price_pokeball = $57, price_greatball = $58, price_ultraball = $59, price_masterball = $60,
+         catch_multiplier_normal = $61, catch_multiplier_rare = $62, catch_multiplier_legendary = $63,
+         price_pack_kanto = $64, price_pack_johto = $65, price_pack_legendary = $66,
+         raid_chance = $67, raid_boss_hp = $68, raid_reward_coins = $69, raid_reward_xp = $70, raid_drop_stone_chance = $71
+     WHERE channel_id = $72`,
     [
       config.videoId || '',
       config.spawnIntervalMs,
@@ -871,7 +1137,7 @@ async function saveStreamerConfig(streamerId, config) {
       config.liveFeedTitle || 'LIVE GAME FEED',
       config.showSpawnAlert !== false,
       config.spawnAlertTitle || 'WILD SPAWN',
-      config.spawnCatchGuide || 'Type catch in chat!',
+      config.spawnCatchGuide || 'Type !catch in chat!',
       config.showBattleArena !== false,
       config.primaryColor || '#3b82f6',
       config.customCss || '',
@@ -884,6 +1150,61 @@ async function saveStreamerConfig(streamerId, config) {
       config.obsWebsocketUrl || '',
       config.spawnTarget || '',
       config.youtubeApiKey || '',
+      config.spawnCardLeft || '',
+      config.spawnCardRight || '',
+      config.spawnCardTop || '',
+      config.spawnCardBottom || '',
+      config.tickerPosition || 'top-left',
+      config.tickerLeft || '',
+      config.tickerRight || '',
+      config.tickerTop || '',
+      config.tickerBottom || '',
+      config.feedPosition || 'top-right',
+      config.feedLeft || '',
+      config.feedRight || '',
+      config.feedTop || '',
+      config.feedBottom || '',
+      config.battlePosition || 'center',
+      config.battleLeft || '',
+      config.battleRight || '',
+      config.battleTop || '',
+      config.battleBottom || '',
+      config.showLeaderboard !== false,
+      config.coinsCaptureNormal !== undefined ? config.coinsCaptureNormal : 20,
+      config.coinsCaptureShiny !== undefined ? config.coinsCaptureShiny : 100,
+      config.xpCaptureNormal !== undefined ? config.xpCaptureNormal : 15,
+      config.xpCaptureShiny !== undefined ? config.xpCaptureShiny : 50,
+      config.levelUpCoins !== undefined ? config.levelUpCoins : 100,
+      config.levelUpGreatballs !== undefined ? config.levelUpGreatballs : 3,
+      config.levelUpUltraballs !== undefined ? config.levelUpUltraballs : 1,
+      config.catchMultiplierPokeball !== undefined ? config.catchMultiplierPokeball : 1.0,
+      config.catchMultiplierGreatball !== undefined ? config.catchMultiplierGreatball : 1.5,
+      config.catchMultiplierUltraball !== undefined ? config.catchMultiplierUltraball : 2.0,
+      config.pricePokeball !== undefined ? config.pricePokeball : 10,
+      config.priceGreatball !== undefined ? config.priceGreatball : 30,
+      config.priceUltraball !== undefined ? config.priceUltraball : 80,
+      config.priceMasterball !== undefined ? config.priceMasterball : 250,
+      config.catchMultiplierNormal !== undefined ? config.catchMultiplierNormal : 1.0,
+      config.catchMultiplierRare !== undefined ? config.catchMultiplierRare : 1.0,
+      config.catchMultiplierLegendary !== undefined ? config.catchMultiplierLegendary : 1.0,
+      config.pricePackKanto !== undefined ? config.pricePackKanto : 150,
+      config.pricePackJohto !== undefined ? config.pricePackJohto : 150,
+      config.pricePackHoenn !== undefined ? config.pricePackHoenn : 150,
+      config.pricePackSinnoh !== undefined ? config.pricePackSinnoh : 150,
+      config.pricePackUnova !== undefined ? config.pricePackUnova : 150,
+      config.pricePackKalos !== undefined ? config.pricePackKalos : 150,
+      config.pricePackAlola !== undefined ? config.pricePackAlola : 150,
+      config.pricePackLegendary !== undefined ? config.pricePackLegendary : 500,
+      config.priceFireStone !== undefined ? config.priceFireStone : 150,
+      config.priceWaterStone !== undefined ? config.priceWaterStone : 150,
+      config.priceThunderStone !== undefined ? config.priceThunderStone : 150,
+      config.priceLeafStone !== undefined ? config.priceLeafStone : 150,
+      config.priceMoonStone !== undefined ? config.priceMoonStone : 150,
+      config.raidChance !== undefined ? config.raidChance : 0.05,
+      config.raidBossHp !== undefined ? config.raidBossHp : 5000,
+      config.raidRewardCoins !== undefined ? config.raidRewardCoins : 250,
+      config.raidRewardXp !== undefined ? config.raidRewardXp : 150,
+      config.raidDropStoneChance !== undefined ? config.raidDropStoneChance : 0.15,
       streamer
     ]
   );
@@ -963,4 +1284,139 @@ module.exports = {
   saveStreamerConfig,
   resetDatabase,
   getAllPlayers
+};
+
+/**
+ * Swaps ownership of two Pokémon instances between two players.
+ */
+async function swapPokemonOwnership(streamerId, playerA, instanceIdA, playerB, instanceIdB) {
+  const streamer = streamerId.toLowerCase().trim();
+  const usernameA = playerA.toLowerCase().trim();
+  const usernameB = playerB.toLowerCase().trim();
+  
+  if (useLocalFallback) {
+    const userA = await getUser(streamerId, usernameA);
+    const userB = await getUser(streamerId, usernameB);
+    
+    const pokeIndexA = userA.inventory.findIndex(p => p.instanceId === instanceIdA);
+    const pokeIndexB = userB.inventory.findIndex(p => p.instanceId === instanceIdB);
+    
+    if (pokeIndexA === -1 || pokeIndexB === -1) {
+      throw new Error("One or both Pokémon not found in player inventories.");
+    }
+    
+    const pokeA = userA.inventory.splice(pokeIndexA, 1)[0];
+    const pokeB = userB.inventory.splice(pokeIndexB, 1)[0];
+    
+    userA.inventory.push(pokeB);
+    userB.inventory.push(pokeA);
+    
+    // Clear buddies or active if traded
+    if (userA.buddyInstanceId === instanceIdA) userA.buddyInstanceId = null;
+    if (userA.activePokemonId === instanceIdA) userA.activePokemonId = userA.inventory[0]?.instanceId || null;
+    if (userB.buddyInstanceId === instanceIdB) userB.buddyInstanceId = null;
+    if (userB.activePokemonId === instanceIdB) userB.activePokemonId = userB.inventory[0]?.instanceId || null;
+    
+    await saveUser(streamerId, userA);
+    await saveUser(streamerId, userB);
+    return;
+  }
+  
+  // PostgreSQL version
+  const userA = await getUser(streamerId, usernameA);
+  const userB = await getUser(streamerId, usernameB);
+  
+  await query(
+    'UPDATE inventories SET username = $1 WHERE streamer_id = $2 AND instance_id = $3',
+    [usernameB, streamer, instanceIdA]
+  );
+  await query(
+    'UPDATE inventories SET username = $1 WHERE streamer_id = $2 AND instance_id = $3',
+    [usernameA, streamer, instanceIdB]
+  );
+  
+  // Clear buddies or active in players table if traded
+  if (userA.buddyInstanceId === instanceIdA) {
+    await query('UPDATE players SET buddy_instance_id = NULL WHERE streamer_id = $1 AND username = $2', [streamer, usernameA]);
+  }
+  if (userA.activePokemonId === instanceIdA) {
+    const nextActive = (await query('SELECT instance_id FROM inventories WHERE streamer_id = $1 AND username = $2 LIMIT 1', [streamer, usernameA])).rows[0]?.instance_id || null;
+    await query('UPDATE players SET active_pokemon_id = $1 WHERE streamer_id = $2 AND username = $3', [nextActive, streamer, usernameA]);
+  }
+  
+  if (userB.buddyInstanceId === instanceIdB) {
+    await query('UPDATE players SET buddy_instance_id = NULL WHERE streamer_id = $1 AND username = $2', [streamer, usernameB]);
+  }
+  if (userB.activePokemonId === instanceIdB) {
+    const nextActive = (await query('SELECT instance_id FROM inventories WHERE streamer_id = $1 AND username = $2 LIMIT 1', [streamer, usernameB])).rows[0]?.instance_id || null;
+    await query('UPDATE players SET active_pokemon_id = $1 WHERE streamer_id = $2 AND username = $3', [nextActive, streamer, usernameB]);
+  }
+}
+
+/**
+ * Forcefully evolves a Pokémon instance to a new ID, name, types, and stats.
+ */
+async function evolvePokemon(streamerId, username, instanceId, newPokemonData) {
+  const streamer = streamerId.toLowerCase().trim();
+  const key = username.toLowerCase().trim();
+  
+  const name = newPokemonData.shiny ? `✨ Shiny ${newPokemonData.name}` : newPokemonData.name;
+  const hp = newPokemonData.stats ? newPokemonData.stats.hp : newPokemonData.baseStats.hp;
+  const attack = newPokemonData.stats ? newPokemonData.stats.attack : newPokemonData.baseStats.attack;
+  const defense = newPokemonData.stats ? newPokemonData.stats.defense : newPokemonData.baseStats.defense;
+  const speed = newPokemonData.stats ? newPokemonData.stats.speed : newPokemonData.baseStats.speed;
+  const types = newPokemonData.types;
+  
+  if (useLocalFallback) {
+    const user = await getUser(streamerId, username);
+    const poke = user.inventory.find(p => p.instanceId === instanceId);
+    if (!poke) throw new Error("Pokémon not found in inventory.");
+    
+    poke.pokemonId = newPokemonData.id;
+    poke.originalName = newPokemonData.name;
+    poke.name = name;
+    poke.types = types;
+    poke.baseStats = { hp, attack, defense, speed };
+    poke.currentStage += 1;
+    
+    await saveUser(streamerId, user);
+    return poke;
+  }
+  
+  // PostgreSQL version
+  await query(
+    `UPDATE inventories 
+     SET pokemon_id = $1, pokemon_name = $2, types = $3, 
+         base_hp = $4, base_atk = $5, base_def = $6, base_spd = $7,
+         current_stage = current_stage + 1
+     WHERE streamer_id = $8 AND username = $9 AND instance_id = $10`,
+    [newPokemonData.id, name, types, hp, attack, defense, speed, streamer, key, instanceId]
+  );
+  
+  return {
+    instanceId,
+    pokemonId: newPokemonData.id,
+    name,
+    originalName: newPokemonData.name,
+    types,
+    baseStats: { hp, attack, defense, speed },
+    shiny: newPokemonData.shiny,
+    currentStage: 2 // placeholder incremental
+  };
+}
+
+module.exports = {
+  getUser,
+  saveUser,
+  addPokemon,
+  selectActivePokemon,
+  addWin,
+  claimDaily,
+  getLeaderboard,
+  getStreamerConfig,
+  saveStreamerConfig,
+  resetDatabase,
+  getAllPlayers,
+  swapPokemonOwnership,
+  evolvePokemon
 };

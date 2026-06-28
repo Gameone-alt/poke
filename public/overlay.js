@@ -3,7 +3,7 @@ const urlParams = new URLSearchParams(window.location.search);
 const channelId = urlParams.get('channel') || 'simulator';
 
 // Backend URL: empty on localhost (same-origin Express), Render URL in production
-const BACKEND_URL = window.location.origin.includes('localhost') ? '' : 'https://pokemon-overlay-backend-hfpf.onrender.com';
+const BACKEND_URL = window.location.origin.includes('localhost') ? '' : window.location.origin;
 const socket = io(BACKEND_URL, {
   query: { channelId }
 });
@@ -121,7 +121,7 @@ function applyConfig(config) {
     if (audio) audio.volume = volume;
   });
 
-  // 3. Live Game Feed Visibility & Header Title
+  // 3. Live Game Feed Visibility, Header Title & Positioning
   const feedContainer = document.getElementById('game-feed-container');
   if (feedContainer) {
     if (config.showLiveFeed === false) {
@@ -132,6 +132,105 @@ function applyConfig(config) {
     const feedHeader = feedContainer.querySelector('.feed-header');
     if (feedHeader) {
       feedHeader.textContent = config.liveFeedTitle || 'LIVE GAME FEED';
+    }
+    
+    // Positioning
+    const feedPos = config.feedPosition || 'top-right';
+    feedContainer.style.top = '';
+    feedContainer.style.bottom = '';
+    feedContainer.style.left = '';
+    feedContainer.style.right = '';
+    
+    if (feedPos === 'custom') {
+      feedContainer.style.top = config.feedTop || 'auto';
+      feedContainer.style.bottom = config.feedBottom || 'auto';
+      feedContainer.style.left = config.feedLeft || 'auto';
+      feedContainer.style.right = config.feedRight || 'auto';
+    } else {
+      if (feedPos === 'top-right') {
+        feedContainer.style.top = '15px';
+        feedContainer.style.right = '15px';
+      } else if (feedPos === 'top-left') {
+        feedContainer.style.top = '15px';
+        feedContainer.style.left = '15px';
+      } else if (feedPos === 'bottom-right') {
+        feedContainer.style.bottom = '15px';
+        feedContainer.style.right = '15px';
+      } else if (feedPos === 'bottom-left') {
+        feedContainer.style.bottom = '15px';
+        feedContainer.style.left = '15px';
+      }
+    }
+  }
+
+  // 3.5. Leaderboard Ticker Positioning
+  const tickerBar = document.getElementById('leaderboard-ticker-bar');
+  if (tickerBar) {
+    if (config.showLeaderboard === false) {
+      tickerBar.classList.add('ticker-hidden');
+    } else {
+      tickerBar.classList.remove('ticker-hidden');
+      
+      const tickerPos = config.tickerPosition || 'top-left';
+      tickerBar.style.top = '';
+      tickerBar.style.bottom = '';
+      tickerBar.style.left = '';
+      tickerBar.style.right = '';
+      
+      if (tickerPos === 'custom') {
+        tickerBar.style.top = config.tickerTop || 'auto';
+        tickerBar.style.bottom = config.tickerBottom || 'auto';
+        tickerBar.style.left = config.tickerLeft || 'auto';
+        tickerBar.style.right = config.tickerRight || 'auto';
+      } else {
+        if (tickerPos === 'top-left') {
+          tickerBar.style.top = '15px';
+          tickerBar.style.left = '15px';
+        } else if (tickerPos === 'top-right') {
+          tickerBar.style.top = '15px';
+          tickerBar.style.right = '15px';
+        } else if (tickerPos === 'bottom-left') {
+          tickerBar.style.bottom = '15px';
+          tickerBar.style.left = '15px';
+        } else if (tickerPos === 'bottom-right') {
+          tickerBar.style.bottom = '15px';
+          tickerBar.style.right = '15px';
+        }
+      }
+    }
+  }
+
+  // 3.8. Battle Arena Positioning Setup
+  if (battleOverlay) {
+    const battlePos = config.battlePosition || 'center';
+    battleOverlay.style.top = '';
+    battleOverlay.style.bottom = '';
+    battleOverlay.style.left = '';
+    battleOverlay.style.right = '';
+    battleOverlay.style.transform = '';
+    
+    if (battlePos === 'custom') {
+      battleOverlay.style.top = config.battleTop || 'auto';
+      battleOverlay.style.bottom = config.battleBottom || 'auto';
+      battleOverlay.style.left = config.battleLeft || 'auto';
+      battleOverlay.style.right = config.battleRight || 'auto';
+      if (config.battleLeft && config.battleLeft !== 'auto' && config.battleTop && config.battleTop !== 'auto') {
+        battleOverlay.style.transform = 'translate(-50%, -50%)';
+      }
+    } else {
+      if (battlePos === 'center') {
+        battleOverlay.style.top = '50%';
+        battleOverlay.style.left = '50%';
+        battleOverlay.style.transform = 'translate(-50%, -50%)';
+      } else if (battlePos === 'top') {
+        battleOverlay.style.top = '15px';
+        battleOverlay.style.left = '50%';
+        battleOverlay.style.transform = 'translateX(-50%)';
+      } else if (battlePos === 'bottom') {
+        battleOverlay.style.bottom = '15px';
+        battleOverlay.style.left = '50%';
+        battleOverlay.style.transform = 'translateX(-50%)';
+      }
     }
   }
 
@@ -154,14 +253,27 @@ function applyConfig(config) {
     const positionClasses = ['pos-bottom-left', 'pos-bottom-right', 'pos-top-left', 'pos-top-right', 'pos-center'];
     positionClasses.forEach(cls => wildSpawnContainer.classList.remove(cls));
     const pos = config.spawnCardPosition || 'bottom-left';
-    wildSpawnContainer.classList.add(`pos-${pos}`);
-
+    
     // Scaling
     const scale = config.spawnCardScale !== undefined ? config.spawnCardScale : 1.0;
-    if (pos === 'center') {
-      wildSpawnContainer.style.transform = `translate(-50%, -50%) scale(${scale})`;
-    } else {
+    
+    if (pos === 'custom') {
+      wildSpawnContainer.style.top = config.spawnCardTop || 'auto';
+      wildSpawnContainer.style.bottom = config.spawnCardBottom || 'auto';
+      wildSpawnContainer.style.left = config.spawnCardLeft || 'auto';
+      wildSpawnContainer.style.right = config.spawnCardRight || 'auto';
       wildSpawnContainer.style.transform = `scale(${scale})`;
+    } else {
+      wildSpawnContainer.style.top = '';
+      wildSpawnContainer.style.bottom = '';
+      wildSpawnContainer.style.left = '';
+      wildSpawnContainer.style.right = '';
+      wildSpawnContainer.classList.add(`pos-${pos}`);
+      if (pos === 'center') {
+        wildSpawnContainer.style.transform = `translate(-50%, -50%) scale(${scale})`;
+      } else {
+        wildSpawnContainer.style.transform = `scale(${scale})`;
+      }
     }
 
     // Sprite Visibility
@@ -584,6 +696,24 @@ socket.on('player_level_up', (data) => {
     infoText.innerHTML = `<span class="cmd-text">@${data.displayName}</span> reached Trainer Level <span class="cmd-text">${data.level}</span>!`;
   }
   
+  const rewardText = document.getElementById('lvl-reward-text');
+  if (rewardText) {
+    const gb = data.greatballsReward !== undefined ? data.greatballsReward : 3;
+    const ub = data.ultraballsReward !== undefined ? data.ultraballsReward : 1;
+    const coins = data.coinsReward !== undefined ? data.coinsReward : 100;
+    
+    const parts = [];
+    if (gb > 0) parts.push(`${gb} Great Ball${gb !== 1 ? 's' : ''}`);
+    if (ub > 0) parts.push(`${ub} Ultra Ball${ub !== 1 ? 's' : ''}`);
+    if (coins > 0) parts.push(`${coins} Coin${coins !== 1 ? 's' : ''}`);
+    
+    if (parts.length > 0) {
+      rewardText.textContent = `Received: ${parts.join(', ')}!`;
+    } else {
+      rewardText.textContent = '';
+    }
+  }
+  
   const levelupOverlay = document.getElementById('levelup-overlay');
   if (levelupOverlay) {
     levelupOverlay.classList.remove('hidden');
@@ -591,6 +721,155 @@ socket.on('player_level_up', (data) => {
       levelupOverlay.classList.add('hidden');
     }, 5000);
   }
+});
+
+// Gacha Pack Opening Socket Event
+socket.on('gacha_pack_opened', (data) => {
+  playSound(sfxSpawn);
+  const overlay = document.getElementById('gacha-overlay');
+  const pack = document.getElementById('gacha-pack-element');
+  const container = document.getElementById('gacha-cards-container');
+  
+  if (!overlay || !pack || !container) return;
+  
+  overlay.classList.remove('hidden');
+  pack.classList.remove('tear-open');
+  pack.classList.remove('hidden');
+  container.classList.add('hidden');
+  container.innerHTML = '';
+  
+  // Wait 1.5s then tear open the pack
+  setTimeout(() => {
+    playSound(sfxHit);
+    pack.classList.add('tear-open');
+    
+    // Hide pack and show cards deal
+    setTimeout(() => {
+      pack.classList.add('hidden');
+      container.classList.remove('hidden');
+      
+      // Deal 3 cards
+      data.cards.forEach((card, idx) => {
+        const cardDiv = document.createElement('div');
+        cardDiv.className = `gacha-card deal-${idx+1}`;
+        
+        const typeBadges = card.types.map(t => `<span class="type-badge type-${t.toLowerCase()}" style="font-size: 8px;">${t}</span>`).join(' ');
+        const shinySpark = card.shiny ? '<span class="shiny-sparkle">✨</span>' : '';
+        const sprite = getSafeSprite(card.spriteUrl, card.fallbackSpriteUrl);
+        
+        cardDiv.innerHTML = `
+          <div class="gacha-card-inner">
+            <div class="gacha-card-front">❓</div>
+            <div class="gacha-card-back">
+              <img src="${sprite}" class="gacha-card-sprite">
+              <div class="gacha-card-name">${shinySpark}${card.name}</div>
+              <div class="gacha-card-types">${typeBadges}</div>
+            </div>
+          </div>
+        `;
+        
+        cardDiv.addEventListener('click', () => {
+          if (!cardDiv.classList.contains('reveal')) {
+            playSound(sfxThrow);
+            cardDiv.classList.add('reveal');
+          }
+        });
+        
+        container.appendChild(cardDiv);
+        
+        // Auto-reveal delay
+        setTimeout(() => {
+          if (!cardDiv.classList.contains('reveal')) {
+            playSound(sfxThrow);
+            cardDiv.classList.add('reveal');
+          }
+        }, 1500 + idx * 1000);
+      });
+      
+      // Close overlay after 7.5 seconds
+      setTimeout(() => {
+        overlay.classList.add('hidden');
+      }, 7500);
+      
+    }, 500);
+    
+  }, 1800);
+});
+
+// Boss Raid Events
+socket.on('raid_start', (data) => {
+  playSound(sfxSpawn);
+  const raidOverlay = document.getElementById('raid-overlay');
+  const sprite = document.getElementById('raid-boss-sprite');
+  const name = document.getElementById('raid-boss-name');
+  const hpFill = document.getElementById('raid-hp-fill');
+  const hpText = document.getElementById('raid-hp-text');
+  const list = document.getElementById('raid-contrib-list');
+  
+  if (!raidOverlay || !sprite || !name || !hpFill || !hpText || !list) return;
+  
+  sprite.src = getSafeSprite(data.spriteUrl, data.fallbackSpriteUrl);
+  name.textContent = data.name;
+  hpFill.style.width = '100%';
+  hpText.textContent = `${data.maxHp} / ${data.maxHp} HP`;
+  list.innerHTML = '<div style="color: #94a3b8; font-style: italic;">Attackers joining...</div>';
+  
+  raidOverlay.classList.remove('hidden');
+});
+
+socket.on('raid_hit', (data) => {
+  playSound(sfxHit);
+  const hpFill = document.getElementById('raid-hp-fill');
+  const hpText = document.getElementById('raid-hp-text');
+  const list = document.getElementById('raid-contrib-list');
+  
+  if (hpFill && hpText) {
+    const percent = (data.currentHp / data.maxHp) * 100;
+    hpFill.style.width = `${percent}%`;
+    hpText.textContent = `${data.currentHp} / ${data.maxHp} HP`;
+  }
+  
+  if (list && data.currentHp > 0) {
+    // We don't have full participants data on hit inside this payload, but let's draw damage hit log
+    list.innerHTML = `<div style="color: #e11d48; font-weight: 600;">💥 @${data.displayName}'s ${data.pokemonName} hit for ${data.damage}!</div>`;
+  }
+  
+  const card = document.querySelector('.raid-card');
+  if (card) {
+    card.style.borderColor = '#ffffff';
+    setTimeout(() => {
+      card.style.borderColor = 'rgba(225, 29, 72, 0.4)';
+    }, 150);
+  }
+});
+
+socket.on('raid_end', (data) => {
+  const hpFill = document.getElementById('raid-hp-fill');
+  const hpText = document.getElementById('raid-hp-text');
+  const list = document.getElementById('raid-contrib-list');
+  
+  if (data.victory) {
+    playSound(sfxEvolve);
+    if (hpFill && hpText) {
+      hpFill.style.width = '0%';
+      hpText.textContent = 'DEFEATED!';
+    }
+    if (list) {
+      list.innerHTML = `<div style="color: #10b981; font-weight: 700;">🏆 Raid Defeated! Chat Wins!</div>`;
+    }
+  } else {
+    playSound(sfxCatchFail);
+    if (list) {
+      list.innerHTML = `<div style="color: #64748b; font-style: italic;">Boss fled...</div>`;
+    }
+  }
+  
+  setTimeout(() => {
+    const raidOverlay = document.getElementById('raid-overlay');
+    if (raidOverlay) {
+      raidOverlay.classList.add('hidden');
+    }
+  }, 4000);
 });
 
 // Marquee Leaderboard Ticker Logic
@@ -602,6 +881,11 @@ function updateMarqueeTicker(leaderboard) {
   const tickerContent = document.getElementById('ticker-content');
   
   if (!tickerBar || !tickerContent) return;
+  
+  if (currentOverlayConfig.showLeaderboard === false) {
+    tickerBar.classList.add('ticker-hidden');
+    return;
+  }
   
   if (!leaderboard || leaderboard.length === 0) {
     tickerBar.classList.add('ticker-hidden');

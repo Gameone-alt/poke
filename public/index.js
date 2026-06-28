@@ -1,5 +1,5 @@
 // Backend URL: empty on localhost (same-origin Express), Render URL in production
-const BACKEND_URL = window.location.origin.includes('localhost') ? '' : 'https://pokemon-overlay-backend-hfpf.onrender.com';
+const BACKEND_URL = window.location.origin.includes('localhost') ? '' : window.location.origin;
 
 // DOM References
 const tabLogin = document.getElementById('tab-login');

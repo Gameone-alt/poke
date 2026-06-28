@@ -9,10 +9,21 @@ public class CPHInline
     {
         try
         {
-            // 1. Retrieve message, user ID, and username from YouTube chat event variables
+            // 1. Retrieve message, user ID, and username from chat event variables
             if (!CPH.TryGetArg("message", out string messageText)) return true;
             if (!CPH.TryGetArg("user", out string username)) return true;
             if (!CPH.TryGetArg("userName", out string displayName)) displayName = username;
+
+            // 1.5. Detect Platform (Twitch vs YouTube)
+            string platform = "twitch"; // Default to Twitch
+            if (CPH.TryGetArg("platform", out string plat))
+            {
+                platform = plat.ToLower();
+            }
+            else if (CPH.VarExists("youtubeUser") || CPH.VarExists("youtubeEvent") || (CPH.TryGetArg("eventSource", out string source) && source.ToLower().Contains("youtube")))
+            {
+                platform = "youtube";
+            }
 
             // 2. Retrieve streamer channel slug
             if (!CPH.TryGetArg("pokemonChannelSlug", out string channelSlug))
@@ -47,13 +58,27 @@ public class CPHInline
                 string reply = ExtractJsonValue(response, "reply");
                 if (!string.IsNullOrEmpty(reply))
                 {
-                    if (useBotAccount)
+                    if (platform == "youtube")
                     {
-                        CPH.SendYouTubeMessage(reply, true);
+                        if (useBotAccount)
+                        {
+                            CPH.SendYouTubeMessage(reply, true);
+                        }
+                        else
+                        {
+                            CPH.SendYouTubeMessage(reply);
+                        }
                     }
-                    else
+                    else // Twitch
                     {
-                        CPH.SendYouTubeMessage(reply);
+                        if (useBotAccount)
+                        {
+                            CPH.SendChatMessage(reply, true);
+                        }
+                        else
+                        {
+                            CPH.SendChatMessage(reply);
+                        }
                     }
                 }
             }

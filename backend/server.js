@@ -54,6 +54,38 @@ app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'dashboard.html'));
 });
 
+app.get('/trainer/:channel/:username', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'profile.html'));
+});
+
+app.get('/api/trainer/:channel/:username', async (req, res) => {
+  const channel = req.params.channel.toLowerCase().trim();
+  const username = req.params.username.toLowerCase().trim();
+  try {
+    const user = await db.getUser(channel, username);
+    res.status(200).json(user);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/trigger-raid', async (req, res) => {
+  const { channelId, bossName, password } = req.body;
+  if (!channelId) {
+    return res.status(400).json({ error: 'Missing channelId' });
+  }
+  const session = getOrCreateSession(channelId.toLowerCase().trim());
+  if (session.config.adminPassword && password !== session.config.adminPassword) {
+    return res.status(401).json({ error: 'Unauthorized: Incorrect password' });
+  }
+  try {
+    await triggerBossRaid(channelId.toLowerCase().trim(), bossName);
+    res.status(200).json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // HTTP POST endpoint for external chat relays (like Streamer.bot C# actions)
 app.post('/api/chat', async (req, res) => {
   const { channelId, username, displayName, messageText } = req.body;
@@ -90,6 +122,35 @@ function loadPokemonDb() {
 }
 loadPokemonDb();
 
+const STONE_EVOLUTIONS = {
+  pikachu: { stone: 'thunder_stone', result: 'raichu' },
+  eevee: {
+    fire_stone: 'flareon',
+    water_stone: 'vaporeon',
+    thunder_stone: 'jolteon'
+  },
+  gloom: { stone: 'leaf_stone', result: 'vileplume' },
+  clefairy: { stone: 'moon_stone', result: 'clefable' },
+  jigglypuff: { stone: 'moon_stone', result: 'wigglytuff' },
+  nidorina: { stone: 'moon_stone', result: 'nidoqueen' },
+  nidorino: { stone: 'moon_stone', result: 'nidoking' },
+  growlithe: { stone: 'fire_stone', result: 'arcanine' },
+  vulpix: { stone: 'fire_stone', result: 'ninetales' },
+  shellder: { stone: 'water_stone', result: 'cloyster' },
+  staryu: { stone: 'water_stone', result: 'starmie' }
+};
+
+function findPokemonByName(name) {
+  const cleanName = name.toLowerCase().trim();
+  const keys = Object.keys(pokemonDb);
+  for (let k of keys) {
+    if (pokemonDb[k].name.toLowerCase() === cleanName) {
+      return pokemonDb[k];
+    }
+  }
+  return null;
+}
+
 // Active multi-tenant sessions: Map<channelId, SessionState>
 const activeSessions = new Map();
 
@@ -106,6 +167,8 @@ function getOrCreateSession(channelId) {
       spawnIntervalTimer: null,
       activeChallenge: null,
       activeBattle: null,
+      activeTrade: null,
+      activeRaidBoss: null,
       config: {
         channelId: cid,
         videoId: '',
@@ -149,9 +212,69 @@ function sendGameLog(channelId, type, text) {
   });
 }
 
+// Trigger a Gigantamax Boss Raid
+async function triggerBossRaid(channelId, customBossName = null) {
+  const session = getOrCreateSession(channelId);
+  if (session.activeRaidBoss) return; // Raid already active
+  
+  const candidates = Object.values(pokemonDb).filter(p => p.stats && p.stats.hp >= 60);
+  if (candidates.length === 0) return;
+  
+  let boss = candidates[Math.floor(Math.random() * candidates.length)];
+  if (customBossName) {
+    const matched = findPokemonByName(customBossName);
+    if (matched) boss = matched;
+  }
+  
+  const isShiny = Math.random() < 0.05; // 5% shiny raid boss chance!
+  const bossName = isShiny ? `✨ Gigantamax Shiny ${boss.name}` : `Gigantamax ${boss.name}`;
+  
+  const maxHp = session.config.raidBossHp !== undefined ? Number(session.config.raidBossHp) : 5000;
+  
+  session.activeRaidBoss = {
+    id: boss.id,
+    name: bossName,
+    maxHp,
+    currentHp: maxHp,
+    shiny: isShiny,
+    spriteUrl: isShiny ? boss.shinySpriteUrl : boss.spriteUrl,
+    fallbackSpriteUrl: isShiny ? boss.fallbackShinySpriteUrl : boss.fallbackSpriteUrl,
+    participants: {}
+  };
+  
+  session.activeWildPokemon = null;
+  if (session.wildDespawnTimer) clearTimeout(session.wildDespawnTimer);
+  io.to(channelId).emit('pokemon_despawned');
+  
+  io.to(channelId).emit('raid_start', {
+    name: bossName,
+    maxHp,
+    spriteUrl: session.activeRaidBoss.spriteUrl,
+    fallbackSpriteUrl: session.activeRaidBoss.fallbackSpriteUrl
+  });
+  
+  const msg = `🚨 BOSS RAID ALERT! A giant ${bossName} has appeared with ${maxHp} HP! Type !attack to damage it using your buddy Pokémon!`;
+  sendGameLog(channelId, 'system', msg);
+  
+  session.wildDespawnTimer = setTimeout(() => {
+    if (session.activeRaidBoss) {
+      const escapeMsg = `💨 The Raid Boss ${session.activeRaidBoss.name} fled...`;
+      sendGameLog(channelId, 'system', escapeMsg);
+      io.to(channelId).emit('raid_end', { victory: false, message: escapeMsg });
+      session.activeRaidBoss = null;
+    }
+  }, 5 * 60 * 1000);
+}
+
 // Spawn Wild Pokémon for a specific session
 async function spawnWildPokemon(channelId) {
   const session = getOrCreateSession(channelId);
+  
+  const raidChance = session.config.raidChance !== undefined ? Number(session.config.raidChance) : 0.05;
+  if (!session.activeRaidBoss && Math.random() < raidChance && !session.config.spawnTarget) {
+    await triggerBossRaid(channelId);
+    return;
+  }
   const pokemonIds = Object.keys(pokemonDb);
   if (pokemonIds.length === 0) {
     console.warn(`[Game Loop] [${channelId}] Cannot spawn: Pokemon database is empty.`);
@@ -214,7 +337,7 @@ async function spawnWildPokemon(channelId) {
     catchRate: session.activeWildPokemon.catchRate
   });
 
-  sendGameLog(channelId, 'spawn', `🌟 A wild ${isShiny ? '✨ Shiny ' : ''}${basePoke.name} has spawned! Type 'catch' to capture it!`);
+  sendGameLog(channelId, 'spawn', `🌟 A wild ${isShiny ? '✨ Shiny ' : ''}${basePoke.name} has spawned! Type '!catch' to capture it!`);
 
   // Set despawn timer
   session.wildDespawnTimer = setTimeout(() => {
@@ -443,6 +566,8 @@ async function runBattle(channelId, playerA, playerB) {
  */
 async function addXPAndCoins(channelId, username, displayName, xpAmount, coinsAmount) {
   try {
+    const session = getOrCreateSession(channelId);
+    const config = session.config;
     const user = await db.getUser(channelId, username, displayName);
     user.xp += xpAmount;
     user.coins += coinsAmount;
@@ -454,10 +579,14 @@ async function addXPAndCoins(channelId, username, displayName, xpAmount, coinsAm
       user.level += 1;
       leveledUp = true;
       
-      // Level up rewards: 3 Great Balls, 1 Ultra Ball, 100 coins
-      user.balls.greatball += 3;
-      user.balls.ultraball += 1;
-      user.coins += 100;
+      // Level up rewards:Great Balls, Ultra Ball, coins (dynamic from config)
+      const gbReward = config.levelUpGreatballs !== undefined ? config.levelUpGreatballs : 3;
+      const ubReward = config.levelUpUltraballs !== undefined ? config.levelUpUltraballs : 1;
+      const coinsReward = config.levelUpCoins !== undefined ? config.levelUpCoins : 100;
+      
+      user.balls.greatball += gbReward;
+      user.balls.ultraball += ubReward;
+      user.coins += coinsReward;
     }
     
     await db.saveUser(channelId, user);
@@ -465,13 +594,19 @@ async function addXPAndCoins(channelId, username, displayName, xpAmount, coinsAm
     io.to(channelId).emit('balls_updated', { username, balls: user.balls });
     
     if (leveledUp) {
-      const lvlMsg = `⭐ LEVEL UP! @${user.displayName} reached Trainer Level ${user.level}! Received: 3 Great Balls, 1 Ultra Ball, 100 Coins.`;
+      const gbReward = config.levelUpGreatballs !== undefined ? config.levelUpGreatballs : 3;
+      const ubReward = config.levelUpUltraballs !== undefined ? config.levelUpUltraballs : 1;
+      const coinsReward = config.levelUpCoins !== undefined ? config.levelUpCoins : 100;
+      
+      const lvlMsg = `⭐ LEVEL UP! @${user.displayName} reached Trainer Level ${user.level}! Received: ${gbReward} Great Balls, ${ubReward} Ultra Balls, ${coinsReward} Coins.`;
       sendGameLog(channelId, 'system', lvlMsg);
       io.to(channelId).emit('player_level_up', {
         username: user.username,
         displayName: user.displayName,
         level: user.level,
-        coinsReward: 100
+        coinsReward: coinsReward,
+        greatballsReward: gbReward,
+        ultraballsReward: ubReward
       });
     }
     
@@ -549,7 +684,7 @@ async function processCommand(channelId, username, displayName, messageText) {
   }
 
   // 4. !catch command
-  if (cleanMsg === '!catch' || cleanMsg === 'catch' || cleanMsg.startsWith('!catch ') || cleanMsg.startsWith('catch ')) {
+  if (cleanMsg === '!catch' || cleanMsg.startsWith('!catch ')) {
     if (!session.activeWildPokemon) {
       return `❌ @${displayName}, no wild Pokémon is active to catch right now!`;
     }
@@ -590,12 +725,22 @@ async function processCommand(channelId, username, displayName, messageText) {
     await db.saveUser(channelId, user);
 
     let multiplier = 1.0;
-    if (ballType === 'greatball') multiplier = 1.5;
-    else if (ballType === 'ultraball') multiplier = 2.0;
+    if (ballType === 'pokeball') multiplier = session.config.catchMultiplierPokeball !== undefined ? session.config.catchMultiplierPokeball : 1.0;
+    else if (ballType === 'greatball') multiplier = session.config.catchMultiplierGreatball !== undefined ? session.config.catchMultiplierGreatball : 1.5;
+    else if (ballType === 'ultraball') multiplier = session.config.catchMultiplierUltraball !== undefined ? session.config.catchMultiplierUltraball : 2.0;
     else if (ballType === 'masterball') multiplier = 100.0; // Auto-catch!
 
     const baseCatchRate = session.activeWildPokemon.catchRate;
-    const finalCatchRate = baseCatchRate * multiplier;
+    let categoryMultiplier = 1.0;
+    if (baseCatchRate <= 0.1) {
+      categoryMultiplier = session.config.catchMultiplierLegendary !== undefined ? Number(session.config.catchMultiplierLegendary) : 1.0;
+    } else if (baseCatchRate <= 0.25) {
+      categoryMultiplier = session.config.catchMultiplierRare !== undefined ? Number(session.config.catchMultiplierRare) : 1.0;
+    } else {
+      categoryMultiplier = session.config.catchMultiplierNormal !== undefined ? Number(session.config.catchMultiplierNormal) : 1.0;
+    }
+
+    const finalCatchRate = baseCatchRate * multiplier * categoryMultiplier;
     const success = Math.random() < finalCatchRate;
 
     if (success) {
@@ -604,9 +749,9 @@ async function processCommand(channelId, username, displayName, messageText) {
       const isShiny = session.activeWildPokemon.isShiny;
       await db.addPokemon(channelId, username, displayName, session.activeWildPokemon, isShiny);
       
-      // Award XP & Coins for successful catch
-      const rewardXp = isShiny ? 50 : 15;
-      const rewardCoins = isShiny ? 100 : 20;
+      // Award XP & Coins for successful catch (dynamic from config)
+      const rewardXp = isShiny ? (session.config.xpCaptureShiny !== undefined ? session.config.xpCaptureShiny : 50) : (session.config.xpCaptureNormal !== undefined ? session.config.xpCaptureNormal : 15);
+      const rewardCoins = isShiny ? (session.config.coinsCaptureShiny !== undefined ? session.config.coinsCaptureShiny : 100) : (session.config.coinsCaptureNormal !== undefined ? session.config.coinsCaptureNormal : 20);
       await addXPAndCoins(channelId, username, displayName, rewardXp, rewardCoins);
       
       io.to(channelId).emit('catch_success', {
@@ -631,7 +776,9 @@ async function processCommand(channelId, username, displayName, messageText) {
         username,
         displayName,
         pokemonName: session.activeWildPokemon.name,
-        ballType: ballType
+        ballType: ballType,
+        spriteUrl: session.activeWildPokemon.spriteUrl,
+        fallbackSpriteUrl: session.activeWildPokemon.fallbackSpriteUrl
       });
       const msg = `💨 @${displayName} threw a ${ballType} but the wild ${session.activeWildPokemon.name} broke free!`;
       sendGameLog(channelId, 'capture', msg);
@@ -785,9 +932,139 @@ async function processCommand(channelId, username, displayName, messageText) {
   }
 
   // 7. !shop / !store command
-  if (cleanMsg === '!shop' || cleanMsg === 'shop' || cleanMsg === '!store' || cleanMsg === 'store') {
-    const msg = `🛍️ Shop: Pokéball 🔴 (10c) | Great Ball 🔵 (30c) | Ultra Ball 🟡 (80c) | Master Ball 🟣 (250c). Type '!buy [ball_type] [amount]' to purchase.`;
-    io.to(channelId).emit('command_feedback', { username, text: msg });
+  if (cleanMsg.startsWith('!shop') || cleanMsg === 'shop' || cleanMsg.startsWith('!store') || cleanMsg === 'store') {
+    const parts = messageText.trim().split(/\s+/);
+    const category = parts[1] ? parts[1].toLowerCase().trim() : '';
+
+    if (category === 'balls') {
+      const pPoke = session.config.pricePokeball !== undefined ? session.config.pricePokeball : 10;
+      const pGreat = session.config.priceGreatball !== undefined ? session.config.priceGreatball : 30;
+      const pUltra = session.config.priceUltraball !== undefined ? session.config.priceUltraball : 80;
+      const pMaster = session.config.priceMasterball !== undefined ? session.config.priceMasterball : 250;
+      const msg = `🛍️ Pokéballs Shop: Pokéball 🔴 (${pPoke}c) | Great Ball 🔵 (${pGreat}c) | Ultra Ball 🟡 (${pUltra}c) | Master Ball 🟣 (${pMaster}c). Buy using '!buy [ball_type] [amount]'.`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    } else if (category === 'packs') {
+      const pKanto = session.config.pricePackKanto !== undefined ? session.config.pricePackKanto : 150;
+      const pJohto = session.config.pricePackJohto !== undefined ? session.config.pricePackJohto : 150;
+      const pHoenn = session.config.pricePackHoenn !== undefined ? session.config.pricePackHoenn : 150;
+      const pSinnoh = session.config.pricePackSinnoh !== undefined ? session.config.pricePackSinnoh : 150;
+      const pUnova = session.config.pricePackUnova !== undefined ? session.config.pricePackUnova : 150;
+      const pKalos = session.config.pricePackKalos !== undefined ? session.config.pricePackKalos : 150;
+      const pAlola = session.config.pricePackAlola !== undefined ? session.config.pricePackAlola : 150;
+      const pLegendary = session.config.pricePackLegendary !== undefined ? session.config.pricePackLegendary : 500;
+      const msg = `🛍️ Booster Packs Shop: Kanto (${pKanto}c) | Johto (${pJohto}c) | Hoenn (${pHoenn}c) | Sinnoh (${pSinnoh}c) | Unova (${pUnova}c) | Kalos (${pKalos}c) | Alola (${pAlola}c) | Legendary (${pLegendary}c). Buy using '!buy pack [type]'.`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    } else if (category === 'stones') {
+      const pFire = session.config.priceFireStone !== undefined ? session.config.priceFireStone : 150;
+      const pWater = session.config.priceWaterStone !== undefined ? session.config.priceWaterStone : 150;
+      const pThunder = session.config.priceThunderStone !== undefined ? session.config.priceThunderStone : 150;
+      const pLeaf = session.config.priceLeafStone !== undefined ? session.config.priceLeafStone : 150;
+      const pMoon = session.config.priceMoonStone !== undefined ? session.config.priceMoonStone : 150;
+      const msg = `🛍️ Evolution Stones Shop: Fire 🔥 (${pFire}c) | Water 💧 (${pWater}c) | Thunder ⚡ (${pThunder}c) | Leaf 🍃 (${pLeaf}c) | Moon 🌙 (${pMoon}c). Buy using '!buy [stone_type] [amount]'.`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    } else {
+      const msg = `🛍️ Shop Categories: '!shop balls' | '!shop packs' | '!shop stones'. Type '!buy [item] [amount]' to purchase.`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+  }
+
+  // 8.5. !buy pack [kanto/johto/hoenn/sinnoh/unova/kalos/alola/legendary] command
+  if (cleanMsg.startsWith('!buy pack ') || cleanMsg.startsWith('buy pack ')) {
+    const parts = messageText.trim().split(/\s+/);
+    if (parts.length < 3) {
+      const msg = `❌ @${displayName}, syntax: !buy pack [kanto/johto/hoenn/sinnoh/unova/kalos/alola/legendary]`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    const packType = parts[2].toLowerCase().trim();
+    let price = 150;
+    if (packType === 'kanto') {
+      price = session.config.pricePackKanto !== undefined ? Number(session.config.pricePackKanto) : 150;
+    } else if (packType === 'johto') {
+      price = session.config.pricePackJohto !== undefined ? Number(session.config.pricePackJohto) : 150;
+    } else if (packType === 'hoenn') {
+      price = session.config.pricePackHoenn !== undefined ? Number(session.config.pricePackHoenn) : 150;
+    } else if (packType === 'sinnoh') {
+      price = session.config.pricePackSinnoh !== undefined ? Number(session.config.pricePackSinnoh) : 150;
+    } else if (packType === 'unova') {
+      price = session.config.pricePackUnova !== undefined ? Number(session.config.pricePackUnova) : 150;
+    } else if (packType === 'kalos') {
+      price = session.config.pricePackKalos !== undefined ? Number(session.config.pricePackKalos) : 150;
+    } else if (packType === 'alola') {
+      price = session.config.pricePackAlola !== undefined ? Number(session.config.pricePackAlola) : 150;
+    } else if (packType === 'legendary') {
+      price = session.config.pricePackLegendary !== undefined ? Number(session.config.pricePackLegendary) : 500;
+    }
+    
+    const user = await db.getUser(channelId, username, displayName);
+    if (user.coins < price) {
+      const msg = `❌ @${displayName}, you need 🪙 ${price} coins to buy a ${packType.toUpperCase()} pack, but you only have 🪙 ${user.coins}!`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    
+    const allPokes = Object.values(pokemonDb);
+    let candidates = [];
+    if (packType === 'kanto') {
+      candidates = allPokes.filter(p => p.id >= 1 && p.id <= 151);
+    } else if (packType === 'johto') {
+      candidates = allPokes.filter(p => p.id >= 152 && p.id <= 251);
+    } else if (packType === 'hoenn') {
+      candidates = allPokes.filter(p => p.id >= 252 && p.id <= 386);
+    } else if (packType === 'sinnoh') {
+      candidates = allPokes.filter(p => p.id >= 387 && p.id <= 493);
+    } else if (packType === 'unova') {
+      candidates = allPokes.filter(p => p.id >= 494 && p.id <= 649);
+    } else if (packType === 'kalos') {
+      candidates = allPokes.filter(p => p.id >= 650 && p.id <= 721);
+    } else if (packType === 'alola') {
+      candidates = allPokes.filter(p => p.id >= 722 && p.id <= 809);
+    } else if (packType === 'legendary') {
+      candidates = allPokes.filter(p => p.catchRate <= 0.1);
+    } else {
+      const msg = `❌ @${displayName}, unknown pack type! Available: kanto, johto, hoenn, sinnoh, unova, kalos, alola, legendary.`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    
+    if (candidates.length === 0) {
+      candidates = allPokes;
+    }
+    
+    const cards = [];
+    for (let i = 0; i < 3; i++) {
+      const randomPoke = candidates[Math.floor(Math.random() * candidates.length)];
+      const isShiny = Math.random() < (session.config.shinyChance || 0.01);
+      
+      const newPoke = await db.addPokemon(channelId, username, displayName, randomPoke, isShiny);
+      cards.push({
+        id: randomPoke.id,
+        name: newPoke.name,
+        originalName: randomPoke.name,
+        types: randomPoke.types,
+        spriteUrl: isShiny ? randomPoke.shinySpriteUrl : randomPoke.spriteUrl,
+        fallbackSpriteUrl: isShiny ? randomPoke.fallbackShinySpriteUrl : randomPoke.fallbackSpriteUrl,
+        shiny: isShiny
+      });
+    }
+    
+    user.coins -= price;
+    await db.saveUser(channelId, user);
+    
+    io.to(channelId).emit('gacha_pack_opened', {
+      username,
+      displayName,
+      packType,
+      cards
+    });
+    
+    const listStr = cards.map(c => c.name).join(', ');
+    const msg = `🎁 @${displayName} opened a ${packType.toUpperCase()} Booster Pack for 🪙 ${price} coins and got: ${listStr}!`;
+    sendGameLog(channelId, 'system', msg);
     return msg;
   }
 
@@ -795,43 +1072,80 @@ async function processCommand(channelId, username, displayName, messageText) {
   if (cleanMsg.startsWith('!buy ') || cleanMsg.startsWith('buy ')) {
     const parts = messageText.trim().split(/\s+/);
     if (parts.length < 2) {
-      const msg = `❌ @${displayName}, syntax: !buy [pokeball/great/ultra/master] [amount]`;
+      const msg = `❌ @${displayName}, syntax: !buy [item_name] [amount]`;
       io.to(channelId).emit('command_feedback', { username, text: msg });
       return msg;
     }
 
     let typeInput = parts[1].toLowerCase().trim();
     let amount = 1;
-    if (parts.length >= 3) {
-      const parsedAmount = parseInt(parts[2]);
+    let nextIdx = 2;
+    if (parts[2] && parts[2].toLowerCase().trim() === 'stone') {
+      typeInput += '_stone';
+      nextIdx = 3;
+    }
+    if (parts[nextIdx]) {
+      const parsedAmount = parseInt(parts[nextIdx], 10);
       if (!isNaN(parsedAmount) && parsedAmount > 0) {
         amount = parsedAmount;
       }
     }
 
-    // Resolve ball types
+    // Resolve item types
+    let isBall = false;
+    let isStone = false;
     let ballType = '';
+    let stoneType = '';
     let pricePerItem = 0;
-    let ballLabel = '';
-    
-    if (typeInput.includes('poke')) {
+    let itemLabel = '';
+
+    if (typeInput.includes('poke') || typeInput === 'ball') {
+      isBall = true;
       ballType = 'pokeball';
-      pricePerItem = 10;
-      ballLabel = '🔴 Pokéball';
+      pricePerItem = session.config.pricePokeball !== undefined ? session.config.pricePokeball : 10;
+      itemLabel = '🔴 Pokéball';
     } else if (typeInput.includes('great')) {
+      isBall = true;
       ballType = 'greatball';
-      pricePerItem = 30;
-      ballLabel = '🔵 Great Ball';
+      pricePerItem = session.config.priceGreatball !== undefined ? session.config.priceGreatball : 30;
+      itemLabel = '🔵 Great Ball';
     } else if (typeInput.includes('ultra')) {
+      isBall = true;
       ballType = 'ultraball';
-      pricePerItem = 80;
-      ballLabel = '🟡 Ultra Ball';
+      pricePerItem = session.config.priceUltraball !== undefined ? session.config.priceUltraball : 80;
+      itemLabel = '🟡 Ultra Ball';
     } else if (typeInput.includes('master')) {
+      isBall = true;
       ballType = 'masterball';
-      pricePerItem = 250;
-      ballLabel = '🟣 Master Ball';
+      pricePerItem = session.config.priceMasterball !== undefined ? session.config.priceMasterball : 250;
+      itemLabel = '🟣 Master Ball';
+    } else if (typeInput.includes('fire')) {
+      isStone = true;
+      stoneType = 'fire_stone';
+      pricePerItem = session.config.priceFireStone !== undefined ? session.config.priceFireStone : 150;
+      itemLabel = '🔥 Fire Stone';
+    } else if (typeInput.includes('water')) {
+      isStone = true;
+      stoneType = 'water_stone';
+      pricePerItem = session.config.priceWaterStone !== undefined ? session.config.priceWaterStone : 150;
+      itemLabel = '💧 Water Stone';
+    } else if (typeInput.includes('thunder')) {
+      isStone = true;
+      stoneType = 'thunder_stone';
+      pricePerItem = session.config.priceThunderStone !== undefined ? session.config.priceThunderStone : 150;
+      itemLabel = '⚡ Thunder Stone';
+    } else if (typeInput.includes('leaf')) {
+      isStone = true;
+      stoneType = 'leaf_stone';
+      pricePerItem = session.config.priceLeafStone !== undefined ? session.config.priceLeafStone : 150;
+      itemLabel = '🍃 Leaf Stone';
+    } else if (typeInput.includes('moon')) {
+      isStone = true;
+      stoneType = 'moon_stone';
+      pricePerItem = session.config.priceMoonStone !== undefined ? session.config.priceMoonStone : 150;
+      itemLabel = '🌙 Moon Stone';
     } else {
-      const msg = `❌ @${displayName}, unknown item. Available: pokeball, greatball, ultraball, masterball.`;
+      const msg = `❌ @${displayName}, unknown item. Available Pokéballs: pokeball, great, ultra, master. Available Stones: fire, water, thunder, leaf, moon.`;
       io.to(channelId).emit('command_feedback', { username, text: msg });
       return msg;
     }
@@ -840,20 +1154,362 @@ async function processCommand(channelId, username, displayName, messageText) {
     const user = await db.getUser(channelId, username, displayName);
 
     if (user.coins < totalPrice) {
-      const msg = `❌ @${displayName}, you need 🪙 ${totalPrice} coins to buy ${amount}x ${ballLabel}, but you only have 🪙 ${user.coins}!`;
+      const msg = `❌ @${displayName}, you need 🪙 ${totalPrice} coins to buy ${amount}x ${itemLabel}, but you only have 🪙 ${user.coins}!`;
       io.to(channelId).emit('command_feedback', { username, text: msg });
       return msg;
     }
 
     user.coins -= totalPrice;
-    user.balls[ballType] += amount;
-    await db.saveUser(channelId, user);
+    if (isBall) {
+      user.balls[ballType] += amount;
+      await db.saveUser(channelId, user);
+      io.to(channelId).emit('balls_updated', { username, balls: user.balls });
+    } else if (isStone) {
+      if (!user.items) user.items = {};
+      user.items[stoneType] = (user.items[stoneType] || 0) + amount;
+      await db.saveUser(channelId, user);
+    }
 
-    const msg = `✅ @${displayName} purchased ${amount}x ${ballLabel} for 🪙 ${totalPrice} coins! Remaining: 🪙 ${user.coins}.`;
+    const msg = `✅ @${displayName} purchased ${amount}x ${itemLabel} for 🪙 ${totalPrice} coins! Remaining: 🪙 ${user.coins}.`;
     sendGameLog(channelId, 'system', msg);
-    io.to(channelId).emit('balls_updated', { username, balls: user.balls });
     return msg;
   }
+
+  // 8.6. !use [stone] [pokemon] Evolution items command
+  if (cleanMsg.startsWith('!use ') || cleanMsg.startsWith('use ')) {
+    const parts = messageText.trim().split(/\s+/);
+    if (parts.length < 3) {
+      const msg = `❌ @${displayName}, syntax: !use [stone_name] [pokemon_name]`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    
+    let stoneInput = parts[1].toLowerCase().trim().replace('_', '');
+    let pokeQuery = parts.slice(2).join(' ').toLowerCase().trim();
+    
+    let stoneKey = '';
+    if (stoneInput.includes('fire')) stoneKey = 'fire_stone';
+    else if (stoneInput.includes('water')) stoneKey = 'water_stone';
+    else if (stoneInput.includes('thunder')) stoneKey = 'thunder_stone';
+    else if (stoneInput.includes('leaf')) stoneKey = 'leaf_stone';
+    else if (stoneInput.includes('moon')) stoneKey = 'moon_stone';
+    else {
+      const msg = `❌ @${displayName}, unknown stone. Available: fire_stone, water_stone, thunder_stone, leaf_stone, moon_stone.`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    
+    const user = await db.getUser(channelId, username, displayName);
+    if (!user.items || !user.items[stoneKey] || user.items[stoneKey] <= 0) {
+      const msg = `❌ @${displayName}, you do not own a ${stoneKey.toUpperCase().replace('_', ' ')}! Buy one in the '!shop'.`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    
+    const foundPoke = user.inventory.find(p => 
+      p.name.toLowerCase().replace('✨ shiny ', '') === pokeQuery || 
+      p.originalName.toLowerCase() === pokeQuery ||
+      p.pokemonId.toString() === pokeQuery
+    );
+    
+    if (!foundPoke) {
+      const msg = `❌ @${displayName}, you don't own a "${pokeQuery}" in your inventory!`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    
+    const origLower = foundPoke.originalName.toLowerCase().trim();
+    const evoRule = STONE_EVOLUTIONS[origLower];
+    let evolvedTargetName = '';
+    
+    if (evoRule) {
+      if (typeof evoRule === 'object' && evoRule[stoneKey]) {
+        evolvedTargetName = evoRule[stoneKey];
+      } else if (evoRule.stone === stoneKey) {
+        evolvedTargetName = evoRule.result;
+      }
+    }
+    
+    if (!evolvedTargetName) {
+      const msg = `❌ @${displayName}, ${foundPoke.name} cannot be evolved using a ${stoneKey.toUpperCase().replace('_', ' ')}!`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    
+    const evolvedStatic = findPokemonByName(evolvedTargetName);
+    if (!evolvedStatic) {
+      const msg = `❌ @${displayName}, server error finding evolution data.`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    
+    user.items[stoneKey] -= 1;
+    await db.saveUser(channelId, user);
+    
+    const oldName = foundPoke.name;
+    const isShiny = foundPoke.shiny;
+    const evolvedPoke = await db.evolvePokemon(channelId, username, foundPoke.instanceId, {
+      id: evolvedStatic.id,
+      name: evolvedStatic.name,
+      types: evolvedStatic.types,
+      baseStats: evolvedStatic.stats,
+      shiny: isShiny
+    });
+    
+    const newName = evolvedPoke.name;
+    
+    io.to(channelId).emit('pokemon_evolved', {
+      displayName,
+      oldName,
+      newName,
+      spriteUrl: isShiny ? evolvedStatic.shinySpriteUrl : evolvedStatic.spriteUrl,
+      fallbackSpriteUrl: isShiny ? evolvedStatic.fallbackShinySpriteUrl : evolvedStatic.fallbackSpriteUrl
+    });
+    
+    const msg = `✨ Evolution: @${displayName}'s ${oldName} evolved into ${newName} using a ${stoneKey.toUpperCase().replace('_', ' ')}!`;
+    sendGameLog(channelId, 'evolution', msg);
+    return msg;
+  }
+
+  // 8.7. Trade System: !trade / !accepttrade / !declinetrade
+  if (cleanMsg.startsWith('!trade ') || cleanMsg.startsWith('trade ')) {
+    const parts = messageText.trim().split(/\s+/);
+    if (parts.length < 4) {
+      const msg = `❌ @${displayName}, syntax: !trade @username [your_pokemon] [their_pokemon]`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    
+    const targetMention = parts[1].replace('@', '').toLowerCase().trim();
+    const myPokeQuery = parts[2].toLowerCase().trim();
+    const theirPokeQuery = parts[3].toLowerCase().trim();
+    
+    if (targetMention === username.toLowerCase()) {
+      const msg = `❌ @${displayName}, you cannot trade with yourself!`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    
+    const userA = await db.getUser(channelId, username, displayName);
+    const foundPokeA = userA.inventory.find(p => 
+      p.name.toLowerCase().replace('✨ shiny ', '') === myPokeQuery || 
+      p.originalName.toLowerCase() === myPokeQuery ||
+      p.pokemonId.toString() === myPokeQuery
+    );
+    
+    if (!foundPokeA) {
+      const msg = `❌ @${displayName}, you don't own a "${myPokeQuery}" to trade!`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    
+    const userB = await db.getUser(channelId, targetMention);
+    const foundPokeB = userB.inventory.find(p => 
+      p.name.toLowerCase().replace('✨ shiny ', '') === theirPokeQuery || 
+      p.originalName.toLowerCase() === theirPokeQuery ||
+      p.pokemonId.toString() === theirPokeQuery
+    );
+    
+    if (!foundPokeB) {
+      const msg = `❌ @${displayName}, @${userB.displayName} doesn't own a "${theirPokeQuery}"!`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    
+    session.activeTrade = {
+      sender: username,
+      senderDisplayName: displayName,
+      receiver: targetMention,
+      receiverDisplayName: userB.displayName,
+      senderPokeId: foundPokeA.instanceId,
+      senderPokeName: foundPokeA.name,
+      receiverPokeId: foundPokeB.instanceId,
+      receiverPokeName: foundPokeB.name,
+      timestamp: Date.now()
+    };
+    
+    const msg = `🤝 Trade Offer: @${displayName} wants to trade their ${foundPokeA.name} for @${userB.displayName}'s ${foundPokeB.name}! @${userB.displayName}, type !accepttrade to accept, or !declinetrade to refuse.`;
+    io.to(channelId).emit('command_feedback', { username, text: msg });
+    return msg;
+  }
+
+  if (cleanMsg === '!accepttrade' || cleanMsg === 'accepttrade' || cleanMsg === '!tradeaccept' || cleanMsg === 'tradeaccept') {
+    if (!session.activeTrade || session.activeTrade.receiver !== username.toLowerCase()) {
+      const msg = `❌ @${displayName}, you do not have any pending trade requests to accept.`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    
+    const trade = session.activeTrade;
+    const userA = await db.getUser(channelId, trade.sender, trade.senderDisplayName);
+    const userB = await db.getUser(channelId, trade.receiver, trade.receiverDisplayName);
+    
+    const ownA = userA.inventory.some(p => p.instanceId === trade.senderPokeId);
+    const ownB = userB.inventory.some(p => p.instanceId === trade.receiverPokeId);
+    
+    if (!ownA || !ownB) {
+      const msg = `❌ Trade cancelled: One or both trainers no longer own the target Pokémon.`;
+      session.activeTrade = null;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    
+    try {
+      await db.swapPokemonOwnership(channelId, trade.sender, trade.senderPokeId, trade.receiver, trade.receiverPokeId);
+      
+      const msg = `✅ Trade successful! @${trade.senderDisplayName} traded ${trade.senderPokeName} to @${trade.receiverDisplayName} for ${trade.receiverPokeName}!`;
+      sendGameLog(channelId, 'system', msg);
+      
+      io.to(channelId).emit('trade_completed', {
+        playerA: trade.senderDisplayName,
+        pokeA: trade.senderPokeName,
+        playerB: trade.receiverDisplayName,
+        pokeB: trade.receiverPokeName
+      });
+      
+      session.activeTrade = null;
+      return msg;
+    } catch (err) {
+      console.error('[Trade] Error swapping ownership:', err.message);
+      const msg = `❌ Error completing trade: ${err.message}`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+  }
+
+  if (cleanMsg === '!declinetrade' || cleanMsg === 'declinetrade' || cleanMsg === '!tradedecline' || cleanMsg === 'tradedecline') {
+    if (!session.activeTrade || session.activeTrade.receiver !== username.toLowerCase()) {
+      const msg = `❌ @${displayName}, you do not have any pending trade requests to decline.`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    const trade = session.activeTrade;
+    session.activeTrade = null;
+    const msg = `❌ Trade offer declined by @${trade.receiverDisplayName}.`;
+    io.to(channelId).emit('command_feedback', { username, text: msg });
+    return msg;
+  }
+
+  // 8.8. Boss Raids: !attack / !raid
+  if (cleanMsg === '!attack' || cleanMsg === 'attack') {
+    if (!session.activeRaidBoss) {
+      const msg = `❌ @${displayName}, there is no active Boss Raid to attack right now.`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    
+    const user = await db.getUser(channelId, username, displayName);
+    let activePoke = null;
+    let attackPower = 20;
+    let pokemonName = 'Fists';
+    
+    if (user.buddyInstanceId) {
+      activePoke = user.inventory.find(p => p.instanceId === user.buddyInstanceId);
+    }
+    if (!activePoke && user.activePokemonId) {
+      activePoke = user.inventory.find(p => p.instanceId === user.activePokemonId);
+    }
+    
+    if (activePoke) {
+      pokemonName = activePoke.name;
+      const baseAtk = activePoke.baseStats.attack || 50;
+      const levelMult = 1 + (user.level * 0.05);
+      const variance = 0.85 + Math.random() * 0.3;
+      attackPower = Math.round(baseAtk * levelMult * variance * 0.5);
+    } else {
+      attackPower = Math.round((20 + (user.level * 2)) * (0.85 + Math.random() * 0.3));
+    }
+    
+    const boss = session.activeRaidBoss;
+    boss.currentHp = Math.max(0, boss.currentHp - attackPower);
+    boss.participants[username] = (boss.participants[username] || 0) + attackPower;
+    
+    io.to(channelId).emit('raid_hit', {
+      username,
+      displayName,
+      pokemonName,
+      damage: attackPower,
+      currentHp: boss.currentHp,
+      maxHp: boss.maxHp
+    });
+    
+    let reply = `@${displayName}'s ${pokemonName} hit ${boss.name} for 💥 ${attackPower} damage! (${boss.currentHp}/${boss.maxHp} HP left)`;
+    
+    if (boss.currentHp <= 0) {
+      clearTimeout(session.wildDespawnTimer);
+      const baseCoins = session.config.raidRewardCoins !== undefined ? Number(session.config.raidRewardCoins) : 250;
+      const baseXP = session.config.raidRewardXp !== undefined ? Number(session.config.raidRewardXp) : 150;
+      
+      const winners = Object.keys(boss.participants);
+      for (const winnerUsername of winners) {
+        const winnerDmg = boss.participants[winnerUsername];
+        const shareRatio = winnerDmg / boss.maxHp;
+        const rewardCoins = Math.round(baseCoins * shareRatio) + 50;
+        const rewardXP = Math.round(baseXP * shareRatio) + 30;
+        
+        let stoneItem = '';
+        const stoneChance = session.config.raidDropStoneChance !== undefined ? Number(session.config.raidDropStoneChance) : 0.15;
+        if (Math.random() < stoneChance) {
+          const stones = ['fire_stone', 'water_stone', 'thunder_stone', 'leaf_stone', 'moon_stone'];
+          stoneItem = stones[Math.floor(Math.random() * stones.length)];
+        }
+        
+        const winUser = await db.getUser(channelId, winnerUsername);
+        winUser.coins += rewardCoins;
+        winUser.xp += rewardXP;
+        if (stoneItem) {
+          if (!winUser.items) winUser.items = {};
+          winUser.items[stoneItem] = (winUser.items[stoneItem] || 0) + 1;
+        }
+        
+        let leveledUp = false;
+        while (winUser.xp >= winUser.level * 100) {
+          winUser.xp -= winUser.level * 100;
+          winUser.level += 1;
+          leveledUp = true;
+          winUser.balls.greatball += 3;
+          winUser.balls.ultraball += 1;
+          winUser.coins += 100;
+        }
+        
+        await db.saveUser(channelId, winUser);
+        
+        if (leveledUp) {
+          io.to(channelId).emit('player_level_up', {
+            username: winnerUsername,
+            displayName: winUser.displayName,
+            level: winUser.level,
+            coinsReward: 100,
+            greatballsReward: 3,
+            ultraballsReward: 1
+          });
+        }
+        
+        io.to(channelId).emit('balls_updated', { username: winnerUsername, balls: winUser.balls });
+      }
+      
+      io.to(channelId).emit('raid_end', {
+        victory: true,
+        message: `🏆 The Raid Boss ${boss.name} has been defeated! Rewards distributed.`,
+        participants: boss.participants
+      });
+      
+      sendGameLog(channelId, 'system', `🏆 The Raid Boss ${boss.name} was defeated! Participants rewarded.`);
+      session.activeRaidBoss = null;
+    }
+    
+    return reply;
+  }
+
+  if (cleanMsg === '!raid' || cleanMsg === 'raid') {
+    if (!session.activeRaidBoss) {
+      return `❌ No active Raid Boss. Gym is quiet!`;
+    }
+    const boss = session.activeRaidBoss;
+    return `🚨 ACTIVE RAID: ${boss.name} | HP: ${boss.currentHp}/${boss.maxHp}. Type !attack to battle!`;
+  }
+
+  // 8.9. !buy commands backup check
 
   // 9. !coins / !balance / !level command
   if (cleanMsg === '!coins' || cleanMsg === 'coins' || cleanMsg === '!balance' || cleanMsg === 'balance' || cleanMsg === '!level' || cleanMsg === 'level') {
@@ -900,7 +1556,7 @@ async function processCommand(channelId, username, displayName, messageText) {
 
   // 11. !help / !commands command
   if (cleanMsg === '!help' || cleanMsg === 'help' || cleanMsg === '!commands' || cleanMsg === 'commands') {
-    return `🎮 Pokémon Game: !daily | !inventory | !coins | !shop | !buy [ball] [amt] | !buddy [name] | !select [name] | !catch [ball_type] | !fight [@user/wild] [your_poke] | !accept [your_poke]`;
+    return `🎮 Pokémon Game: !daily | !inventory | !coins | !shop | !buy [ball/stone] [amt] | !buddy [name] | !select [name] | !catch [ball_type] | !fight [@user/wild] [your_poke] | !trade @user [my_poke] [their_poke] | !use [stone] [poke] | !attack`;
   }
 
   return null;

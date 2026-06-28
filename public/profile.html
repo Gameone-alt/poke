@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokémon Trainer Profile</title>
+  <!-- Google Fonts Outfit & Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-primary: #3b82f6;
+      --color-primary-glow: rgba(59, 130, 246, 0.15);
+      --bg-dark: #0f172a;
+      --bg-card: rgba(30, 41, 59, 0.7);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at top, #1e293b, var(--bg-dark));
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      overflow-x: hidden;
+    }
+
+    /* Glassmorphism containers */
+    .profile-container {
+      width: 100%;
+      max-width: 1000px;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+
+    .trainer-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 30px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      align-items: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .trainer-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, var(--color-primary-glow) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .trainer-avatar-wrapper {
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(135deg, var(--color-primary), #6366f1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Outfit', sans-serif;
+      font-size: 40px;
+      font-weight: 800;
+      color: #fff;
+      box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);
+      z-index: 1;
+    }
+
+    .trainer-details {
+      flex: 1;
+      min-width: 250px;
+      z-index: 1;
+    }
+
+    .trainer-name {
+      font-family: 'Outfit', sans-serif;
+      font-size: 32px;
+      font-weight: 800;
+      background: linear-gradient(to right, #fff, #cbd5e1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+
+    .trainer-level-badge {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 50px;
+      padding: 4px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #3b82f6;
+      margin-bottom: 12px;
+    }
+
+    .xp-bar-container {
+      width: 100%;
+      max-width: 400px;
+      margin-top: 8px;
+    }
+
+    .xp-text {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .xp-bar {
+      height: 8px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .xp-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #6366f1);
+      width: 0%;
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .trainer-stats {
+      display: flex;
+      gap: 30px;
+      flex-wrap: wrap;
+      z-index: 1;
+    }
+
+    .stat-box {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 15px 24px;
+      min-width: 130px;
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-family: 'Outfit', sans-serif;
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    /* Badges section */
+    .badges-container {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .badge-icon {
+      font-size: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Inventory Grid */
+    .inventory-section {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .section-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .pokemon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 20px;
+    }
+
+    .pokemon-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pokemon-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at bottom, rgba(255, 255, 255, 0.03) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .pokemon-card:hover {
+      transform: translateY(-8px);
+      border-color: rgba(59, 130, 246, 0.4);
+      box-shadow: 0 15px 30px rgba(59, 130, 246, 0.15);
+    }
+
+    .pokemon-sprite {
+      width: 96px;
+      height: 96px;
+      object-fit: contain;
+      image-rendering: pixelated;
+      margin-bottom: 10px;
+      filter: drop-shadow(0 8px 12px rgba(0,0,0,0.2));
+      transition: transform 0.3s ease;
+    }
+
+    .pokemon-card:hover .pokemon-sprite {
+      transform: scale(1.1) translateY(-2px);
+    }
+
+    .pokemon-name {
+      font-family: 'Outfit', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+
+    .shiny-sparkle {
+      color: #f59e0b;
+      margin-right: 4px;
+      font-size: 14px;
+      animation: flash 1.5s infinite alternate;
+    }
+
+    @keyframes flash {
+      from { opacity: 0.5; }
+      to { opacity: 1; }
+    }
+
+    /* Types tags */
+    .pokemon-types {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .type-badge {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      color: #fff;
+      letter-spacing: 0.5px;
+    }
+
+    /* Type tag colors */
+    .type-normal { background: #a8a77a; }
+    .type-fire { background: #ee8130; box-shadow: 0 0 10px rgba(238, 129, 48, 0.3); }
+    .type-water { background: #6390f0; box-shadow: 0 0 10px rgba(99, 144, 240, 0.3); }
+    .type-electric { background: #f7d02c; color: #000; box-shadow: 0 0 10px rgba(247, 208, 44, 0.3); }
+    .type-grass { background: #7ac74c; box-shadow: 0 0 10px rgba(122, 199, 76, 0.3); }
+    .type-ice { background: #96d9d6; color: #000; }
+    .type-fighting { background: #c22e28; }
+    .type-poison { background: #a33ea1; }
+    .type-ground { background: #e2bf65; }
+    .type-flying { background: #a98ff3; }
+    .type-psychic { background: #f95587; }
+    .type-bug { background: #a6b91a; }
+    .type-rock { background: #b6a136; }
+    .type-ghost { background: #705746; }
+    .type-dragon { background: #6f35fc; }
+    .type-steel { background: #b7b7ce; }
+    .type-fairy { background: #d685ad; }
+
+    .pokemon-wins {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .buddy-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 3px 6px;
+      border-radius: 8px;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 8px rgba(217, 119, 6, 0.3);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      background: var(--bg-card);
+      border-radius: 20px;
+      border: 1px dashed var(--border-color);
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="profile-container">
+    <!-- Trainer Info Card -->
+    <div class="trainer-card">
+      <div class="trainer-avatar-wrapper" id="avatar">T</div>
+      <div class="trainer-details">
+        <div class="trainer-name" id="trainer-name">@Trainer</div>
+        <div class="trainer-level-badge" id="level-badge">Trainer Level 1</div>
+        <div class="xp-bar-container">
+          <div class="xp-text">
+            <span>Experience Points</span>
+            <span id="xp-ratio">0 / 100 XP</span>
+          </div>
+          <div class="xp-bar">
+            <div class="xp-fill" id="xp-fill"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- General stats -->
+      <div class="trainer-stats">
+        <div class="stat-box">
+          <div class="stat-label">Wallet Balance</div>
+          <div class="stat-value" id="coins-value">🪙 0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Total Caught</div>
+          <div class="stat-value" id="caught-value">0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inventory Box -->
+    <div class="inventory-section">
+      <div class="section-title">
+        🎒 Collected Pokémon Pokebox
+      </div>
+      
+      <div class="pokemon-grid" id="pokemon-grid">
+        <!-- Will be populated dynamically via profile.js -->
+        <div class="empty-state">No Pokémon in collection yet. Go catch some spawns!</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/profile.js"></script>
+</body>
+</html>

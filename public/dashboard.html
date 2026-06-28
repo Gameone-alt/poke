@@ -86,6 +86,186 @@
             </div>
           </div>
           
+          <h3 style="margin-top: 20px; font-size: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--color-primary); letter-spacing: 0.5px;">💰 Custom Economy & Game Rewards</h3>
+          
+          <h4 style="margin-top: 10px; font-size: 12px; color: var(--text-muted);">🎉 Capture Rewards (Normal vs Shiny)</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="coins-capture-normal">Coins Reward (Normal)</label>
+              <input type="number" id="coins-capture-normal" min="0" value="20">
+            </div>
+            <div class="form-group">
+              <label for="coins-capture-shiny">Coins Reward (Shiny)</label>
+              <input type="number" id="coins-capture-shiny" min="0" value="100">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="xp-capture-normal">XP Reward (Normal)</label>
+              <input type="number" id="xp-capture-normal" min="0" value="15">
+            </div>
+            <div class="form-group">
+              <label for="xp-capture-shiny">XP Reward (Shiny)</label>
+              <input type="number" id="xp-capture-shiny" min="0" value="50">
+            </div>
+          </div>
+
+          <h4 style="margin-top: 15px; font-size: 12px; color: var(--text-muted);">⭐ Level Up Rewards</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="level-up-coins">Coins Reward</label>
+              <input type="number" id="level-up-coins" min="0" value="100">
+            </div>
+            <div class="form-group">
+              <label for="level-up-greatballs">Great Balls Reward</label>
+              <input type="number" id="level-up-greatballs" min="0" value="3">
+            </div>
+            <div class="form-group">
+              <label for="level-up-ultraballs">Ultra Balls Reward</label>
+              <input type="number" id="level-up-ultraballs" min="0" value="1">
+            </div>
+          </div>
+
+          <h4 style="margin-top: 15px; font-size: 12px; color: var(--text-muted);">🧮 Capture Rate Multipliers</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="catch-multiplier-pokeball">Poke Ball Multiplier</label>
+              <input type="number" id="catch-multiplier-pokeball" min="0.1" step="0.1" value="1.0">
+            </div>
+            <div class="form-group">
+              <label for="catch-multiplier-greatball">Great Ball Multiplier</label>
+              <input type="number" id="catch-multiplier-greatball" min="0.1" step="0.1" value="1.5">
+            </div>
+            <div class="form-group">
+              <label for="catch-multiplier-ultraball">Ultra Ball Multiplier</label>
+              <input type="number" id="catch-multiplier-ultraball" min="0.1" step="0.1" value="2.0">
+            </div>
+          </div>
+
+          <h4 style="margin-top: 15px; font-size: 12px; color: var(--text-muted);">🦖 Pokémon Rarity Capture Rate Multipliers</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="catch-multiplier-normal">Normal Rarity Multiplier</label>
+              <input type="number" id="catch-multiplier-normal" min="0.1" step="0.1" value="1.0">
+            </div>
+            <div class="form-group">
+              <label for="catch-multiplier-rare">Rare Rarity Multiplier</label>
+              <input type="number" id="catch-multiplier-rare" min="0.1" step="0.1" value="1.0">
+            </div>
+            <div class="form-group">
+              <label for="catch-multiplier-legendary">Legendary Rarity Multiplier</label>
+              <input type="number" id="catch-multiplier-legendary" min="0.1" step="0.1" value="1.0">
+            </div>
+          </div>
+
+          <h4 style="margin-top: 15px; font-size: 12px; color: var(--text-muted);">🛍️ Shop Item Prices (Coins)</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="price-pokeball">Poke Ball Price</label>
+              <input type="number" id="price-pokeball" min="0" value="10">
+            </div>
+            <div class="form-group">
+              <label for="price-greatball">Great Ball Price</label>
+              <input type="number" id="price-greatball" min="0" value="30">
+            </div>
+            <div class="form-group">
+              <label for="price-ultraball">Ultra Ball Price</label>
+              <input type="number" id="price-ultraball" min="0" value="80">
+            </div>
+            <div class="form-group">
+              <label for="price-masterball">Master Ball Price</label>
+              <input type="number" id="price-masterball" min="0" value="250">
+            </div>
+          </div>
+
+          <h4 style="margin-top: 15px; font-size: 12px; color: var(--text-muted);">🎁 Gacha Booster Pack Prices (Coins)</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="price-pack-kanto">Kanto Pack Price</label>
+              <input type="number" id="price-pack-kanto" min="0" value="150">
+            </div>
+            <div class="form-group">
+              <label for="price-pack-johto">Johto Pack Price</label>
+              <input type="number" id="price-pack-johto" min="0" value="150">
+            </div>
+            <div class="form-group">
+              <label for="price-pack-hoenn">Hoenn Pack Price</label>
+              <input type="number" id="price-pack-hoenn" min="0" value="150">
+            </div>
+            <div class="form-group">
+              <label for="price-pack-sinnoh">Sinnoh Pack Price</label>
+              <input type="number" id="price-pack-sinnoh" min="0" value="150">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="price-pack-unova">Unova Pack Price</label>
+              <input type="number" id="price-pack-unova" min="0" value="150">
+            </div>
+            <div class="form-group">
+              <label for="price-pack-kalos">Kalos Pack Price</label>
+              <input type="number" id="price-pack-kalos" min="0" value="150">
+            </div>
+            <div class="form-group">
+              <label for="price-pack-alola">Alola Pack Price</label>
+              <input type="number" id="price-pack-alola" min="0" value="150">
+            </div>
+            <div class="form-group">
+              <label for="price-pack-legendary">Legendary Pack Price</label>
+              <input type="number" id="price-pack-legendary" min="0" value="500">
+            </div>
+          </div>
+
+          <h4 style="margin-top: 15px; font-size: 12px; color: var(--text-muted);">💎 Evolution Stone Shop Prices (Coins)</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="price-fire-stone">Fire Stone Price</label>
+              <input type="number" id="price-fire-stone" min="0" value="150">
+            </div>
+            <div class="form-group">
+              <label for="price-water-stone">Water Stone Price</label>
+              <input type="number" id="price-water-stone" min="0" value="150">
+            </div>
+            <div class="form-group">
+              <label for="price-thunder-stone">Thunder Stone Price</label>
+              <input type="number" id="price-thunder-stone" min="0" value="150">
+            </div>
+            <div class="form-group">
+              <label for="price-leaf-stone">Leaf Stone Price</label>
+              <input type="number" id="price-leaf-stone" min="0" value="150">
+            </div>
+            <div class="form-group">
+              <label for="price-moon-stone">Moon Stone Price</label>
+              <input type="number" id="price-moon-stone" min="0" value="150">
+            </div>
+          </div>
+
+          <h4 style="margin-top: 15px; font-size: 12px; color: var(--text-muted);">🦖 Cooperative Boss Raid Settings</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="raid-chance">Auto-spawn Raid Chance (%)</label>
+              <input type="number" id="raid-chance" min="0" max="100" step="1" value="5">
+            </div>
+            <div class="form-group">
+              <label for="raid-boss-hp">Raid Boss Max HP</label>
+              <input type="number" id="raid-boss-hp" min="100" value="5000">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="raid-reward-coins">Raid Coins Pool Reward</label>
+              <input type="number" id="raid-reward-coins" min="0" value="250">
+            </div>
+            <div class="form-group">
+              <label for="raid-reward-xp">Raid XP Pool Reward</label>
+              <input type="number" id="raid-reward-xp" min="0" value="150">
+            </div>
+            <div class="form-group">
+              <label for="raid-drop-stone-chance">Evolution Stone Drop Chance (%)</label>
+              <input type="number" id="raid-drop-stone-chance" min="0" max="100" step="5" value="15">
+            </div>
+          </div>
+
           <h3 style="margin-top: 20px; font-size: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--color-primary); letter-spacing: 0.5px;">🎨 Overlay Customization</h3>
           
           <div class="form-row">
@@ -110,10 +290,14 @@
               <label for="sfx-volume">SFX Volume (%)</label>
               <input type="number" id="sfx-volume" min="0" max="100" value="50">
             </div>
-            <div class="form-group" style="justify-content: center;">
-              <label for="show-battle-arena" style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 15px;">
+            <div class="form-group" style="justify-content: center; display: flex; flex-direction: row; gap: 15px; align-items: center; margin-top: 15px;">
+              <label for="show-battle-arena" style="display: flex; align-items: center; gap: 6px; cursor: pointer; margin: 0; font-size: 13px;">
                 <input type="checkbox" id="show-battle-arena" checked style="width: auto;">
-                Show Battle Arena Overlay
+                Show Battle Arena
+              </label>
+              <label for="show-leaderboard" style="display: flex; align-items: center; gap: 6px; cursor: pointer; margin: 0; font-size: 13px;">
+                <input type="checkbox" id="show-leaderboard" checked style="width: auto;">
+                Show Leaderboard
               </label>
             </div>
           </div>
@@ -137,7 +321,7 @@
 
           <div class="form-group">
             <label for="spawn-catch-guide">Wild Spawn Catch Guide Text</label>
-            <input type="text" id="spawn-catch-guide" placeholder="e.g. Type catch in chat!">
+            <input type="text" id="spawn-catch-guide" placeholder="e.g. Type !catch in chat!">
           </div>
 
           
@@ -156,7 +340,125 @@
                 <option value="top-left">Top Left</option>
                 <option value="top-right">Top Right</option>
                 <option value="center">Center Screen</option>
+                <option value="custom">Custom Position</option>
               </select>
+            </div>
+          </div>
+
+          <div class="form-row custom-position-row" id="spawn-custom-pos-row" style="display: none; gap: 10px; margin-bottom: 15px;">
+            <div class="form-group" style="flex: 1;">
+              <label for="spawn-card-left" style="font-size: 11px;">Left (e.g. 30px, 10%)</label>
+              <input type="text" id="spawn-card-left" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label for="spawn-card-right" style="font-size: 11px;">Right</label>
+              <input type="text" id="spawn-card-right" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label for="spawn-card-top" style="font-size: 11px;">Top</label>
+              <input type="text" id="spawn-card-top" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label for="spawn-card-bottom" style="font-size: 11px;">Bottom</label>
+              <input type="text" id="spawn-card-bottom" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+            </div>
+          </div>
+
+          <h4 style="margin-top: 15px; font-size: 13px; color: var(--color-primary); letter-spacing: 0.5px; border-top: 1px dashed var(--border-color); padding-top: 10px;">👑 Leaderboard Ticker Position</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ticker-position">Ticker Position Preset</label>
+              <select id="ticker-position" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
+                <option value="top-left">Top Left Preset</option>
+                <option value="top-right">Top Right Preset</option>
+                <option value="bottom-left">Bottom Left Preset</option>
+                <option value="bottom-right">Bottom Right Preset</option>
+                <option value="custom">Custom Position</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row custom-position-row" id="ticker-custom-pos-row" style="display: none; gap: 10px; margin-bottom: 15px;">
+            <div class="form-group" style="flex: 1;">
+              <label for="ticker-left" style="font-size: 11px;">Left</label>
+              <input type="text" id="ticker-left" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label for="ticker-right" style="font-size: 11px;">Right</label>
+              <input type="text" id="ticker-right" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label for="ticker-top" style="font-size: 11px;">Top</label>
+              <input type="text" id="ticker-top" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label for="ticker-bottom" style="font-size: 11px;">Bottom</label>
+              <input type="text" id="ticker-bottom" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+            </div>
+          </div>
+
+          <h4 style="margin-top: 15px; font-size: 13px; color: var(--color-primary); letter-spacing: 0.5px; border-top: 1px dashed var(--border-color); padding-top: 10px;">📰 Live Game Feed Position</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="feed-position">Feed Position Preset</label>
+              <select id="feed-position" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
+                <option value="top-right">Top Right Preset</option>
+                <option value="top-left">Top Left Preset</option>
+                <option value="bottom-right">Bottom Right Preset</option>
+                <option value="bottom-left">Bottom Left Preset</option>
+                <option value="custom">Custom Position</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row custom-position-row" id="feed-custom-pos-row" style="display: none; gap: 10px; margin-bottom: 15px;">
+            <div class="form-group" style="flex: 1;">
+              <label for="feed-left" style="font-size: 11px;">Left</label>
+              <input type="text" id="feed-left" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label for="feed-right" style="font-size: 11px;">Right</label>
+              <input type="text" id="feed-right" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label for="feed-top" style="font-size: 11px;">Top</label>
+              <input type="text" id="feed-top" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label for="feed-bottom" style="font-size: 11px;">Bottom</label>
+              <input type="text" id="feed-bottom" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+            </div>
+          </div>
+
+          <h4 style="margin-top: 15px; font-size: 13px; color: var(--color-primary); letter-spacing: 0.5px; border-top: 1px dashed var(--border-color); padding-top: 10px;">⚔️ Battle Arena Position</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="battle-position">Battle Position Preset</label>
+              <select id="battle-position" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
+                <option value="center">Center Screen Preset</option>
+                <option value="top">Top Preset</option>
+                <option value="bottom">Bottom Preset</option>
+                <option value="custom">Custom Position</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row custom-position-row" id="battle-custom-pos-row" style="display: none; gap: 10px; margin-bottom: 15px;">
+            <div class="form-group" style="flex: 1;">
+              <label for="battle-left" style="font-size: 11px;">Left</label>
+              <input type="text" id="battle-left" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label for="battle-right" style="font-size: 11px;">Right</label>
+              <input type="text" id="battle-right" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label for="battle-top" style="font-size: 11px;">Top</label>
+              <input type="text" id="battle-top" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label for="battle-bottom" style="font-size: 11px;">Bottom</label>
+              <input type="text" id="battle-bottom" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
             </div>
           </div>
 
@@ -202,6 +504,14 @@
             </div>
             <small>Specifies which Pokémon spawns next. Reverts to random after one spawn.</small>
           </div>
+          <div class="form-group" style="margin-bottom: 15px; border-top: 1px dashed var(--border-color); padding-top: 15px;">
+            <label for="raid-boss-target">Trigger Boss Raid</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="raid-boss-target" placeholder="e.g. Mewtwo or Charizard (Optional)" style="flex: 1;">
+              <button type="button" id="btn-trigger-raid" class="btn btn-preset" style="margin: 0; background: #e11d48; border: none; color: #fff;">Trigger Raid</button>
+            </div>
+            <small>Instantly spawns a Gigantamax Raid Boss for viewers to battle cooperatively.</small>
+          </div>
           <div class="action-buttons">
             <button id="btn-force-spawn" class="btn btn-action">Force Spawn Pokémon</button>
             <button id="btn-reset-db" class="btn btn-danger">Reset Player Database</button>
@@ -239,16 +549,19 @@
             <label>Quick Command Templates</label>
             <div class="preset-buttons">
               <button class="btn btn-preset" data-cmd="!daily">🎁 Claim Daily (!daily)</button>
-              <button class="btn btn-preset" data-cmd="catch">🔴 Catch with Pokéball (catch)</button>
-              <button class="btn btn-preset" data-cmd="catch great">🔵 Catch with Great Ball (catch great)</button>
-              <button class="btn btn-preset" data-cmd="catch ultra">🟡 Catch with Ultra Ball (catch ultra)</button>
+              <button class="btn btn-preset" data-cmd="!catch">🔴 Catch with Pokéball (!catch)</button>
+              <button class="btn btn-preset" data-cmd="!catch great">🔵 Catch with Great Ball (!catch great)</button>
+              <button class="btn btn-preset" data-cmd="!catch ultra">🟡 Catch with Ultra Ball (!catch ultra)</button>
               <button class="btn btn-preset" data-cmd="!inventory">🎒 View Inventory (!inventory)</button>
             </div>
-            <label style="font-size:11px; color:#64748b; margin-top:8px;">⚔️ Battle commands require a Pokémon name. Type them manually below:</label>
+            <label style="font-size:11px; color:#64748b; margin-top:8px;">⚔️ Custom commands require names/mentions. Type them manually below:</label>
             <div style="font-size:11px; color:#475569; line-height:1.6; background:rgba(255,255,255,0.02); padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
               <code>!fight @username [your_pokemon]</code> — Challenge a player<br>
               <code>!fight wild [your_pokemon]</code> — Fight the wild spawn<br>
-              <code>!accept [your_pokemon]</code> — Accept a challenge
+              <code>!accept [your_pokemon]</code> — Accept a challenge<br>
+              <code>!attack</code> — Attack active Boss Raid<br>
+              <code>!trade @username [mine] [theirs]</code> — Trade request<br>
+              <code>!use fire_stone [pokemon]</code> — Evolve Pokémon
             </div>
           </div>
 

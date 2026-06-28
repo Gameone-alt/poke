@@ -7,7 +7,7 @@ if (!channelId) {
 }
 
 // Backend URL: empty on localhost (same-origin Express), Render URL in production
-const BACKEND_URL = window.location.origin.includes('localhost') ? '' : 'https://pokemon-overlay-backend-hfpf.onrender.com';
+const BACKEND_URL = window.location.origin.includes('localhost') ? '' : window.location.origin;
 const socket = io(BACKEND_URL, {
   query: { channelId }
 });
@@ -110,6 +110,7 @@ const primaryColorInput = document.getElementById('primary-color');
 const primaryColorTextInput = document.getElementById('primary-color-text');
 const sfxVolumeInput = document.getElementById('sfx-volume');
 const showBattleArenaInput = document.getElementById('show-battle-arena');
+const showLeaderboardInput = document.getElementById('show-leaderboard');
 const showLiveFeedInput = document.getElementById('show-live-feed');
 const liveFeedTitleInput = document.getElementById('live-feed-title');
 const showSpawnAlertInput = document.getElementById('show-spawn-alert');
@@ -117,12 +118,97 @@ const spawnAlertTitleInput = document.getElementById('spawn-alert-title');
 const spawnCatchGuideInput = document.getElementById('spawn-catch-guide');
 const customCssInput = document.getElementById('custom-css');
 
+// Custom Economy inputs
+const coinsCaptureNormalInput = document.getElementById('coins-capture-normal');
+const coinsCaptureShinyInput = document.getElementById('coins-capture-shiny');
+const xpCaptureNormalInput = document.getElementById('xp-capture-normal');
+const xpCaptureShinyInput = document.getElementById('xp-capture-shiny');
+const levelUpCoinsInput = document.getElementById('level-up-coins');
+const levelUpGreatballsInput = document.getElementById('level-up-greatballs');
+const levelUpUltraballsInput = document.getElementById('level-up-ultraballs');
+const catchMultiplierPokeballInput = document.getElementById('catch-multiplier-pokeball');
+const catchMultiplierGreatballInput = document.getElementById('catch-multiplier-greatball');
+const catchMultiplierUltraballInput = document.getElementById('catch-multiplier-ultraball');
+const pricePokeballInput = document.getElementById('price-pokeball');
+const priceGreatballInput = document.getElementById('price-greatball');
+const priceUltraballInput = document.getElementById('price-ultraball');
+const priceMasterballInput = document.getElementById('price-masterball');
+
+const catchMultiplierNormalInput = document.getElementById('catch-multiplier-normal');
+const catchMultiplierRareInput = document.getElementById('catch-multiplier-rare');
+const catchMultiplierLegendaryInput = document.getElementById('catch-multiplier-legendary');
+const pricePackKantoInput = document.getElementById('price-pack-kanto');
+const pricePackJohtoInput = document.getElementById('price-pack-johto');
+const pricePackHoennInput = document.getElementById('price-pack-hoenn');
+const pricePackSinnohInput = document.getElementById('price-pack-sinnoh');
+const pricePackUnovaInput = document.getElementById('price-pack-unova');
+const pricePackKalosInput = document.getElementById('price-pack-kalos');
+const pricePackAlolaInput = document.getElementById('price-pack-alola');
+const pricePackLegendaryInput = document.getElementById('price-pack-legendary');
+const priceFireStoneInput = document.getElementById('price-fire-stone');
+const priceWaterStoneInput = document.getElementById('price-water-stone');
+const priceThunderStoneInput = document.getElementById('price-thunder-stone');
+const priceLeafStoneInput = document.getElementById('price-leaf-stone');
+const priceMoonStoneInput = document.getElementById('price-moon-stone');
+
+const raidChanceInput = document.getElementById('raid-chance');
+const raidBossHpInput = document.getElementById('raid-boss-hp');
+const raidRewardCoinsInput = document.getElementById('raid-reward-coins');
+const raidRewardXpInput = document.getElementById('raid-reward-xp');
+const raidDropStoneChanceInput = document.getElementById('raid-drop-stone-chance');
+
 // Spawn Card Specific Elements
 const spawnCardScaleInput = document.getElementById('spawn-card-scale');
 const spawnCardPositionSelect = document.getElementById('spawn-card-position');
 const showCardSpriteCheckbox = document.getElementById('show-card-sprite');
 const showCardTypesCheckbox = document.getElementById('show-card-types');
 const showCardInstructionsCheckbox = document.getElementById('show-card-instructions');
+
+// Custom layout inputs
+const spawnCustomPosRow = document.getElementById('spawn-custom-pos-row');
+const spawnCardLeftInput = document.getElementById('spawn-card-left');
+const spawnCardRightInput = document.getElementById('spawn-card-right');
+const spawnCardTopInput = document.getElementById('spawn-card-top');
+const spawnCardBottomInput = document.getElementById('spawn-card-bottom');
+
+const tickerPositionSelect = document.getElementById('ticker-position');
+const tickerCustomPosRow = document.getElementById('ticker-custom-pos-row');
+const tickerLeftInput = document.getElementById('ticker-left');
+const tickerRightInput = document.getElementById('ticker-right');
+const tickerTopInput = document.getElementById('ticker-top');
+const tickerBottomInput = document.getElementById('ticker-bottom');
+
+const feedPositionSelect = document.getElementById('feed-position');
+const feedCustomPosRow = document.getElementById('feed-custom-pos-row');
+const feedLeftInput = document.getElementById('feed-left');
+const feedRightInput = document.getElementById('feed-right');
+const feedTopInput = document.getElementById('feed-top');
+const feedBottomInput = document.getElementById('feed-bottom');
+
+const battlePositionSelect = document.getElementById('battle-position');
+const battleCustomPosRow = document.getElementById('battle-custom-pos-row');
+const battleLeftInput = document.getElementById('battle-left');
+const battleRightInput = document.getElementById('battle-right');
+const battleTopInput = document.getElementById('battle-top');
+const battleBottomInput = document.getElementById('battle-bottom');
+
+function setupCustomPosToggle(selectEl, rowEl) {
+  if (!selectEl || !rowEl) return;
+  const updateToggle = () => {
+    if (selectEl.value === 'custom') {
+      rowEl.style.display = 'flex';
+    } else {
+      rowEl.style.display = 'none';
+    }
+  };
+  selectEl.addEventListener('change', updateToggle);
+  updateToggle();
+}
+
+setupCustomPosToggle(spawnCardPositionSelect, spawnCustomPosRow);
+setupCustomPosToggle(tickerPositionSelect, tickerCustomPosRow);
+setupCustomPosToggle(feedPositionSelect, feedCustomPosRow);
+setupCustomPosToggle(battlePositionSelect, battleCustomPosRow);
 
 // Specific Spawn Target
 const spawnTargetInput = document.getElementById('spawn-target');
@@ -158,11 +244,12 @@ function populateConfig(config) {
   primaryColorTextInput.value = config.primaryColor || '#3b82f6';
   sfxVolumeInput.value = config.sfxVolume !== undefined ? config.sfxVolume : 50;
   showBattleArenaInput.checked = config.showBattleArena !== false;
+  showLeaderboardInput.checked = config.showLeaderboard !== false;
   showLiveFeedInput.checked = config.showLiveFeed !== false;
   liveFeedTitleInput.value = config.liveFeedTitle || 'LIVE GAME FEED';
   showSpawnAlertInput.checked = config.showSpawnAlert !== false;
   spawnAlertTitleInput.value = config.spawnAlertTitle || 'WILD SPAWN';
-  spawnCatchGuideInput.value = config.spawnCatchGuide || 'Type catch in chat!';
+  spawnCatchGuideInput.value = config.spawnCatchGuide || 'Type !catch in chat!';
   customCssInput.value = config.customCss || '';
   
   // Card layout customization
@@ -171,12 +258,83 @@ function populateConfig(config) {
   showCardSpriteCheckbox.checked = config.showCardSprite !== false;
   showCardTypesCheckbox.checked = config.showCardTypes !== false;
   showCardInstructionsCheckbox.checked = config.showCardInstructions !== false;
+
+  // Custom offsets
+  spawnCardLeftInput.value = config.spawnCardLeft || '';
+  spawnCardRightInput.value = config.spawnCardRight || '';
+  spawnCardTopInput.value = config.spawnCardTop || '';
+  spawnCardBottomInput.value = config.spawnCardBottom || '';
+  
+  tickerPositionSelect.value = config.tickerPosition || 'top-left';
+  tickerLeftInput.value = config.tickerLeft || '';
+  tickerRightInput.value = config.tickerRight || '';
+  tickerTopInput.value = config.tickerTop || '';
+  tickerBottomInput.value = config.tickerBottom || '';
+  
+  feedPositionSelect.value = config.feedPosition || 'top-right';
+  feedLeftInput.value = config.feedLeft || '';
+  feedRightInput.value = config.feedRight || '';
+  feedTopInput.value = config.feedTop || '';
+  feedBottomInput.value = config.feedBottom || '';
+  
+  battlePositionSelect.value = config.battlePosition || 'center';
+  battleLeftInput.value = config.battleLeft || '';
+  battleRightInput.value = config.battleRight || '';
+  battleTopInput.value = config.battleTop || '';
+  battleBottomInput.value = config.battleBottom || '';
+  
+  // Trigger toggles
+  [spawnCardPositionSelect, tickerPositionSelect, feedPositionSelect, battlePositionSelect].forEach(select => {
+    if (select) select.dispatchEvent(new Event('change'));
+  });
   
   // Specific Spawn Target
   spawnTargetInput.value = config.spawnTarget || '';
+
+  // Custom Economy values
+  coinsCaptureNormalInput.value = config.coinsCaptureNormal !== undefined ? config.coinsCaptureNormal : 20;
+  coinsCaptureShinyInput.value = config.coinsCaptureShiny !== undefined ? config.coinsCaptureShiny : 100;
+  xpCaptureNormalInput.value = config.xpCaptureNormal !== undefined ? config.xpCaptureNormal : 15;
+  xpCaptureShinyInput.value = config.xpCaptureShiny !== undefined ? config.xpCaptureShiny : 50;
+  levelUpCoinsInput.value = config.levelUpCoins !== undefined ? config.levelUpCoins : 100;
+  levelUpGreatballsInput.value = config.levelUpGreatballs !== undefined ? config.levelUpGreatballs : 3;
+  levelUpUltraballsInput.value = config.levelUpUltraballs !== undefined ? config.levelUpUltraballs : 1;
+  catchMultiplierPokeballInput.value = config.catchMultiplierPokeball !== undefined ? config.catchMultiplierPokeball : 1.0;
+  catchMultiplierGreatballInput.value = config.catchMultiplierGreatball !== undefined ? config.catchMultiplierGreatball : 1.5;
+  catchMultiplierUltraballInput.value = config.catchMultiplierUltraball !== undefined ? config.catchMultiplierUltraball : 2.0;
+  pricePokeballInput.value = config.pricePokeball !== undefined ? config.pricePokeball : 10;
+  priceGreatballInput.value = config.priceGreatball !== undefined ? config.priceGreatball : 30;
+  priceUltraballInput.value = config.priceUltraball !== undefined ? config.priceUltraball : 80;
+  priceMasterballInput.value = config.priceMasterball !== undefined ? config.priceMasterball : 250;
+  
+  catchMultiplierNormalInput.value = config.catchMultiplierNormal !== undefined ? config.catchMultiplierNormal : 1.0;
+  catchMultiplierRareInput.value = config.catchMultiplierRare !== undefined ? config.catchMultiplierRare : 1.0;
+  catchMultiplierLegendaryInput.value = config.catchMultiplierLegendary !== undefined ? config.catchMultiplierLegendary : 1.0;
+  pricePackKantoInput.value = config.pricePackKanto !== undefined ? config.pricePackKanto : 150;
+  pricePackJohtoInput.value = config.pricePackJohto !== undefined ? config.pricePackJohto : 150;
+  pricePackHoennInput.value = config.pricePackHoenn !== undefined ? config.pricePackHoenn : 150;
+  pricePackSinnohInput.value = config.pricePackSinnoh !== undefined ? config.pricePackSinnoh : 150;
+  pricePackUnovaInput.value = config.pricePackUnova !== undefined ? config.pricePackUnova : 150;
+  pricePackKalosInput.value = config.pricePackKalos !== undefined ? config.pricePackKalos : 150;
+  pricePackAlolaInput.value = config.pricePackAlola !== undefined ? config.pricePackAlola : 150;
+  pricePackLegendaryInput.value = config.pricePackLegendary !== undefined ? config.pricePackLegendary : 500;
+  
+  priceFireStoneInput.value = config.priceFireStone !== undefined ? config.priceFireStone : 150;
+  priceWaterStoneInput.value = config.priceWaterStone !== undefined ? config.priceWaterStone : 150;
+  priceThunderStoneInput.value = config.priceThunderStone !== undefined ? config.priceThunderStone : 150;
+  priceLeafStoneInput.value = config.priceLeafStone !== undefined ? config.priceLeafStone : 150;
+  priceMoonStoneInput.value = config.priceMoonStone !== undefined ? config.priceMoonStone : 150;
+  
+  raidChanceInput.value = config.raidChance !== undefined ? Math.round(config.raidChance * 100) : 5;
+  raidBossHpInput.value = config.raidBossHp !== undefined ? config.raidBossHp : 5000;
+  raidRewardCoinsInput.value = config.raidRewardCoins !== undefined ? config.raidRewardCoins : 250;
+  raidRewardXpInput.value = config.raidRewardXp !== undefined ? config.raidRewardXp : 150;
+  raidDropStoneChanceInput.value = config.raidDropStoneChance !== undefined ? Math.round(config.raidDropStoneChance * 100) : 15;
 }
 
 const btnForceSpawn = document.getElementById('btn-force-spawn');
+const btnTriggerRaid = document.getElementById('btn-trigger-raid');
+const raidBossTargetInput = document.getElementById('raid-boss-target');
 const btnResetDb = document.getElementById('btn-reset-db');
 const btnLogout = document.getElementById('btn-logout');
 const obsOverlayUrl = document.getElementById('obs-overlay-url');
@@ -249,6 +407,44 @@ configForm.addEventListener('submit', (e) => {
     primaryColor: primaryColorInput.value,
     sfxVolume: parseInt(sfxVolumeInput.value),
     showBattleArena: showBattleArenaInput.checked,
+    showLeaderboard: showLeaderboardInput.checked,
+    
+    // Custom Economy & Game Rewards
+    coinsCaptureNormal: parseInt(coinsCaptureNormalInput.value),
+    coinsCaptureShiny: parseInt(coinsCaptureShinyInput.value),
+    xpCaptureNormal: parseInt(xpCaptureNormalInput.value),
+    xpCaptureShiny: parseInt(xpCaptureShinyInput.value),
+    levelUpCoins: parseInt(levelUpCoinsInput.value),
+    levelUpGreatballs: parseInt(levelUpGreatballsInput.value),
+    levelUpUltraballs: parseInt(levelUpUltraballsInput.value),
+    catchMultiplierPokeball: parseFloat(catchMultiplierPokeballInput.value),
+    catchMultiplierGreatball: parseFloat(catchMultiplierGreatballInput.value),
+    catchMultiplierUltraball: parseFloat(catchMultiplierUltraballInput.value),
+    pricePokeball: parseInt(pricePokeballInput.value),
+    priceGreatball: parseInt(priceGreatballInput.value),
+    priceUltraball: parseInt(priceUltraballInput.value),
+    priceMasterball: parseInt(priceMasterballInput.value),
+    catchMultiplierNormal: parseFloat(catchMultiplierNormalInput.value),
+    catchMultiplierRare: parseFloat(catchMultiplierRareInput.value),
+    catchMultiplierLegendary: parseFloat(catchMultiplierLegendaryInput.value),
+    pricePackKanto: parseInt(pricePackKantoInput.value, 10),
+    pricePackJohto: parseInt(pricePackJohtoInput.value, 10),
+    pricePackHoenn: parseInt(pricePackHoennInput.value, 10),
+    pricePackSinnoh: parseInt(pricePackSinnohInput.value, 10),
+    pricePackUnova: parseInt(pricePackUnovaInput.value, 10),
+    pricePackKalos: parseInt(pricePackKalosInput.value, 10),
+    pricePackAlola: parseInt(pricePackAlolaInput.value, 10),
+    pricePackLegendary: parseInt(pricePackLegendaryInput.value, 10),
+    priceFireStone: parseInt(priceFireStoneInput.value, 10),
+    priceWaterStone: parseInt(priceWaterStoneInput.value, 10),
+    priceThunderStone: parseInt(priceThunderStoneInput.value, 10),
+    priceLeafStone: parseInt(priceLeafStoneInput.value, 10),
+    priceMoonStone: parseInt(priceMoonStoneInput.value, 10),
+    raidChance: parseFloat(raidChanceInput.value) / 100,
+    raidBossHp: parseInt(raidBossHpInput.value, 10),
+    raidRewardCoins: parseInt(raidRewardCoinsInput.value, 10),
+    raidRewardXp: parseInt(raidRewardXpInput.value, 10),
+    raidDropStoneChance: parseFloat(raidDropStoneChanceInput.value) / 100,
     showLiveFeed: showLiveFeedInput.checked,
     liveFeedTitle: liveFeedTitleInput.value.trim(),
     showSpawnAlert: showSpawnAlertInput.checked,
@@ -262,6 +458,27 @@ configForm.addEventListener('submit', (e) => {
     showCardSprite: showCardSpriteCheckbox.checked,
     showCardTypes: showCardTypesCheckbox.checked,
     showCardInstructions: showCardInstructionsCheckbox.checked,
+    
+    // Custom positioning offsets
+    spawnCardLeft: spawnCardLeftInput.value.trim(),
+    spawnCardRight: spawnCardRightInput.value.trim(),
+    spawnCardTop: spawnCardTopInput.value.trim(),
+    spawnCardBottom: spawnCardBottomInput.value.trim(),
+    tickerPosition: tickerPositionSelect.value,
+    tickerLeft: tickerLeftInput.value.trim(),
+    tickerRight: tickerRightInput.value.trim(),
+    tickerTop: tickerTopInput.value.trim(),
+    tickerBottom: tickerBottomInput.value.trim(),
+    feedPosition: feedPositionSelect.value,
+    feedLeft: feedLeftInput.value.trim(),
+    feedRight: feedRightInput.value.trim(),
+    feedTop: feedTopInput.value.trim(),
+    feedBottom: feedBottomInput.value.trim(),
+    battlePosition: battlePositionSelect.value,
+    battleLeft: battleLeftInput.value.trim(),
+    battleRight: battleRightInput.value.trim(),
+    battleTop: battleTopInput.value.trim(),
+    battleBottom: battleBottomInput.value.trim(),
     
     // Retain spawn target if set
     spawnTarget: spawnTargetInput.value.trim()
@@ -294,6 +511,39 @@ btnSaveTarget.addEventListener('click', () => {
     primaryColor: primaryColorInput.value,
     sfxVolume: parseInt(sfxVolumeInput.value),
     showBattleArena: showBattleArenaInput.checked,
+    showLeaderboard: showLeaderboardInput.checked,
+    
+    // Custom Economy & Game Rewards
+    coinsCaptureNormal: parseInt(coinsCaptureNormalInput.value),
+    coinsCaptureShiny: parseInt(coinsCaptureShinyInput.value),
+    xpCaptureNormal: parseInt(xpCaptureNormalInput.value),
+    xpCaptureShiny: parseInt(xpCaptureShinyInput.value),
+    levelUpCoins: parseInt(levelUpCoinsInput.value),
+    levelUpGreatballs: parseInt(levelUpGreatballsInput.value),
+    levelUpUltraballs: parseInt(levelUpUltraballsInput.value),
+    catchMultiplierPokeball: parseFloat(catchMultiplierPokeballInput.value),
+    catchMultiplierGreatball: parseFloat(catchMultiplierGreatballInput.value),
+    catchMultiplierUltraball: parseFloat(catchMultiplierUltraballInput.value),
+    pricePokeball: parseInt(pricePokeballInput.value),
+    priceGreatball: parseInt(priceGreatballInput.value),
+    priceUltraball: parseInt(priceUltraballInput.value),
+    priceMasterball: parseInt(priceMasterballInput.value),
+    catchMultiplierNormal: parseFloat(catchMultiplierNormalInput.value),
+    catchMultiplierRare: parseFloat(catchMultiplierRareInput.value),
+    catchMultiplierLegendary: parseFloat(catchMultiplierLegendaryInput.value),
+    pricePackKanto: parseInt(pricePackKantoInput.value, 10),
+    pricePackJohto: parseInt(pricePackJohtoInput.value, 10),
+    pricePackHoenn: parseInt(pricePackHoennInput.value, 10),
+    pricePackSinnoh: parseInt(pricePackSinnohInput.value, 10),
+    pricePackUnova: parseInt(pricePackUnovaInput.value, 10),
+    pricePackKalos: parseInt(pricePackKalosInput.value, 10),
+    pricePackAlola: parseInt(pricePackAlolaInput.value, 10),
+    pricePackLegendary: parseInt(pricePackLegendaryInput.value, 10),
+    priceFireStone: parseInt(priceFireStoneInput.value, 10),
+    priceWaterStone: parseInt(priceWaterStoneInput.value, 10),
+    priceThunderStone: parseInt(priceThunderStoneInput.value, 10),
+    priceLeafStone: parseInt(priceLeafStoneInput.value, 10),
+    priceMoonStone: parseInt(priceMoonStoneInput.value, 10),
     showLiveFeed: showLiveFeedInput.checked,
     liveFeedTitle: liveFeedTitleInput.value.trim(),
     showSpawnAlert: showSpawnAlertInput.checked,
@@ -306,6 +556,26 @@ btnSaveTarget.addEventListener('click', () => {
     showCardTypes: showCardTypesCheckbox.checked,
     showCardInstructions: showCardInstructionsCheckbox.checked,
     
+    spawnCardLeft: spawnCardLeftInput.value.trim(),
+    spawnCardRight: spawnCardRightInput.value.trim(),
+    spawnCardTop: spawnCardTopInput.value.trim(),
+    spawnCardBottom: spawnCardBottomInput.value.trim(),
+    tickerPosition: tickerPositionSelect.value,
+    tickerLeft: tickerLeftInput.value.trim(),
+    tickerRight: tickerRightInput.value.trim(),
+    tickerTop: tickerTopInput.value.trim(),
+    tickerBottom: tickerBottomInput.value.trim(),
+    feedPosition: feedPositionSelect.value,
+    feedLeft: feedLeftInput.value.trim(),
+    feedRight: feedRightInput.value.trim(),
+    feedTop: feedTopInput.value.trim(),
+    feedBottom: feedBottomInput.value.trim(),
+    battlePosition: battlePositionSelect.value,
+    battleLeft: battleLeftInput.value.trim(),
+    battleRight: battleRightInput.value.trim(),
+    battleTop: battleTopInput.value.trim(),
+    battleBottom: battleBottomInput.value.trim(),
+    
     spawnTarget: target
   };
   
@@ -313,9 +583,36 @@ btnSaveTarget.addEventListener('click', () => {
   alert(`Next spawn target locked to: "${target}". Check overlay or click Force Spawn!`);
 });
 
-// Button triggers
+// manual spawn trigger
 btnForceSpawn.addEventListener('click', () => {
   socket.emit('force_spawn', { password: adminPassword });
+});
+
+// Trigger Boss Raid API call
+btnTriggerRaid.addEventListener('click', async () => {
+  const bossName = raidBossTargetInput.value.trim();
+  
+  try {
+    const res = await fetch('/api/trigger-raid', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        channelId: channelId,
+        bossName: bossName,
+        password: adminPassword
+      })
+    });
+    
+    if (res.ok) {
+      alert('Boss Raid triggered successfully!');
+      raidBossTargetInput.value = '';
+    } else {
+      const err = await res.json();
+      alert(`Failed to trigger Boss Raid: ${err.error || 'Server error'}`);
+    }
+  } catch (err) {
+    alert(`Connection error: ${err.message}`);
+  }
 });
 
 btnResetDb.addEventListener('click', () => {

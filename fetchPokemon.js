@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const LIMIT = 386; // Gen 1 to Gen 3
+const LIMIT = 1025; // Gen 1 to Gen 9
 const OUTPUT_DIR = path.join(__dirname, 'backend', 'data');
 const OUTPUT_FILE = path.join(OUTPUT_DIR, 'pokemon.json');
 
@@ -226,6 +226,80 @@ async function run() {
     };
   });
   
+  // Fetch remaining Gen 8 & 9 Pokémon from PokeAPI
+  console.log('Fetching remaining Gen 8 & 9 Pokémon from PokeAPI...');
+  const startId = 810;
+  const endId = 1025;
+  const ids = [];
+  for (let id = startId; id <= endId; id++) {
+    ids.push(id);
+  }
+
+  // Fetch in batches of 20
+  const batchSize = 20;
+  for (let i = 0; i < ids.length; i += batchSize) {
+    const batch = ids.slice(i, i + batchSize);
+    console.log(`Fetching batch: IDs ${batch[0]} to ${batch[batch.length - 1]}...`);
+    await Promise.all(batch.map(async (id) => {
+      try {
+        const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+        if (!res.ok) {
+          console.warn(`[PokeAPI] Failed to fetch ID ${id}: status ${res.status}`);
+          return;
+        }
+        const data = await res.json();
+        const name = data.name.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        const types = data.types.map(t => t.type.name.toLowerCase());
+        
+        const hp = data.stats[0].base_stat;
+        const attack = data.stats[1].base_stat;
+        const defense = data.stats[2].base_stat;
+        const spAttack = data.stats[3].base_stat;
+        const spDefense = data.stats[4].base_stat;
+        const speed = data.stats[5].base_stat;
+        
+        const statsSum = hp + attack + defense + speed + spAttack + spDefense;
+        
+        let catchRate = 0.55;
+        if (statsSum >= 580) {
+          catchRate = 0.04;
+        } else if (statsSum >= 480) {
+          catchRate = 0.12;
+        } else if (statsSum >= 380) {
+          catchRate = 0.22;
+        } else if (statsSum >= 300) {
+          catchRate = 0.35;
+        }
+        
+        const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/${id}.gif`;
+        const shinySpriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/shiny/${id}.gif`;
+        const fallbackSpriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
+        const fallbackShinySpriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/${id}.png`;
+        
+        pokemonDb[id] = {
+          id: id,
+          name: name,
+          types: types,
+          stats: {
+            hp: hp,
+            attack: attack,
+            defense: defense,
+            speed: speed
+          },
+          statsSum: statsSum,
+          catchRate: catchRate,
+          spriteUrl: spriteUrl,
+          shinySpriteUrl: shinySpriteUrl,
+          fallbackSpriteUrl: fallbackSpriteUrl,
+          fallbackShinySpriteUrl: fallbackShinySpriteUrl,
+          evolution: null
+        };
+      } catch (err) {
+        console.error(`[PokeAPI] Error fetching ID ${id}:`, err.message);
+      }
+    }));
+  }
+
   fs.writeFileSync(OUTPUT_FILE, JSON.stringify(pokemonDb, null, 2), 'utf-8');
   console.log(`Successfully generated ${OUTPUT_FILE} with ${Object.keys(pokemonDb).length} Pokémon!`);
 }
