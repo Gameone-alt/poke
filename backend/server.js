@@ -95,7 +95,9 @@ app.post('/api/chat', async (req, res) => {
   
   try {
     console.log(`[API Chat Relay] [${channelId}] ${displayName || username}: ${messageText}`);
-    const reply = await processCommand(channelId.toLowerCase().trim(), username, displayName || username, messageText);
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+    const baseUrl = `${protocol}://${req.headers.host}`;
+    const reply = await processCommand(channelId.toLowerCase().trim(), username, displayName || username, messageText, baseUrl);
     res.status(200).json({ success: true, reply });
   } catch (err) {
     console.error('[API Chat Relay] Error processing command:', err.message);
@@ -618,8 +620,9 @@ async function addXPAndCoins(channelId, username, displayName, xpAmount, coinsAm
 }
 
 // Master command processing function
-async function processCommand(channelId, username, displayName, messageText) {
+async function processCommand(channelId, username, displayName, messageText, baseUrl) {
   const session = getOrCreateSession(channelId);
+  const finalBaseUrl = baseUrl || process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000';
   const cleanMsg = messageText.toLowerCase().trim();
   
   // 1. !daily command
@@ -651,7 +654,7 @@ async function processCommand(channelId, username, displayName, messageText) {
     const buddy = user.inventory.find(p => p.instanceId === user.buddyInstanceId);
     const buddyText = buddy ? ` | Buddy: ${buddy.name}` : '';
 
-    const msg = `🎒 @${displayName} (Lv.${user.level} | ${user.xp}/${user.level * 100} XP): owns ${invCount} Pokémon. ${activeText}${buddyText} | Coins: 🪙 ${user.coins} | Balls: ${user.balls.pokeball} Poké, ${user.balls.greatball} Great, ${user.balls.ultraball} Ultra, ${user.balls.masterball} Master.`;
+    const msg = `🎒 @${displayName} (Lv.${user.level} | ${user.xp}/${user.level * 100} XP): owns ${invCount} Pokémon. ${activeText}${buddyText} | Coins: 🪙 ${user.coins} | Balls: ${user.balls.pokeball} Poké, ${user.balls.greatball} Great, ${user.balls.ultraball} Ultra, ${user.balls.masterball} Master. View Inventory: ${finalBaseUrl}/trainer/${channelId}/${username}`;
     
     io.to(channelId).emit('command_feedback', {
       username,
@@ -1607,7 +1610,10 @@ io.on('connection', async (socket) => {
   socket.on('simulate_chat', (data) => {
     const { username, displayName, messageText } = data;
     console.log(`[Simulator] [${channelId}] ${displayName} (${username}): ${messageText}`);
-    processCommand(channelId, username, displayName, messageText);
+    const host = socket.handshake.headers.host || 'localhost:3000';
+    const protocol = socket.handshake.headers['x-forwarded-proto'] || 'http';
+    const baseUrl = `${protocol}://${host}`;
+    processCommand(channelId, username, displayName, messageText, baseUrl);
   });
 
   socket.on('update_config', async (data) => {
