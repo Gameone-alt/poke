@@ -513,6 +513,21 @@ async function runBattle(channelId, playerA, playerB) {
     fallbackB = pokeB.shiny ? lookupB?.fallbackShinySpriteUrl : lookupB?.fallbackSpriteUrl;
   }
 
+  const getBasePower = (p) => (p.baseStats.hp * 0.2) + (p.baseStats.attack * 0.4) + (p.baseStats.defense * 0.3) + (p.baseStats.speed * 0.1);
+  const powerA = getBasePower(pokeA);
+  const powerB = getBasePower(pokeB);
+
+  const multA = getCombatMultiplier(pokeA.types, pokeB.types);
+  const multB = getCombatMultiplier(pokeB.types, pokeA.types);
+
+  const varianceA = 0.85 + Math.random() * 0.30;
+  const varianceB = 0.85 + Math.random() * 0.30;
+
+  const finalPowerA = powerA * multA * varianceA;
+  const finalPowerB = powerB * multB * varianceB;
+
+  const winner = finalPowerA >= finalPowerB ? 'challenger' : 'opponent';
+
   // Trigger battle overlay
   io.to(channelId).emit('battle_start', {
     challenger: playerA.displayName,
@@ -533,21 +548,6 @@ async function runBattle(channelId, playerA, playerB) {
   });
 
   sendGameLog(channelId, 'battle', `⚔️ Battle Started: @${playerA.displayName}'s ${pokeA.name} vs ${opponentName}'s ${pokeB.name}!`);
-
-  const getBasePower = (p) => (p.baseStats.hp * 0.2) + (p.baseStats.attack * 0.4) + (p.baseStats.defense * 0.3) + (p.baseStats.speed * 0.1);
-  const powerA = getBasePower(pokeA);
-  const powerB = getBasePower(pokeB);
-
-  const multA = getCombatMultiplier(pokeA.types, pokeB.types);
-  const multB = getCombatMultiplier(pokeB.types, pokeA.types);
-
-  const varianceA = 0.85 + Math.random() * 0.30;
-  const varianceB = 0.85 + Math.random() * 0.30;
-
-  const finalPowerA = powerA * multA * varianceA;
-  const finalPowerB = powerB * multB * varianceB;
-
-  const winner = finalPowerA >= finalPowerB ? 'challenger' : 'opponent';
   
   setTimeout(async () => {
     // Guard clause: ensure the session still exists
