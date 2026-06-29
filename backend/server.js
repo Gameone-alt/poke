@@ -1246,8 +1246,17 @@ async function processCommand(channelId, username, displayName, messageText, bas
       return msg;
     }
     
-    let stoneInput = parts[1].toLowerCase().trim().replace('_', '');
-    let pokeQuery = parts.slice(2).join(' ').toLowerCase().trim();
+    let stoneInput = '';
+    let pokeQuery = '';
+    
+    // Check if they typed e.g. "!use fire stone eevee"
+    if (parts[2] && parts[2].toLowerCase() === 'stone' && parts.length >= 4) {
+      stoneInput = (parts[1] + '_' + parts[2]).toLowerCase().trim().replace('_', '');
+      pokeQuery = parts.slice(3).join(' ').toLowerCase().trim();
+    } else {
+      stoneInput = parts[1].toLowerCase().trim().replace('_', '');
+      pokeQuery = parts.slice(2).join(' ').toLowerCase().trim();
+    }
     
     let stoneKey = '';
     if (stoneInput.includes('fire')) stoneKey = 'fire_stone';
