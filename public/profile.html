@@ -528,6 +528,77 @@
         <div class="empty-state">No Pokémon in collection yet. Go catch some spawns!</div>
       </div>
     </div>
+
+    <!-- Chat Commands Guide -->
+    <div class="commands-section" style="margin-top: 25px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);">
+      <div class="section-title" style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+        🎮 Stream Chat Commands Guide
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr; gap: 10px; text-align: left; font-size: 13px;">
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: grid; grid-template-columns: 140px 1fr; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+            <code style="color: #38bdf8; font-weight: bold; background: rgba(56,189,248,0.1); padding: 2px 6px; border-radius: 4px; width: fit-content; text-align: center;">!profile</code>
+            <span style="color: #cbd5e1; margin-left: 10px;">View your online trainer profile link.</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 140px 1fr; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+            <code style="color: #38bdf8; font-weight: bold; background: rgba(56,189,248,0.1); padding: 2px 6px; border-radius: 4px; width: fit-content; text-align: center;">!daily</code>
+            <span style="color: #cbd5e1; margin-left: 10px;">Claims your daily login coins and balls reward.</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 140px 1fr; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+            <code style="color: #38bdf8; font-weight: bold; background: rgba(56,189,248,0.1); padding: 2px 6px; border-radius: 4px; width: fit-content; text-align: center;">!coins</code>
+            <span style="color: #cbd5e1; margin-left: 10px;">Check your current coin balance in chat.</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 140px 1fr; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+            <code style="color: #38bdf8; font-weight: bold; background: rgba(56,189,248,0.1); padding: 2px 6px; border-radius: 4px; width: fit-content; text-align: center;">!catch [type]</code>
+            <span style="color: #cbd5e1; margin-left: 10px;">Throw a ball to catch the wild Pokémon (types: <code>poke</code>, <code>great</code>, <code>ultra</code>, <code>master</code>).</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 140px 1fr; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+            <code style="color: #38bdf8; font-weight: bold; background: rgba(56,189,248,0.1); padding: 2px 6px; border-radius: 4px; width: fit-content; text-align: center;">!shop</code>
+            <span style="color: #cbd5e1; margin-left: 10px;">Lists all items and stone/pack bundles you can buy.</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 140px 1fr; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+            <code style="color: #38bdf8; font-weight: bold; background: rgba(56,189,248,0.1); padding: 2px 6px; border-radius: 4px; width: fit-content; text-align: center;">!buy [item] [qty]</code>
+            <span style="color: #cbd5e1; margin-left: 10px;">Purchase items from the shop (e.g. <code>!buy ultraball 5</code>).</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 140px 1fr; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+            <code style="color: #38bdf8; font-weight: bold; background: rgba(56,189,248,0.1); padding: 2px 6px; border-radius: 4px; width: fit-content; text-align: center;">!buddy [name]</code>
+            <span style="color: #cbd5e1; margin-left: 10px;">Sets your companion buddy shown on your profile card.</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 140px 1fr; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+            <code style="color: #38bdf8; font-weight: bold; background: rgba(56,189,248,0.1); padding: 2px 6px; border-radius: 4px; width: fit-content; text-align: center;">!select [name]</code>
+            <span style="color: #cbd5e1; margin-left: 10px;">Selects active combat fighter for battles.</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 140px 1fr; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+            <code style="color: #38bdf8; font-weight: bold; background: rgba(56,189,248,0.1); padding: 2px 6px; border-radius: 4px; width: fit-content; text-align: center;">!fight [@user/wild]</code>
+            <span style="color: #cbd5e1; margin-left: 10px;">Challenge another viewer or fight the active wild spawn.</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 140px 1fr; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+            <code style="color: #38bdf8; font-weight: bold; background: rgba(56,189,248,0.1); padding: 2px 6px; border-radius: 4px; width: fit-content; text-align: center;">!accept [name]</code>
+            <span style="color: #cbd5e1; margin-left: 10px;">Accept a pending battle challenge.</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 140px 1fr; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+            <code style="color: #38bdf8; font-weight: bold; background: rgba(56,189,248,0.1); padding: 2px 6px; border-radius: 4px; width: fit-content; text-align: center;">!use [stone] [name]</code>
+            <span style="color: #cbd5e1; margin-left: 10px;">Evolve a Pokémon (e.g. <code>!use fire_stone Eevee</code>).</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 140px 1fr; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+            <code style="color: #38bdf8; font-weight: bold; background: rgba(56,189,248,0.1); padding: 2px 6px; border-radius: 4px; width: fit-content; text-align: center;">!fuse [name]</code>
+            <span style="color: #cbd5e1; margin-left: 10px;">Combines duplicate Pokémon to boost base stats (stars ★ level).</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 140px 1fr; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+            <code style="color: #38bdf8; font-weight: bold; background: rgba(56,189,248,0.1); padding: 2px 6px; border-radius: 4px; width: fit-content; text-align: center;">!trade [name]</code>
+            <span style="color: #cbd5e1; margin-left: 10px;">Offer a duplicate Pokémon to the trade pool.</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 140px 1fr; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+            <code style="color: #38bdf8; font-weight: bold; background: rgba(56,189,248,0.1); padding: 2px 6px; border-radius: 4px; width: fit-content; text-align: center;">!accept @user</code>
+            <span style="color: #cbd5e1; margin-left: 10px;">Mutually confirm trade exchange with target player.</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 140px 1fr; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+            <code style="color: #38bdf8; font-weight: bold; background: rgba(56,189,248,0.1); padding: 2px 6px; border-radius: 4px; width: fit-content; text-align: center;">!attack</code>
+            <span style="color: #cbd5e1; margin-left: 10px;">Attack the active Gigantamax Raid Boss.</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="/profile.js"></script>

@@ -780,8 +780,8 @@ async function processCommand(channelId, username, displayName, messageText, bas
     }
   }
 
-  // 2. !inventory command
-  if (cleanMsg === '!inventory' || cleanMsg === 'inventory' || cleanMsg === '!pokebox' || cleanMsg === 'pokebox') {
+  // 2. !profile / !inventory command
+  if (cleanMsg === '!profile' || cleanMsg === 'profile' || cleanMsg === '!inventory' || cleanMsg === 'inventory' || cleanMsg === '!inv' || cleanMsg === 'inv' || cleanMsg === '!pokebox' || cleanMsg === 'pokebox') {
     const user = await db.getUser(channelId, username, displayName);
     const invCount = user.inventory.length;
     const active = user.inventory.find(p => p.instanceId === user.activePokemonId);
@@ -794,7 +794,7 @@ async function processCommand(channelId, username, displayName, messageText, bas
     const baseLink = session.config.inventoryBaseUrl 
       ? `${session.config.inventoryBaseUrl.replace(/\/$/, '')}/trainer/${channelId}/${username}?backend=${finalBaseUrl}` 
       : `${finalBaseUrl}/trainer/${channelId}/${username}`;
-    const msg = `@${displayName} View Inventory (Click Here): ${baseLink}`;
+    const msg = `🔗 @${displayName}'s Profile: ${baseLink}`;
     
     io.to(channelId).emit('command_feedback', {
       username,
