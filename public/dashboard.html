@@ -251,10 +251,15 @@
               </div>
               
               <div class="form-row">
-                <div class="form-group" style="grid-column: span 2;">
+                <div class="form-group">
                   <label for="battle-accept-timeout">Battle Challenge Accept Timer (seconds)</label>
                   <input type="number" id="battle-accept-timeout" min="10" max="300" value="30">
                   <small>How long a player has to type '!accept [pokemon]' before a challenged battle offer expires.</small>
+                </div>
+                <div class="form-group">
+                  <label for="stream-delay">Stream Delay (seconds)</label>
+                  <input type="number" id="stream-delay" min="0" max="60" value="0">
+                  <small>Delay chat command processing by this many seconds to sync with Twitch/YouTube delay.</small>
                 </div>
               </div>
               

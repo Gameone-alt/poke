@@ -104,12 +104,31 @@ app.post('/api/chat', async (req, res) => {
   }
   
   try {
-    console.log(`[API Chat Relay] [${channelId}] ${displayName || username}: ${messageText}`);
+    const cleanChannelId = channelId.toLowerCase().trim();
+    await ensureSessionInitialized(cleanChannelId);
+    
+    const session = activeSessions.get(cleanChannelId);
+    const delaySeconds = session && session.config && session.config.streamDelaySeconds ? Number(session.config.streamDelaySeconds) : 0;
+    const delayMs = delaySeconds * 1000;
     const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
     const baseUrl = `${protocol}://${req.headers.host}`;
-    await ensureSessionInitialized(channelId.toLowerCase().trim());
-    const reply = await processCommand(channelId.toLowerCase().trim(), username, displayName || username, messageText, baseUrl);
-    res.status(200).json({ success: true, reply });
+    
+    if (delayMs > 0) {
+      setTimeout(async () => {
+        try {
+          console.log(`[API Chat Relay Delayed ${delaySeconds}s] [${cleanChannelId}] ${displayName || username}: ${messageText}`);
+          const reply = await processCommand(cleanChannelId, username, displayName || username, messageText, baseUrl);
+          res.status(200).json({ success: true, reply });
+        } catch (err) {
+          console.error('[API Chat Relay Delayed] Error:', err.message);
+          res.status(500).json({ error: err.message });
+        }
+      }, delayMs);
+    } else {
+      console.log(`[API Chat Relay] [${cleanChannelId}] ${displayName || username}: ${messageText}`);
+      const reply = await processCommand(cleanChannelId, username, displayName || username, messageText, baseUrl);
+      res.status(200).json({ success: true, reply });
+    }
   } catch (err) {
     console.error('[API Chat Relay] Error processing command:', err.message);
     res.status(500).json({ error: err.message });
@@ -124,12 +143,31 @@ app.get('/api/chat', async (req, res) => {
   }
   
   try {
-    console.log(`[API Chat Relay GET] [${channelId}] ${displayName || username}: ${messageText}`);
+    const cleanChannelId = channelId.toLowerCase().trim();
+    await ensureSessionInitialized(cleanChannelId);
+    
+    const session = activeSessions.get(cleanChannelId);
+    const delaySeconds = session && session.config && session.config.streamDelaySeconds ? Number(session.config.streamDelaySeconds) : 0;
+    const delayMs = delaySeconds * 1000;
     const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
     const baseUrl = `${protocol}://${req.headers.host}`;
-    await ensureSessionInitialized(channelId.toLowerCase().trim());
-    const reply = await processCommand(channelId.toLowerCase().trim(), username, displayName || username, messageText, baseUrl);
-    res.status(200).send(reply); // Send raw text reply directly
+    
+    if (delayMs > 0) {
+      setTimeout(async () => {
+        try {
+          console.log(`[API Chat Relay GET Delayed ${delaySeconds}s] [${cleanChannelId}] ${displayName || username}: ${messageText}`);
+          const reply = await processCommand(cleanChannelId, username, displayName || username, messageText, baseUrl);
+          res.status(200).send(reply);
+        } catch (err) {
+          console.error('[API Chat Relay GET Delayed] Error:', err.message);
+          res.status(500).send('Error: ' + err.message);
+        }
+      }, delayMs);
+    } else {
+      console.log(`[API Chat Relay GET] [${cleanChannelId}] ${displayName || username}: ${messageText}`);
+      const reply = await processCommand(cleanChannelId, username, displayName || username, messageText, baseUrl);
+      res.status(200).send(reply);
+    }
   } catch (err) {
     console.error('[API Chat Relay GET] Error processing command:', err.message);
     res.status(500).send('Error: ' + err.message);
