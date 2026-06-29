@@ -1680,13 +1680,23 @@ async function processCommand(channelId, username, displayName, messageText, bas
     boss.currentHp = Math.max(0, boss.currentHp - attackPower);
     boss.participants[username] = (boss.participants[username] || 0) + attackPower;
     
+    // Prepare sorted list of contributors
+    const sortedContributors = Object.entries(boss.participants)
+      .map(([uname, dmg]) => {
+        // Fetch display name if available in memory sessions, or fall back to username
+        return { username: uname, damage: dmg };
+      })
+      .sort((a, b) => b.damage - a.damage);
+
     io.to(channelId).emit('raid_hit', {
       username,
       displayName,
       pokemonName,
       damage: attackPower,
       currentHp: boss.currentHp,
-      maxHp: boss.maxHp
+      maxHp: boss.maxHp,
+      types: activePoke ? activePoke.types : [],
+      contributors: sortedContributors
     });
     
     let reply = `@${displayName}'s ${pokemonName} hit ${boss.name} for 💥 ${attackPower} damage! (${boss.currentHp}/${boss.maxHp} HP left)`;

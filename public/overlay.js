@@ -1344,6 +1344,7 @@ socket.on('raid_start', (data) => {
   const hpFill = document.getElementById('raid-hp-fill');
   const hpText = document.getElementById('raid-hp-text');
   const list = document.getElementById('raid-contrib-list');
+  const card = document.querySelector('.raid-card');
   
   if (!raidOverlay || !sprite || !name || !hpFill || !hpText || !list) return;
   
@@ -1353,32 +1354,81 @@ socket.on('raid_start', (data) => {
   hpText.textContent = `${data.maxHp} / ${data.maxHp} HP`;
   list.innerHTML = '<div style="color: #94a3b8; font-style: italic;">Attackers joining...</div>';
   
+  if (card) {
+    card.classList.add('gigantamax-active');
+  }
+  
   raidOverlay.classList.remove('hidden');
 });
 
 socket.on('raid_hit', (data) => {
-  playSound(sfxHit);
   const hpFill = document.getElementById('raid-hp-fill');
   const hpText = document.getElementById('raid-hp-text');
   const list = document.getElementById('raid-contrib-list');
-  
-  if (hpFill && hpText) {
-    const percent = (data.currentHp / data.maxHp) * 100;
-    hpFill.style.width = `${percent}%`;
-    hpText.textContent = `${data.currentHp} / ${data.maxHp} HP`;
-  }
-  
-  if (list && data.currentHp > 0) {
-    // We don't have full participants data on hit inside this payload, but let's draw damage hit log
-    list.innerHTML = `<div style="color: #e11d48; font-weight: 600;">💥 @${data.displayName}'s ${data.pokemonName} hit for ${data.damage}!</div>`;
-  }
-  
+  const sprite = document.getElementById('raid-boss-sprite');
   const card = document.querySelector('.raid-card');
-  if (card) {
-    card.style.borderColor = '#ffffff';
-    setTimeout(() => {
-      card.style.borderColor = 'rgba(225, 29, 72, 0.4)';
-    }, 150);
+  
+  if (!sprite) return;
+
+  // 1. Calculate hit position on Raid Boss card
+  const rect = sprite.getBoundingClientRect();
+  const endX = rect.left + rect.width / 2;
+  const endY = rect.top + rect.height / 2;
+  
+  // Projectile starts from a random spot at the bottom of the screen (chat style)
+  const startX = Math.random() * window.innerWidth;
+  const startY = window.innerHeight;
+
+  // 2. Spawn flying type-based raid projectile
+  shootRaidProjectile(startX, startY, endX, endY, data.types, () => {
+    playSound(sfxHit);
+    
+    // Shake card on hit
+    if (card) {
+      card.classList.add('raid-boss-hit-active');
+      setTimeout(() => card.classList.remove('raid-boss-hit-active'), 200);
+    }
+
+    // Show floating damage popup on boss card
+    showDamagePopup(endX, endY - 30, `-${data.damage} HP!`, '#f43f5e');
+    
+    // Particle explosion
+    createHitParticles(endX, endY, '#f43f5e');
+
+    // Update health bars
+    if (hpFill && hpText) {
+      const percent = (data.currentHp / data.maxHp) * 100;
+      hpFill.style.width = `${percent}%`;
+      hpText.textContent = `${data.currentHp} / ${data.maxHp} HP`;
+    }
+  });
+
+  // 3. Render Top 4 attackers leaderboard
+  if (list && data.contributors && data.contributors.length > 0) {
+    let html = '';
+    // Show top 4 contributors
+    const top4 = data.contributors.slice(0, 4);
+    top4.forEach((c, index) => {
+      let medal = '⚔️';
+      if (index === 0) medal = '🥇';
+      else if (index === 1) medal = '🥈';
+      else if (index === 2) medal = '🥉';
+
+      const sharePct = Math.round((c.damage / data.maxHp) * 100);
+      
+      html += `
+        <div class="contrib-row">
+          <div class="contrib-header-info">
+            <span class="contrib-rank-name">${medal} <strong>@${c.username}</strong></span>
+            <span>💥 ${c.damage} dmg (${sharePct}%)</span>
+          </div>
+          <div class="contrib-progress-outer">
+            <div class="contrib-progress-fill" style="width: ${sharePct}%"></div>
+          </div>
+        </div>
+      `;
+    });
+    list.innerHTML = html;
   }
 });
 
@@ -1386,7 +1436,12 @@ socket.on('raid_end', (data) => {
   const hpFill = document.getElementById('raid-hp-fill');
   const hpText = document.getElementById('raid-hp-text');
   const list = document.getElementById('raid-contrib-list');
+  const card = document.querySelector('.raid-card');
   
+  if (card) {
+    card.classList.remove('gigantamax-active');
+  }
+
   if (data.victory) {
     playSound(sfxEvolve);
     if (hpFill && hpText) {
@@ -1394,12 +1449,12 @@ socket.on('raid_end', (data) => {
       hpText.textContent = 'DEFEATED!';
     }
     if (list) {
-      list.innerHTML = `<div style="color: #10b981; font-weight: 700;">🏆 Raid Defeated! Chat Wins!</div>`;
+      list.innerHTML = `<div style="color: #10b981; font-weight: 800; font-size: 13px; text-align: center; padding: 10px; background: rgba(16, 185, 129, 0.1); border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.2);">🏆 Raid Defeated! Chat Wins!</div>`;
     }
   } else {
     playSound(sfxCatchFail);
     if (list) {
-      list.innerHTML = `<div style="color: #64748b; font-style: italic;">Boss fled...</div>`;
+      list.innerHTML = `<div style="color: #94a3b8; font-style: italic; text-align: center; padding: 10px;">💨 The Raid Boss fled into the clouds...</div>`;
     }
   }
   
@@ -1408,8 +1463,46 @@ socket.on('raid_end', (data) => {
     if (raidOverlay) {
       raidOverlay.classList.add('hidden');
     }
-  }, 4000);
+  }, 5000);
 });
+
+// Helper: Spawn flying projectile for Boss Raid hit
+function shootRaidProjectile(startX, startY, endX, endY, types, callback) {
+  let emoji = '💥'; // Default physical strike
+  let color = '#f43f5e';
+  let shadow = 'rgba(244, 63, 94, 0.8)';
+  
+  const tList = types ? types.map(t => t.toLowerCase()) : [];
+  if (tList.includes('fire')) { emoji = '🔥'; color = '#f97316'; shadow = 'rgba(249, 115, 22, 0.8)'; }
+  else if (tList.includes('water')) { emoji = '💧'; color = '#3b82f6'; shadow = 'rgba(59, 130, 246, 0.8)'; }
+  else if (tList.includes('electric')) { emoji = '⚡'; color = '#eab308'; shadow = 'rgba(234, 179, 8, 0.8)'; }
+  else if (tList.includes('grass')) { emoji = '🍃'; color = '#22c55e'; shadow = 'rgba(34, 197, 94, 0.8)'; }
+  else if (tList.includes('ghost') || tList.includes('psychic')) { emoji = '🔮'; color = '#a855f7'; shadow = 'rgba(168, 85, 247, 0.8)'; }
+  
+  const proj = document.createElement('div');
+  proj.textContent = emoji;
+  proj.style.position = 'fixed';
+  proj.style.fontSize = '36px';
+  proj.style.left = `${startX - 18}px`;
+  proj.style.top = `${startY - 18}px`;
+  proj.style.zIndex = '9999';
+  proj.style.pointerEvents = 'none';
+  proj.style.filter = `drop-shadow(0 0 12px ${shadow})`;
+  document.body.appendChild(proj);
+  
+  const anim = proj.animate([
+    { left: `${startX - 18}px`, top: `${startY - 18}px`, transform: 'scale(1) rotate(0deg)' },
+    { left: `${endX - 18}px`, top: `${endY - 18}px`, transform: 'scale(1.8) rotate(360deg)' }
+  ], {
+    duration: 600,
+    easing: 'ease-out'
+  });
+  
+  anim.onfinish = () => {
+    proj.remove();
+    if (callback) callback();
+  };
+}
 
 // Marquee Leaderboard Ticker Logic
 let tickerInterval = null;
