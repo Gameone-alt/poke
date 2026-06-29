@@ -74,6 +74,9 @@ const BALL_SPRITES = {
 
 // Handle Image error fallback wrapper
 function getSafeSprite(spriteUrl, fallbackUrl) {
+  if (currentOverlayConfig && currentOverlayConfig.spriteFormat === 'static') {
+    return fallbackUrl || spriteUrl;
+  }
   return spriteUrl || fallbackUrl;
 }
 
@@ -102,6 +105,7 @@ function triggerShinySparkles() {
 }
 
 let currentOverlayConfig = {};
+let catchGuideInterval = null;
 
 function applyConfig(config) {
   if (!config) return;
@@ -301,15 +305,34 @@ function applyConfig(config) {
     // Catch Instruction Guide & Visibility
     const catchInstruction = wildSpawnContainer.querySelector('.catch-instruction');
     if (catchInstruction) {
+      if (catchGuideInterval) {
+        clearInterval(catchGuideInterval);
+        catchGuideInterval = null;
+      }
       if (config.showCardInstructions === false) {
         catchInstruction.classList.add('hidden');
       } else {
         catchInstruction.classList.remove('hidden');
-        let guideHtml = config.spawnCatchGuide || 'Type <span class="cmd-text">catch</span> in chat!';
-        if (!guideHtml.includes('<span') && (guideHtml.toLowerCase().includes('catch') || guideHtml.toLowerCase().includes('!catch'))) {
-          guideHtml = guideHtml.replace(/(catch|!catch)/i, '<span class="cmd-text">$1</span>');
+        if (config.spawnCatchGuideMode === 'rotate') {
+          const rotations = [
+            'Type <span class="cmd-text">!catch</span> to use Pokéball!',
+            'Type <span class="cmd-text">!catch great</span> for Great Ball!',
+            'Type <span class="cmd-text">!catch ultra</span> for Ultra Ball!',
+            'Type <span class="cmd-text">!catch master</span> for Master Ball!'
+          ];
+          let rotateIdx = 0;
+          catchInstruction.innerHTML = rotations[rotateIdx];
+          catchGuideInterval = setInterval(() => {
+            rotateIdx = (rotateIdx + 1) % rotations.length;
+            catchInstruction.innerHTML = rotations[rotateIdx];
+          }, 4000);
+        } else {
+          let guideHtml = config.spawnCatchGuide || 'Type <span class="cmd-text">!catch</span> in chat!';
+          if (!guideHtml.includes('<span') && (guideHtml.toLowerCase().includes('catch') || guideHtml.toLowerCase().includes('!catch'))) {
+            guideHtml = guideHtml.replace(/(catch|!catch)/i, '<span class="cmd-text">$1</span>');
+          }
+          catchInstruction.innerHTML = guideHtml;
         }
-        catchInstruction.innerHTML = guideHtml;
       }
     }
   }

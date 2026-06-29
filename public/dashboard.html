@@ -427,7 +427,14 @@
                   </select>
                 </div>
                 <div class="form-group">
-                  <label for="sfx-volume">SFX Audio Volume (0 to 100)</label>
+                  <label for="sprite-format">Pokémon Image Format</label>
+                  <select id="sprite-format" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
+                    <option value="animated">Animated GIF (Showdown Gen 5)</option>
+                    <option value="static">Static PNG Artwork (Official Artwork)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="sfx-volume">SFX Volume (0 to 100)</label>
                   <input type="number" id="sfx-volume" min="0" max="100" value="50">
                 </div>
               </div>
@@ -464,9 +471,19 @@
 
               <div class="form-row">
                 <div class="form-group">
-                  <label for="spawn-catch-guide">Wild Spawn Catch Guide Text</label>
+                  <label for="spawn-catch-guide-mode">Catch Guide Display Mode</label>
+                  <select id="spawn-catch-guide-mode" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
+                    <option value="static">Use Custom Text (Entered below)</option>
+                    <option value="rotate">Auto-Rotate commands (!catch, !catch great, etc.)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="spawn-catch-guide">Custom Catch Guide Text (if Custom)</label>
                   <input type="text" id="spawn-catch-guide" placeholder="e.g. Type !catch in chat!">
                 </div>
+              </div>
+
+              <div class="form-row">
                 <div class="form-group">
                   <label for="primary-color">Primary UI Highlight Color</label>
                   <div style="display: flex; gap: 8px; align-items: center;">

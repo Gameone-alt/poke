@@ -107,6 +107,8 @@ const configForm = document.getElementById('config-form');
 
 // UI Customization DOM elements
 const themeSelect = document.getElementById('theme');
+const spriteFormatSelect = document.getElementById('sprite-format');
+const spawnCatchGuideModeSelect = document.getElementById('spawn-catch-guide-mode');
 const primaryColorInput = document.getElementById('primary-color');
 const primaryColorTextInput = document.getElementById('primary-color-text');
 const sfxVolumeInput = document.getElementById('sfx-volume');
@@ -242,6 +244,8 @@ function populateConfig(config) {
   
   // Customization fields
   themeSelect.value = config.theme || 'modern';
+  spriteFormatSelect.value = config.spriteFormat || 'animated';
+  spawnCatchGuideModeSelect.value = config.spawnCatchGuideMode || 'static';
   primaryColorInput.value = config.primaryColor || '#3b82f6';
   primaryColorTextInput.value = config.primaryColor || '#3b82f6';
   sfxVolumeInput.value = config.sfxVolume !== undefined ? config.sfxVolume : 50;
@@ -407,6 +411,8 @@ configForm.addEventListener('submit', (e) => {
     
     // UI Customization
     theme: themeSelect.value,
+    spriteFormat: spriteFormatSelect.value,
+    spawnCatchGuideMode: spawnCatchGuideModeSelect.value,
     primaryColor: primaryColorInput.value,
     sfxVolume: parseInt(sfxVolumeInput.value),
     showBattleArena: showBattleArenaInput.checked,
@@ -512,6 +518,8 @@ btnSaveTarget.addEventListener('click', () => {
     catchCooldownMs: parseInt(catchCooldownInput.value) * 1000,
     shinyChance: parseFloat(shinyChanceInput.value) / 100,
     theme: themeSelect.value,
+    spriteFormat: spriteFormatSelect.value,
+    spawnCatchGuideMode: spawnCatchGuideModeSelect.value,
     primaryColor: primaryColorInput.value,
     sfxVolume: parseInt(sfxVolumeInput.value),
     showBattleArena: showBattleArenaInput.checked,
