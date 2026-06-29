@@ -427,8 +427,8 @@
                   </select>
                 </div>
                 <div class="form-group">
-                  <label for="sfx-volume">SFX Audio Volume (0 to 1)</label>
-                  <input type="number" id="sfx-volume" step="0.1" min="0" max="1" value="0.5">
+                  <label for="sfx-volume">SFX Audio Volume (0 to 100)</label>
+                  <input type="number" id="sfx-volume" min="0" max="100" value="50">
                 </div>
               </div>
 
@@ -444,6 +444,10 @@
                 <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; color: var(--text-muted); flex: 1; min-width: 150px;">
                   <input type="checkbox" id="show-battle-arena" checked style="width: auto;">
                   Enable Battle Arena Overlay
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; color: var(--text-muted); flex: 1; min-width: 150px;">
+                  <input type="checkbox" id="show-leaderboard" checked style="width: auto;">
+                  Show Leaderboard Ticker
                 </label>
               </div>
 
@@ -465,7 +469,10 @@
                 </div>
                 <div class="form-group">
                   <label for="primary-color">Primary UI Highlight Color</label>
-                  <input type="text" id="primary-color" placeholder="e.g. #3b82f6">
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <input type="color" id="primary-color" value="#3b82f6" style="width: 40px; height: 38px; padding: 0; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; background: transparent;">
+                    <input type="text" id="primary-color-text" value="#3b82f6" placeholder="#3b82f6" style="flex: 1; text-align: center; text-transform: uppercase;">
+                  </div>
                 </div>
               </div>
 
@@ -475,6 +482,7 @@
                 <small>Overrides default Render backend domain links sent to chat. Use your Vercel URL here.</small>
               </div>
 
+              <!-- Wild Spawn Card Layout -->
               <h4 style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 10px;">📐 Wild Spawn Card Layout</h4>
               <div class="form-row">
                 <div class="form-group">
@@ -494,7 +502,111 @@
                 </div>
               </div>
 
-              <!-- Custom Coordinates (Only visible when Custom position selected) -->
+              <!-- Spawn custom coords -->
+              <div class="form-row custom-position-row" id="spawn-custom-pos-row" style="display: none; gap: 10px; margin-bottom: 15px;">
+                <div class="form-group" style="flex: 1;">
+                  <label for="spawn-card-left" style="font-size: 11px;">Left</label>
+                  <input type="text" id="spawn-card-left" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                  <label for="spawn-card-right" style="font-size: 11px;">Right</label>
+                  <input type="text" id="spawn-card-right" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                  <label for="spawn-card-top" style="font-size: 11px;">Top</label>
+                  <input type="text" id="spawn-card-top" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                  <label for="spawn-card-bottom" style="font-size: 11px;">Bottom</label>
+                  <input type="text" id="spawn-card-bottom" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                </div>
+              </div>
+
+              <!-- Leaderboard Ticker Position -->
+              <h4 style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 10px;">👑 Leaderboard Ticker Position</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="ticker-position">Ticker Position Preset</label>
+                  <select id="ticker-position" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
+                    <option value="top-left">Top Left Preset</option>
+                    <option value="top-right">Top Right Preset</option>
+                    <option value="bottom-left">Bottom Left Preset</option>
+                    <option value="bottom-right">Bottom Right Preset</option>
+                    <option value="custom">Custom Position</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Ticker custom coords -->
+              <div class="form-row custom-position-row" id="ticker-custom-pos-row" style="display: none; gap: 10px; margin-bottom: 15px;">
+                <div class="form-group" style="flex: 1;">
+                  <label for="ticker-left" style="font-size: 11px;">Left</label>
+                  <input type="text" id="ticker-left" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                  <label for="ticker-right" style="font-size: 11px;">Right</label>
+                  <input type="text" id="ticker-right" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                  <label for="ticker-top" style="font-size: 11px;">Top</label>
+                  <input type="text" id="ticker-top" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                  <label for="ticker-bottom" style="font-size: 11px;">Bottom</label>
+                  <input type="text" id="ticker-bottom" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                </div>
+              </div>
+
+              <!-- Live Game Feed Position -->
+              <h4 style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 10px;">📰 Live Game Feed Position</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="feed-position">Feed Position Preset</label>
+                  <select id="feed-position" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
+                    <option value="top-right">Top Right Preset</option>
+                    <option value="top-left">Top Left Preset</option>
+                    <option value="bottom-right">Bottom Right Preset</option>
+                    <option value="bottom-left">Bottom Left Preset</option>
+                    <option value="custom">Custom Position</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Feed custom coords -->
+              <div class="form-row custom-position-row" id="feed-custom-pos-row" style="display: none; gap: 10px; margin-bottom: 15px;">
+                <div class="form-group" style="flex: 1;">
+                  <label for="feed-left" style="font-size: 11px;">Left</label>
+                  <input type="text" id="feed-left" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                  <label for="feed-right" style="font-size: 11px;">Right</label>
+                  <input type="text" id="feed-right" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                  <label for="feed-top" style="font-size: 11px;">Top</label>
+                  <input type="text" id="feed-top" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                  <label for="feed-bottom" style="font-size: 11px;">Bottom</label>
+                  <input type="text" id="feed-bottom" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                </div>
+              </div>
+
+              <!-- Battle Arena Position -->
+              <h4 style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 10px;">⚔️ Battle Arena Position</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="battle-position">Battle Position Preset</label>
+                  <select id="battle-position" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
+                    <option value="center">Center Screen Preset</option>
+                    <option value="top">Top Preset</option>
+                    <option value="bottom">Bottom Preset</option>
+                    <option value="custom">Custom Position</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Battle custom coords -->
               <div class="form-row custom-position-row" id="battle-custom-pos-row" style="display: none; gap: 10px; margin-bottom: 15px;">
                 <div class="form-group" style="flex: 1;">
                   <label for="battle-left" style="font-size: 11px;">Left</label>
