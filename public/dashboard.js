@@ -853,46 +853,87 @@ function updateLeaderboardUI(leaderboard) {
 // ==========================================================================
 // Tab Switching, Viewer Database Searching, & Administration Controllers
 // ==========================================================================
-const btnTabControls = document.getElementById('btn-tab-controls');
+const btnTabConsole = document.getElementById('btn-tab-console');
+const btnTabSettings = document.getElementById('btn-tab-settings');
 const btnTabViewers = document.getElementById('btn-tab-viewers');
-const mainControlsView = document.getElementById('main-controls-view');
+
+const mainConsoleView = document.getElementById('main-console-view');
+const mainSettingsView = document.getElementById('main-settings-view');
 const mainViewersView = document.getElementById('main-viewers-view');
+
 const viewerSearch = document.getElementById('viewer-search');
 const viewerDbBody = document.getElementById('viewer-db-body');
 
 let cachedPlayersList = [];
 
 // Tab click actions
-if (btnTabControls && btnTabViewers) {
-  btnTabControls.addEventListener('click', () => {
-    btnTabControls.classList.add('active');
-    btnTabControls.style.background = 'var(--color-primary)';
-    btnTabControls.style.color = '#fff';
-    
-    btnTabViewers.classList.remove('active');
-    btnTabViewers.style.background = 'rgba(255,255,255,0.05)';
-    btnTabViewers.style.color = 'var(--text-muted)';
-    
-    mainControlsView.classList.remove('hidden');
-    mainViewersView.classList.add('hidden');
+function deactivateAllTabs() {
+  [btnTabConsole, btnTabSettings, btnTabViewers].forEach(btn => {
+    if (btn) {
+      btn.classList.remove('active');
+      btn.style.background = 'rgba(255,255,255,0.05)';
+      btn.style.color = 'var(--text-muted)';
+    }
   });
+  [mainConsoleView, mainSettingsView, mainViewersView].forEach(view => {
+    if (view) view.classList.add('hidden');
+  });
+}
 
+if (btnTabConsole) {
+  btnTabConsole.addEventListener('click', () => {
+    deactivateAllTabs();
+    btnTabConsole.classList.add('active');
+    btnTabConsole.style.background = 'var(--color-primary)';
+    btnTabConsole.style.color = '#fff';
+    if (mainConsoleView) mainConsoleView.classList.remove('hidden');
+  });
+}
+
+if (btnTabSettings) {
+  btnTabSettings.addEventListener('click', () => {
+    deactivateAllTabs();
+    btnTabSettings.classList.add('active');
+    btnTabSettings.style.background = 'var(--color-primary)';
+    btnTabSettings.style.color = '#fff';
+    if (mainSettingsView) mainSettingsView.classList.remove('hidden');
+  });
+}
+
+if (btnTabViewers) {
   btnTabViewers.addEventListener('click', () => {
+    deactivateAllTabs();
     btnTabViewers.classList.add('active');
     btnTabViewers.style.background = 'var(--color-primary)';
     btnTabViewers.style.color = '#fff';
-    
-    btnTabControls.classList.remove('active');
-    btnTabControls.style.background = 'rgba(255,255,255,0.05)';
-    btnTabControls.style.color = 'var(--text-muted)';
-    
-    mainControlsView.classList.add('hidden');
-    mainViewersView.classList.remove('hidden');
+    if (mainViewersView) mainViewersView.classList.remove('hidden');
     
     // Trigger socket load
     socket.emit('get_all_players');
   });
 }
+
+// Settings Inner Tab Navigation (Vertical sidebar tabs)
+const configTabBtns = document.querySelectorAll('.config-tab-btn');
+const configTabPanels = document.querySelectorAll('.config-tab-panel');
+
+configTabBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    // Remove active class from all buttons and panels
+    configTabBtns.forEach(b => b.classList.remove('active'));
+    configTabPanels.forEach(p => p.classList.remove('active'));
+    
+    // Add active class to clicked button
+    btn.classList.add('active');
+    
+    // Show matching panel
+    const targetPanelId = btn.getAttribute('data-panel');
+    const targetPanel = document.getElementById(targetPanelId);
+    if (targetPanel) {
+      targetPanel.classList.add('active');
+    }
+  });
+});
 
 // Receive all players list updates
 socket.on('all_players_data', (players) => {

@@ -23,509 +23,15 @@
     </header>
 
     <nav class="dashboard-tabs" style="display: flex; gap: 10px; padding: 0 20px; margin-bottom: 10px; margin-top: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
-      <button type="button" class="btn tab-btn active" id="btn-tab-controls" style="margin: 0; background: var(--color-primary); color: #fff; border-radius: 8px; font-weight: 600;">🎮 Live Controls & Settings</button>
+      <button type="button" class="btn tab-btn active" id="btn-tab-console" style="margin: 0; background: var(--color-primary); color: #fff; border-radius: 8px; font-weight: 600;">🎮 Live Console</button>
+      <button type="button" class="btn tab-btn" id="btn-tab-settings" style="margin: 0; background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid var(--border-color); border-radius: 8px; font-weight: 600;">🔧 Streamer Settings</button>
       <button type="button" class="btn tab-btn" id="btn-tab-viewers" style="margin: 0; background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid var(--border-color); border-radius: 8px; font-weight: 600;">👥 Viewer Management Database</button>
     </nav>
 
-    <main class="dashboard-grid" id="main-controls-view">
+    <!-- Console View (Simulator + State + Quick Actions) -->
+    <main class="dashboard-grid" id="main-console-view">
       
-      <!-- Left Panel: Configuration & Quick Actions -->
-      <section class="grid-card config-card">
-        <h2>🔧 Streamer Settings</h2>
-        
-        <form id="config-form" class="settings-form">
-          <div class="form-row">
-            <div class="form-group">
-              <label for="channel-id">YouTube Channel ID</label>
-              <input type="text" id="channel-id" placeholder="e.g. UCxxxxxxxxx">
-            </div>
-            <div class="form-group">
-              <label for="twitch-channel">Twitch Channel Name</label>
-              <input type="text" id="twitch-channel" placeholder="e.g. poketrainer">
-            </div>
-          </div>
-          
-          <div class="form-row">
-            <div class="form-group" style="flex: 1;">
-              <label for="youtube-api-key">YouTube Data API Key (Optional)</label>
-              <input type="password" id="youtube-api-key" placeholder="AIzaSy..." autocomplete="new-password" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
-              <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">Official API loop prioritizes this key to avoid web scraper IP limits. Key remains private.</small>
-            </div>
-          </div>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <label for="video-id">Active YouTube Video ID</label>
-              <input type="text" id="video-id" placeholder="e.g. watch?v=VIDEO_ID">
-            </div>
-            <div class="form-group">
-              <label for="obs-websocket-url">OBS WebSocket Connection</label>
-              <input type="text" id="obs-websocket-url" placeholder="e.g. ws://localhost:4455">
-            </div>
-          </div>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <label for="spawn-interval">Spawn Loop (seconds)</label>
-              <input type="number" id="spawn-interval" min="10" value="60">
-            </div>
-            <div class="form-group">
-              <label for="despawn-timeout">Flee Timer (seconds)</label>
-              <input type="number" id="despawn-timeout" min="5" value="45">
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label for="catch-cooldown">Catch Cooldown (s)</label>
-              <input type="number" id="catch-cooldown" min="0" value="15">
-            </div>
-            <div class="form-group">
-              <label for="shiny-chance">Shiny Rate (%)</label>
-              <input type="number" id="shiny-chance" step="0.1" min="0" max="100" value="1">
-            </div>
-          </div>
-          
-          <h3 style="margin-top: 20px; font-size: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--color-primary); letter-spacing: 0.5px;">💰 Custom Economy & Game Rewards</h3>
-          
-          <h4 style="margin-top: 10px; font-size: 12px; color: var(--text-muted);">🎉 Capture Rewards (Normal vs Shiny)</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="coins-capture-normal">Coins Reward (Normal)</label>
-              <input type="number" id="coins-capture-normal" min="0" value="20">
-            </div>
-            <div class="form-group">
-              <label for="coins-capture-shiny">Coins Reward (Shiny)</label>
-              <input type="number" id="coins-capture-shiny" min="0" value="100">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="xp-capture-normal">XP Reward (Normal)</label>
-              <input type="number" id="xp-capture-normal" min="0" value="15">
-            </div>
-            <div class="form-group">
-              <label for="xp-capture-shiny">XP Reward (Shiny)</label>
-              <input type="number" id="xp-capture-shiny" min="0" value="50">
-            </div>
-          </div>
-
-          <h4 style="margin-top: 15px; font-size: 12px; color: var(--text-muted);">⭐ Level Up Rewards</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="level-up-coins">Coins Reward</label>
-              <input type="number" id="level-up-coins" min="0" value="100">
-            </div>
-            <div class="form-group">
-              <label for="level-up-greatballs">Great Balls Reward</label>
-              <input type="number" id="level-up-greatballs" min="0" value="3">
-            </div>
-            <div class="form-group">
-              <label for="level-up-ultraballs">Ultra Balls Reward</label>
-              <input type="number" id="level-up-ultraballs" min="0" value="1">
-            </div>
-          </div>
-
-          <h4 style="margin-top: 15px; font-size: 12px; color: var(--text-muted);">🧮 Capture Rate Multipliers</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="catch-multiplier-pokeball">Poke Ball Multiplier</label>
-              <input type="number" id="catch-multiplier-pokeball" min="0.1" step="0.1" value="1.0">
-            </div>
-            <div class="form-group">
-              <label for="catch-multiplier-greatball">Great Ball Multiplier</label>
-              <input type="number" id="catch-multiplier-greatball" min="0.1" step="0.1" value="1.5">
-            </div>
-            <div class="form-group">
-              <label for="catch-multiplier-ultraball">Ultra Ball Multiplier</label>
-              <input type="number" id="catch-multiplier-ultraball" min="0.1" step="0.1" value="2.0">
-            </div>
-          </div>
-
-          <h4 style="margin-top: 15px; font-size: 12px; color: var(--text-muted);">🦖 Pokémon Rarity Capture Rate Multipliers</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="catch-multiplier-normal">Normal Rarity Multiplier</label>
-              <input type="number" id="catch-multiplier-normal" min="0.1" step="0.1" value="1.0">
-            </div>
-            <div class="form-group">
-              <label for="catch-multiplier-rare">Rare Rarity Multiplier</label>
-              <input type="number" id="catch-multiplier-rare" min="0.1" step="0.1" value="1.0">
-            </div>
-            <div class="form-group">
-              <label for="catch-multiplier-legendary">Legendary Rarity Multiplier</label>
-              <input type="number" id="catch-multiplier-legendary" min="0.1" step="0.1" value="1.0">
-            </div>
-          </div>
-
-          <h4 style="margin-top: 15px; font-size: 12px; color: var(--text-muted);">🛍️ Shop Item Prices (Coins)</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="price-pokeball">Poke Ball Price</label>
-              <input type="number" id="price-pokeball" min="0" value="10">
-            </div>
-            <div class="form-group">
-              <label for="price-greatball">Great Ball Price</label>
-              <input type="number" id="price-greatball" min="0" value="30">
-            </div>
-            <div class="form-group">
-              <label for="price-ultraball">Ultra Ball Price</label>
-              <input type="number" id="price-ultraball" min="0" value="80">
-            </div>
-            <div class="form-group">
-              <label for="price-masterball">Master Ball Price</label>
-              <input type="number" id="price-masterball" min="0" value="250">
-            </div>
-          </div>
-
-          <h4 style="margin-top: 15px; font-size: 12px; color: var(--text-muted);">🎁 Gacha Booster Pack Prices (Coins)</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="price-pack-kanto">Kanto Pack Price</label>
-              <input type="number" id="price-pack-kanto" min="0" value="150">
-            </div>
-            <div class="form-group">
-              <label for="price-pack-johto">Johto Pack Price</label>
-              <input type="number" id="price-pack-johto" min="0" value="150">
-            </div>
-            <div class="form-group">
-              <label for="price-pack-hoenn">Hoenn Pack Price</label>
-              <input type="number" id="price-pack-hoenn" min="0" value="150">
-            </div>
-            <div class="form-group">
-              <label for="price-pack-sinnoh">Sinnoh Pack Price</label>
-              <input type="number" id="price-pack-sinnoh" min="0" value="150">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="price-pack-unova">Unova Pack Price</label>
-              <input type="number" id="price-pack-unova" min="0" value="150">
-            </div>
-            <div class="form-group">
-              <label for="price-pack-kalos">Kalos Pack Price</label>
-              <input type="number" id="price-pack-kalos" min="0" value="150">
-            </div>
-            <div class="form-group">
-              <label for="price-pack-alola">Alola Pack Price</label>
-              <input type="number" id="price-pack-alola" min="0" value="150">
-            </div>
-            <div class="form-group">
-              <label for="price-pack-legendary">Legendary Pack Price</label>
-              <input type="number" id="price-pack-legendary" min="0" value="500">
-            </div>
-          </div>
-
-          <h4 style="margin-top: 15px; font-size: 12px; color: var(--text-muted);">💎 Evolution Stone Shop Prices (Coins)</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="price-fire-stone">Fire Stone Price</label>
-              <input type="number" id="price-fire-stone" min="0" value="150">
-            </div>
-            <div class="form-group">
-              <label for="price-water-stone">Water Stone Price</label>
-              <input type="number" id="price-water-stone" min="0" value="150">
-            </div>
-            <div class="form-group">
-              <label for="price-thunder-stone">Thunder Stone Price</label>
-              <input type="number" id="price-thunder-stone" min="0" value="150">
-            </div>
-            <div class="form-group">
-              <label for="price-leaf-stone">Leaf Stone Price</label>
-              <input type="number" id="price-leaf-stone" min="0" value="150">
-            </div>
-            <div class="form-group">
-              <label for="price-moon-stone">Moon Stone Price</label>
-              <input type="number" id="price-moon-stone" min="0" value="150">
-            </div>
-          </div>
-
-          <h4 style="margin-top: 15px; font-size: 12px; color: var(--text-muted);">🦖 Cooperative Boss Raid Settings</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="raid-chance">Auto-spawn Raid Chance (%)</label>
-              <input type="number" id="raid-chance" min="0" max="100" step="1" value="5">
-            </div>
-            <div class="form-group">
-              <label for="raid-boss-hp">Raid Boss Max HP</label>
-              <input type="number" id="raid-boss-hp" min="100" value="5000">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="raid-reward-coins">Raid Coins Pool Reward</label>
-              <input type="number" id="raid-reward-coins" min="0" value="250">
-            </div>
-            <div class="form-group">
-              <label for="raid-reward-xp">Raid XP Pool Reward</label>
-              <input type="number" id="raid-reward-xp" min="0" value="150">
-            </div>
-            <div class="form-group">
-              <label for="raid-drop-stone-chance">Evolution Stone Drop Chance (%)</label>
-              <input type="number" id="raid-drop-stone-chance" min="0" max="100" step="5" value="15">
-            </div>
-          </div>
-
-          <h3 style="margin-top: 20px; font-size: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; color: var(--color-primary); letter-spacing: 0.5px;">🎨 Overlay Customization</h3>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <label for="theme">Overlay Theme</label>
-              <select id="theme" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
-                <option value="modern">Modern Glassmorphism</option>
-                <option value="retro">Classic 8-Bit Retro</option>
-                <option value="minimal">Minimalist Sprite-Only (Borderless)</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="primary-color">Primary Accent Color</label>
-              <div style="display: flex; gap: 8px; align-items: center;">
-                <input type="color" id="primary-color" value="#3b82f6" style="width: 40px; height: 38px; padding: 0; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; background: transparent; display: block;">
-                <input type="text" id="primary-color-text" value="#3b82f6" placeholder="#3b82f6" style="flex: 1; text-align: center; text-transform: uppercase;">
-              </div>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label for="sfx-volume">SFX Volume (%)</label>
-              <input type="number" id="sfx-volume" min="0" max="100" value="50">
-            </div>
-            <div class="form-group" style="justify-content: center; display: flex; flex-direction: row; gap: 15px; align-items: center; margin-top: 15px;">
-              <label for="show-battle-arena" style="display: flex; align-items: center; gap: 6px; cursor: pointer; margin: 0; font-size: 13px;">
-                <input type="checkbox" id="show-battle-arena" checked style="width: auto;">
-                Show Battle Arena
-              </label>
-              <label for="show-leaderboard" style="display: flex; align-items: center; gap: 6px; cursor: pointer; margin: 0; font-size: 13px;">
-                <input type="checkbox" id="show-leaderboard" checked style="width: auto;">
-                Show Leaderboard
-              </label>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label for="show-live-feed" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                <input type="checkbox" id="show-live-feed" checked style="width: auto;">
-                Show Live Game Feed
-              </label>
-              <input type="text" id="live-feed-title" placeholder="Title, e.g. LIVE GAME FEED" style="margin-top: 5px;">
-            </div>
-            <div class="form-group">
-              <label for="show-spawn-alert" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                <input type="checkbox" id="show-spawn-alert" checked style="width: auto;">
-                Show Wild Spawn Card
-              </label>
-              <input type="text" id="spawn-alert-title" placeholder="Title, e.g. WILD SPAWN" style="margin-top: 5px;">
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="spawn-catch-guide">Wild Spawn Catch Guide Text</label>
-            <input type="text" id="spawn-catch-guide" placeholder="e.g. Type !catch in chat!">
-          </div>
-          <div class="form-group">
-            <label for="inventory-base-url">Custom Inventory URL Prefix (Optional)</label>
-            <input type="text" id="inventory-base-url" placeholder="e.g. https://my-pokedex.vercel.app">
-            <small style="color: #64748b; font-size: 11px; display: block; margin-top: 4px;">Streamers on Vercel/custom domains can set this to override the default Render link in chat.</small>
-          </div>
-
-          
-          <h4 style="margin-top: 15px; font-size: 13px; color: var(--color-primary); letter-spacing: 0.5px; border-top: 1px dashed var(--border-color); padding-top: 10px;">🎴 Wild Spawn Card Layout</h4>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label for="spawn-card-scale">Card Scale / Size</label>
-              <input type="number" id="spawn-card-scale" step="0.05" min="0.5" max="2.0" value="1.0">
-            </div>
-            <div class="form-group">
-              <label for="spawn-card-position">Card Position</label>
-              <select id="spawn-card-position" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
-                <option value="bottom-left">Bottom Left</option>
-                <option value="bottom-right">Bottom Right</option>
-                <option value="top-left">Top Left</option>
-                <option value="top-right">Top Right</option>
-                <option value="center">Center Screen</option>
-                <option value="custom">Custom Position</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-row custom-position-row" id="spawn-custom-pos-row" style="display: none; gap: 10px; margin-bottom: 15px;">
-            <div class="form-group" style="flex: 1;">
-              <label for="spawn-card-left" style="font-size: 11px;">Left (e.g. 30px, 10%)</label>
-              <input type="text" id="spawn-card-left" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-            </div>
-            <div class="form-group" style="flex: 1;">
-              <label for="spawn-card-right" style="font-size: 11px;">Right</label>
-              <input type="text" id="spawn-card-right" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-            </div>
-            <div class="form-group" style="flex: 1;">
-              <label for="spawn-card-top" style="font-size: 11px;">Top</label>
-              <input type="text" id="spawn-card-top" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-            </div>
-            <div class="form-group" style="flex: 1;">
-              <label for="spawn-card-bottom" style="font-size: 11px;">Bottom</label>
-              <input type="text" id="spawn-card-bottom" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-            </div>
-          </div>
-
-          <h4 style="margin-top: 15px; font-size: 13px; color: var(--color-primary); letter-spacing: 0.5px; border-top: 1px dashed var(--border-color); padding-top: 10px;">👑 Leaderboard Ticker Position</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="ticker-position">Ticker Position Preset</label>
-              <select id="ticker-position" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
-                <option value="top-left">Top Left Preset</option>
-                <option value="top-right">Top Right Preset</option>
-                <option value="bottom-left">Bottom Left Preset</option>
-                <option value="bottom-right">Bottom Right Preset</option>
-                <option value="custom">Custom Position</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-row custom-position-row" id="ticker-custom-pos-row" style="display: none; gap: 10px; margin-bottom: 15px;">
-            <div class="form-group" style="flex: 1;">
-              <label for="ticker-left" style="font-size: 11px;">Left</label>
-              <input type="text" id="ticker-left" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-            </div>
-            <div class="form-group" style="flex: 1;">
-              <label for="ticker-right" style="font-size: 11px;">Right</label>
-              <input type="text" id="ticker-right" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-            </div>
-            <div class="form-group" style="flex: 1;">
-              <label for="ticker-top" style="font-size: 11px;">Top</label>
-              <input type="text" id="ticker-top" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-            </div>
-            <div class="form-group" style="flex: 1;">
-              <label for="ticker-bottom" style="font-size: 11px;">Bottom</label>
-              <input type="text" id="ticker-bottom" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-            </div>
-          </div>
-
-          <h4 style="margin-top: 15px; font-size: 13px; color: var(--color-primary); letter-spacing: 0.5px; border-top: 1px dashed var(--border-color); padding-top: 10px;">📰 Live Game Feed Position</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="feed-position">Feed Position Preset</label>
-              <select id="feed-position" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
-                <option value="top-right">Top Right Preset</option>
-                <option value="top-left">Top Left Preset</option>
-                <option value="bottom-right">Bottom Right Preset</option>
-                <option value="bottom-left">Bottom Left Preset</option>
-                <option value="custom">Custom Position</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-row custom-position-row" id="feed-custom-pos-row" style="display: none; gap: 10px; margin-bottom: 15px;">
-            <div class="form-group" style="flex: 1;">
-              <label for="feed-left" style="font-size: 11px;">Left</label>
-              <input type="text" id="feed-left" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-            </div>
-            <div class="form-group" style="flex: 1;">
-              <label for="feed-right" style="font-size: 11px;">Right</label>
-              <input type="text" id="feed-right" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-            </div>
-            <div class="form-group" style="flex: 1;">
-              <label for="feed-top" style="font-size: 11px;">Top</label>
-              <input type="text" id="feed-top" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-            </div>
-            <div class="form-group" style="flex: 1;">
-              <label for="feed-bottom" style="font-size: 11px;">Bottom</label>
-              <input type="text" id="feed-bottom" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-            </div>
-          </div>
-
-          <h4 style="margin-top: 15px; font-size: 13px; color: var(--color-primary); letter-spacing: 0.5px; border-top: 1px dashed var(--border-color); padding-top: 10px;">⚔️ Battle Arena Position</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="battle-position">Battle Position Preset</label>
-              <select id="battle-position" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
-                <option value="center">Center Screen Preset</option>
-                <option value="top">Top Preset</option>
-                <option value="bottom">Bottom Preset</option>
-                <option value="custom">Custom Position</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-row custom-position-row" id="battle-custom-pos-row" style="display: none; gap: 10px; margin-bottom: 15px;">
-            <div class="form-group" style="flex: 1;">
-              <label for="battle-left" style="font-size: 11px;">Left</label>
-              <input type="text" id="battle-left" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-            </div>
-            <div class="form-group" style="flex: 1;">
-              <label for="battle-right" style="font-size: 11px;">Right</label>
-              <input type="text" id="battle-right" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-            </div>
-            <div class="form-group" style="flex: 1;">
-              <label for="battle-top" style="font-size: 11px;">Top</label>
-              <input type="text" id="battle-top" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-            </div>
-            <div class="form-group" style="flex: 1;">
-              <label for="battle-bottom" style="font-size: 11px;">Bottom</label>
-              <input type="text" id="battle-bottom" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-            </div>
-          </div>
-
-          <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px; margin-bottom: 15px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
-            <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; color: var(--text-muted);">
-              <input type="checkbox" id="show-card-sprite" checked style="width: auto;">
-              Show Sprite Image
-            </label>
-            <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; color: var(--text-muted);">
-              <input type="checkbox" id="show-card-types" checked style="width: auto;">
-              Show Type Badges
-            </label>
-            <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; color: var(--text-muted);">
-              <input type="checkbox" id="show-card-instructions" checked style="width: auto;">
-              Show Catch Guide
-            </label>
-          </div>
-
-          <div class="form-group">
-            <label for="custom-css">Custom CSS Overrides</label>
-            <textarea id="custom-css" rows="4" placeholder="/* CSS styles here, e.g. .feed-entry { font-size: 14px; } */" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: 'Courier New', Courier, monospace; font-size: 12px; resize: vertical;"></textarea>
-          </div>
-          
-          <div class="form-group" style="margin-top: 15px;">
-            <label>Your OBS Browser Source URL</label>
-            <div class="copy-link-group" style="display: flex; gap: 8px;">
-              <input type="text" id="obs-overlay-url" readonly style="flex: 1; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: var(--text-muted); padding: 10px 12px; border-radius: 8px; font-family: inherit; font-size: 13px; cursor: pointer;" onclick="this.select()">
-              <button type="button" id="btn-copy-url" style="padding: 10px 15px; border-radius: 8px; border: none; background: var(--color-primary); color: #fff; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; transition: background 0.2s;">Copy</button>
-            </div>
-            <small>Copy and paste this link as a Browser Source in OBS Studio (Resolution: 1920x1080).</small>
-          </div>
-          
-          <button type="submit" class="btn btn-primary" style="margin-top: 15px;">Save Settings</button>
-        </form>
-
-        <div class="quick-actions">
-          <h3>⚡ Quick Actions</h3>
-          <div class="form-group" style="margin-bottom: 15px;">
-            <label for="spawn-target">Set Next Pokémon to Spawn</label>
-            <div style="display: flex; gap: 8px;">
-              <input type="text" id="spawn-target" placeholder="e.g. Mewtwo or Pikachu" style="flex: 1;">
-              <button type="button" id="btn-save-target" class="btn btn-preset" style="margin: 0; background: var(--color-primary); border: none; color: #fff;">Set Target</button>
-            </div>
-            <small>Specifies which Pokémon spawns next. Reverts to random after one spawn.</small>
-          </div>
-          <div class="form-group" style="margin-bottom: 15px; border-top: 1px dashed var(--border-color); padding-top: 15px;">
-            <label for="raid-boss-target">Trigger Boss Raid</label>
-            <div style="display: flex; gap: 8px;">
-              <input type="text" id="raid-boss-target" placeholder="e.g. Mewtwo or Charizard (Optional)" style="flex: 1;">
-              <button type="button" id="btn-trigger-raid" class="btn btn-preset" style="margin: 0; background: #e11d48; border: none; color: #fff;">Trigger Raid</button>
-            </div>
-            <small>Instantly spawns a Gigantamax Raid Boss for viewers to battle cooperatively.</small>
-          </div>
-          <div class="action-buttons">
-            <button id="btn-force-spawn" class="btn btn-action">Force Spawn Pokémon</button>
-            <button id="btn-reset-db" class="btn btn-danger">Reset Player Database</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- Center Panel: Chat Command Simulator -->
+      <!-- Left Panel: Chat Command Simulator -->
       <section class="grid-card simulator-card">
         <h2>💬 YouTube Chat Simulator</h2>
         <p class="section-desc">Simulate viewer messages to test the bot's catch and battle rules offline.</p>
@@ -585,7 +91,7 @@
         </div>
       </section>
 
-      <!-- Right Panel: Game States & Leaderboard -->
+      <!-- Right Panel: Game States, Leaderboard & Quick Live Actions -->
       <section class="grid-card state-card">
         <h2>📊 Game State & Leaderboard</h2>
         
@@ -605,7 +111,31 @@
           </div>
         </div>
 
-        <div class="leaderboard-section">
+        <div class="quick-actions" style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+          <h3>⚡ Quick Live Controls</h3>
+          <div class="form-group" style="margin-bottom: 15px;">
+            <label for="spawn-target">Set Next Pokémon to Spawn</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="spawn-target" placeholder="e.g. Mewtwo or Pikachu" style="flex: 1;">
+              <button type="button" id="btn-save-target" class="btn btn-preset" style="margin: 0; background: var(--color-primary); border: none; color: #fff;">Set Target</button>
+            </div>
+            <small>Specifies which Pokémon spawns next. Reverts to random after one spawn.</small>
+          </div>
+          <div class="form-group" style="margin-bottom: 15px; border-top: 1px dashed var(--border-color); padding-top: 15px;">
+            <label for="raid-boss-target">Trigger Boss Raid</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="raid-boss-target" placeholder="e.g. Mewtwo or Charizard (Optional)" style="flex: 1;">
+              <button type="button" id="btn-trigger-raid" class="btn btn-preset" style="margin: 0; background: #e11d48; border: none; color: #fff;">Trigger Raid</button>
+            </div>
+            <small>Instantly spawns a Gigantamax Raid Boss for viewers to battle cooperatively.</small>
+          </div>
+          <div class="action-buttons" style="display: flex; gap: 10px; margin-top: 15px;">
+            <button id="btn-force-spawn" class="btn btn-action" style="flex: 1;">Force Spawn Pokémon</button>
+            <button id="btn-reset-db" class="btn btn-danger" style="flex: 1;">Reset Player Database</button>
+          </div>
+        </div>
+
+        <div class="leaderboard-section" style="margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 15px;">
           <h3>🏆 Top Players (Pokedex Size)</h3>
           <div class="table-wrap">
             <table class="leaderboard-table">
@@ -625,6 +155,437 @@
             </table>
           </div>
         </div>
+      </section>
+
+    </main>
+
+    <!-- Config View (Full width split tab form) -->
+    <main class="dashboard-grid hidden" id="main-settings-view" style="display: grid; grid-template-columns: 1fr; gap: 20px;">
+      
+      <section class="grid-card" style="width: 100%;">
+        <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px;">
+          <h2>🔧 Streamer Settings</h2>
+          <p class="section-desc">Manage API connections, gameplay configurations, drop rates, items, and theme aesthetics.</p>
+        </div>
+
+        <form id="config-form" class="settings-form-split">
+          <!-- Sidebar Tabs Menu -->
+          <div class="settings-sidebar-nav">
+            <button type="button" class="config-tab-btn active" data-panel="panel-connections">📡 Connections & APIs</button>
+            <button type="button" class="config-tab-btn" data-panel="panel-gameplay">⚙️ Gameplay Rates</button>
+            <button type="button" class="config-tab-btn" data-panel="panel-rewards">💰 Economy & XP</button>
+            <button type="button" class="config-tab-btn" data-panel="panel-shop">🛒 Shop & Multipliers</button>
+            <button type="button" class="config-tab-btn" data-panel="panel-overlay">🎨 Overlay Theme</button>
+            <button type="button" class="config-tab-btn" data-panel="panel-raid">🦖 Raid Boss</button>
+          </div>
+
+          <!-- Content Panels -->
+          <div class="settings-panels-content">
+            
+            <!-- Panel 1: Connections & APIs -->
+            <div class="config-tab-panel active" id="panel-connections">
+              <h3>📡 Connections & APIs</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="channel-id">YouTube Channel ID</label>
+                  <input type="text" id="channel-id" placeholder="e.g. UCxxxxxxxxx">
+                  <small>Your YouTube channel's unique ID for monitoring live stream chat.</small>
+                </div>
+                <div class="form-group">
+                  <label for="twitch-channel">Twitch Channel Name</label>
+                  <input type="text" id="twitch-channel" placeholder="e.g. poketrainer">
+                  <small>For multi-stream setups, monitor Twitch chat concurrently.</small>
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="youtube-api-key">YouTube Data API Key (Optional)</label>
+                  <input type="password" id="youtube-api-key" placeholder="AIzaSy..." autocomplete="new-password">
+                  <small>Speeds up live chat loading and prevents web scraper IP limits. Highly recommended.</small>
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="video-id">Active YouTube Video ID</label>
+                  <input type="text" id="video-id" placeholder="e.g. watch?v=VIDEO_ID">
+                  <small>Forces the bot to monitor chat from a specific stream/video.</small>
+                </div>
+                <div class="form-group">
+                  <label for="obs-websocket-url">OBS WebSocket Connection</label>
+                  <input type="text" id="obs-websocket-url" placeholder="e.g. ws://localhost:4455">
+                  <small>Enables overlay controls via OBS triggers.</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Panel 2: Gameplay Rates -->
+            <div class="config-tab-panel" id="panel-gameplay">
+              <h3>⚙️ Gameplay Rates & Timers</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="spawn-interval">Spawn Loop (seconds)</label>
+                  <input type="number" id="spawn-interval" min="10" value="60">
+                  <small>How often a new wild Pokémon spawns on the stream overlay.</small>
+                </div>
+                <div class="form-group">
+                  <label for="despawn-timeout">Flee Timer (seconds)</label>
+                  <input type="number" id="despawn-timeout" min="5" value="45">
+                  <small>How long the wild Pokémon stays on screen before fleeing.</small>
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="catch-cooldown">Catch Cooldown (seconds)</label>
+                  <input type="number" id="catch-cooldown" min="0" value="15">
+                  <small>Cooldown delay before a viewer can throw another ball.</small>
+                </div>
+                <div class="form-group">
+                  <label for="shiny-chance">Shiny Rate (%)</label>
+                  <input type="number" id="shiny-chance" step="0.1" min="0" max="100" value="1.0">
+                  <small>Spawn chance of a rare Shiny Pokémon variant (e.g. 1%).</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Panel 3: Economy & XP -->
+            <div class="config-tab-panel" id="panel-rewards">
+              <h3>💰 Custom Economy & Game Rewards</h3>
+              
+              <h4>🎉 Capture Rewards (Normal vs Shiny)</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="coins-capture-normal">Coins Reward (Normal)</label>
+                  <input type="number" id="coins-capture-normal" min="0" value="20">
+                </div>
+                <div class="form-group">
+                  <label for="coins-capture-shiny">Coins Reward (Shiny)</label>
+                  <input type="number" id="coins-capture-shiny" min="0" value="100">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="xp-capture-normal">XP Reward (Normal)</label>
+                  <input type="number" id="xp-capture-normal" min="0" value="15">
+                </div>
+                <div class="form-group">
+                  <label for="xp-capture-shiny">XP Reward (Shiny)</label>
+                  <input type="number" id="xp-capture-shiny" min="0" value="50">
+                </div>
+              </div>
+
+              <h4 style="margin-top: 15px;">⭐ Level Up Rewards</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="level-up-coins">Coins Reward</label>
+                  <input type="number" id="level-up-coins" min="0" value="100">
+                </div>
+                <div class="form-group">
+                  <label for="level-up-greatballs">Great Balls Reward</label>
+                  <input type="number" id="level-up-greatballs" min="0" value="3">
+                </div>
+                <div class="form-group">
+                  <label for="level-up-ultraballs">Ultra Balls Reward</label>
+                  <input type="number" id="level-up-ultraballs" min="0" value="1">
+                </div>
+              </div>
+            </div>
+
+            <!-- Panel 4: Shop & Multipliers -->
+            <div class="config-tab-panel" id="panel-shop">
+              <h3>🛒 Capture Rates & Shop Economy</h3>
+              
+              <h4>🧮 Capture Rate Ball Multipliers</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="catch-multiplier-pokeball">Poke Ball Multiplier</label>
+                  <input type="number" id="catch-multiplier-pokeball" min="0.1" step="0.1" value="1.0">
+                </div>
+                <div class="form-group">
+                  <label for="catch-multiplier-greatball">Great Ball Multiplier</label>
+                  <input type="number" id="catch-multiplier-greatball" min="0.1" step="0.1" value="1.5">
+                </div>
+                <div class="form-group">
+                  <label for="catch-multiplier-ultraball">Ultra Ball Multiplier</label>
+                  <input type="number" id="catch-multiplier-ultraball" min="0.1" step="0.1" value="2.0">
+                </div>
+              </div>
+
+              <h4>🦖 Pokémon Rarity Capture Rate Multipliers</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="catch-multiplier-normal">Normal Rarity Multiplier</label>
+                  <input type="number" id="catch-multiplier-normal" min="0.1" step="0.1" value="1.0">
+                </div>
+                <div class="form-group">
+                  <label for="catch-multiplier-rare">Rare Rarity Multiplier</label>
+                  <input type="number" id="catch-multiplier-rare" min="0.1" step="0.1" value="1.0">
+                </div>
+                <div class="form-group">
+                  <label for="catch-multiplier-legendary">Legendary Rarity Multiplier</label>
+                  <input type="number" id="catch-multiplier-legendary" min="0.1" step="0.1" value="1.0">
+                </div>
+              </div>
+
+              <h4 style="margin-top: 15px;">🛍️ Pokéball Shop Prices (Coins)</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="price-pokeball">Pokéball Price</label>
+                  <input type="number" id="price-pokeball" min="0" value="10">
+                </div>
+                <div class="form-group">
+                  <label for="price-greatball">Great Ball Price</label>
+                  <input type="number" id="price-greatball" min="0" value="30">
+                </div>
+                <div class="form-group">
+                  <label for="price-ultraball">Ultra Ball Price</label>
+                  <input type="number" id="price-ultraball" min="0" value="80">
+                </div>
+                <div class="form-group">
+                  <label for="price-masterball">Master Ball Price</label>
+                  <input type="number" id="price-masterball" min="0" value="250">
+                </div>
+              </div>
+
+              <h4 style="margin-top: 15px;">📦 Card Pack Shop Prices (Coins)</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="price-pack-kanto">Kanto Pack</label>
+                  <input type="number" id="price-pack-kanto" min="0" value="50">
+                </div>
+                <div class="form-group">
+                  <label for="price-pack-johto">Johto Pack</label>
+                  <input type="number" id="price-pack-johto" min="0" value="50">
+                </div>
+                <div class="form-group">
+                  <label for="price-pack-hoenn">Hoenn Pack</label>
+                  <input type="number" id="price-pack-hoenn" min="0" value="50">
+                </div>
+                <div class="form-group">
+                  <label for="price-pack-sinnoh">Sinnoh Pack</label>
+                  <input type="number" id="price-pack-sinnoh" min="0" value="50">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="price-pack-unova">Unova Pack</label>
+                  <input type="number" id="price-pack-unova" min="0" value="60">
+                </div>
+                <div class="form-group">
+                  <label for="price-pack-kalos">Kalos Pack</label>
+                  <input type="number" id="price-pack-kalos" min="0" value="60">
+                </div>
+                <div class="form-group">
+                  <label for="price-pack-alola">Alola Pack</label>
+                  <input type="number" id="price-pack-alola" min="0" value="60">
+                </div>
+                <div class="form-group">
+                  <label for="price-pack-legendary">Legendary Pack</label>
+                  <input type="number" id="price-pack-legendary" min="0" value="200">
+                </div>
+              </div>
+
+              <h4 style="margin-top: 15px;">💎 Evolution Stone Shop Prices (Coins)</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="price-fire-stone">Fire Stone</label>
+                  <input type="number" id="price-fire-stone" min="0" value="150">
+                </div>
+                <div class="form-group">
+                  <label for="price-water-stone">Water Stone</label>
+                  <input type="number" id="price-water-stone" min="0" value="150">
+                </div>
+                <div class="form-group">
+                  <label for="price-thunder-stone">Thunder Stone</label>
+                  <input type="number" id="price-thunder-stone" min="0" value="150">
+                </div>
+                <div class="form-group">
+                  <label for="price-leaf-stone">Leaf Stone</label>
+                  <input type="number" id="price-leaf-stone" min="0" value="150">
+                </div>
+                <div class="form-group">
+                  <label for="price-moon-stone">Moon Stone</label>
+                  <input type="number" id="price-moon-stone" min="0" value="150">
+                </div>
+              </div>
+            </div>
+
+            <!-- Panel 5: Overlay Design & Theme -->
+            <div class="config-tab-panel" id="panel-overlay">
+              <h3>🎨 Overlay Aesthetics & Customization</h3>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="theme">Stream Overlay Theme</label>
+                  <select id="theme" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
+                    <option value="glassmorphism">Glassmorphism (Modern)</option>
+                    <option value="retro">8-Bit Pixel Retro</option>
+                    <option value="minimalist">Minimalist (Sprite Only)</option>
+                    <option value="dark">Sleek Cyber Dark</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="sfx-volume">SFX Audio Volume (0 to 1)</label>
+                  <input type="number" id="sfx-volume" step="0.1" min="0" max="1" value="0.5">
+                </div>
+              </div>
+
+              <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px; margin-bottom: 10px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; color: var(--text-muted); flex: 1; min-width: 150px;">
+                  <input type="checkbox" id="show-live-feed" checked style="width: auto;">
+                  Show Live Activity Feed
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; color: var(--text-muted); flex: 1; min-width: 150px;">
+                  <input type="checkbox" id="show-spawn-alert" checked style="width: auto;">
+                  Show Spawn Alert Box
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; color: var(--text-muted); flex: 1; min-width: 150px;">
+                  <input type="checkbox" id="show-battle-arena" checked style="width: auto;">
+                  Enable Battle Arena Overlay
+                </label>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="live-feed-title">Live Activity Feed Header</label>
+                  <input type="text" id="live-feed-title" placeholder="e.g. LIVE ACTIVITY FEED">
+                </div>
+                <div class="form-group">
+                  <label for="spawn-alert-title">Spawn Alert Header</label>
+                  <input type="text" id="spawn-alert-title" placeholder="e.g. A WILD POKÉMON APPEARED">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="spawn-catch-guide">Wild Spawn Catch Guide Text</label>
+                  <input type="text" id="spawn-catch-guide" placeholder="e.g. Type !catch in chat!">
+                </div>
+                <div class="form-group">
+                  <label for="primary-color">Primary UI Highlight Color</label>
+                  <input type="text" id="primary-color" placeholder="e.g. #3b82f6">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="inventory-base-url">Custom Trainer Profiles URL prefix (Optional)</label>
+                <input type="text" id="inventory-base-url" placeholder="e.g. https://poke-eight-inky.vercel.app">
+                <small>Overrides default Render backend domain links sent to chat. Use your Vercel URL here.</small>
+              </div>
+
+              <h4 style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 10px;">📐 Wild Spawn Card Layout</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="spawn-card-scale">Card Scale / Size</label>
+                  <input type="number" id="spawn-card-scale" step="0.05" min="0.5" max="2.0" value="1.0">
+                </div>
+                <div class="form-group">
+                  <label for="spawn-card-position">Card Position</label>
+                  <select id="spawn-card-position" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
+                    <option value="bottom-left">Bottom Left</option>
+                    <option value="bottom-right">Bottom Right</option>
+                    <option value="top-left">Top Left</option>
+                    <option value="top-right">Top Right</option>
+                    <option value="center">Center Screen</option>
+                    <option value="custom">Custom Position</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Custom Coordinates (Only visible when Custom position selected) -->
+              <div class="form-row custom-position-row" id="battle-custom-pos-row" style="display: none; gap: 10px; margin-bottom: 15px;">
+                <div class="form-group" style="flex: 1;">
+                  <label for="battle-left" style="font-size: 11px;">Left</label>
+                  <input type="text" id="battle-left" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                  <label for="battle-right" style="font-size: 11px;">Right</label>
+                  <input type="text" id="battle-right" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                  <label for="battle-top" style="font-size: 11px;">Top</label>
+                  <input type="text" id="battle-top" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                  <label for="battle-bottom" style="font-size: 11px;">Bottom</label>
+                  <input type="text" id="battle-bottom" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                </div>
+              </div>
+
+              <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px; margin-bottom: 15px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; color: var(--text-muted);">
+                  <input type="checkbox" id="show-card-sprite" checked style="width: auto;">
+                  Show Sprite Image
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; color: var(--text-muted);">
+                  <input type="checkbox" id="show-card-types" checked style="width: auto;">
+                  Show Type Badges
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; color: var(--text-muted);">
+                  <input type="checkbox" id="show-card-instructions" checked style="width: auto;">
+                  Show Catch Guide Instructions
+                </label>
+              </div>
+
+              <div class="form-group">
+                <label for="custom-css">Custom CSS Overrides</label>
+                <textarea id="custom-css" rows="4" placeholder="/* CSS styles here, e.g. .feed-entry { font-size: 14px; } */" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: 'Courier New', Courier, monospace; font-size: 12px; resize: vertical;"></textarea>
+              </div>
+            </div>
+
+            <!-- Panel 6: Raid Boss -->
+            <div class="config-tab-panel" id="panel-raid">
+              <h3>🦖 Gigantamax Raid Boss Settings</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="raid-chance">Raid Spawn Chance (per loop %)</label>
+                  <input type="number" id="raid-chance" min="0" max="100" step="0.5" value="5">
+                  <small>Chance to automatically spawn a raid boss instead of a normal wild Pokémon.</small>
+                </div>
+                <div class="form-group">
+                  <label for="raid-boss-hp">Raid Boss HP</label>
+                  <input type="number" id="raid-boss-hp" min="100" value="1000">
+                  <small>Total collaborative hitpoints required to defeat the Raid Boss.</small>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="raid-reward-coins">Raid Win Coins Reward</label>
+                  <input type="number" id="raid-reward-coins" min="0" value="300">
+                  <small>Coins awarded to all players who participated in defeating the boss.</small>
+                </div>
+                <div class="form-group">
+                  <label for="raid-reward-xp">Raid Win XP Reward</label>
+                  <input type="number" id="raid-reward-xp" min="0" value="150">
+                  <small>XP awarded to all participants.</small>
+                </div>
+                <div class="form-group">
+                  <label for="raid-drop-stone-chance">Evolution Stone Drop Chance (%)</label>
+                  <input type="number" id="raid-drop-stone-chance" min="0" max="100" value="25">
+                  <small>Chance for active participants to drop a random Evolution Stone upon victory.</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Global Action / Save Panel -->
+            <div style="border-top: 1px solid var(--border-color); padding-top: 15px; display: flex; flex-direction: column; gap: 15px; margin-top: 10px;">
+              <div class="form-group">
+                <label>Your OBS Browser Source URL</label>
+                <div class="copy-link-group" style="display: flex; gap: 8px;">
+                  <input type="text" id="obs-overlay-url" readonly style="flex: 1; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: var(--text-muted); padding: 10px 12px; border-radius: 8px; font-family: inherit; font-size: 13px; cursor: pointer;" onclick="this.select()">
+                  <button type="button" id="btn-copy-url" style="padding: 10px 15px; border-radius: 8px; border: none; background: var(--color-primary); color: #fff; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; transition: background 0.2s;">Copy</button>
+                </div>
+                <small>Copy and paste this link as a Browser Source in OBS Studio (Resolution: 1920x1080).</small>
+              </div>
+
+              <button type="submit" class="btn btn-primary" style="padding: 12px 20px; font-size: 15px; font-weight: 700; border-radius: 10px;">Save Settings</button>
+            </div>
+
+          </div>
+        </form>
       </section>
 
     </main>
