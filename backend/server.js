@@ -1047,13 +1047,15 @@ async function processCommand(channelId, username, displayName, messageText, bas
   if (cleanMsg.startsWith('!shop') || cleanMsg === 'shop' || cleanMsg.startsWith('!store') || cleanMsg === 'store') {
     const parts = messageText.trim().split(/\s+/);
     const category = parts[1] ? parts[1].toLowerCase().trim() : '';
+    const user = await db.getUser(channelId, username, displayName);
+    const coinsText = ` (Your Coins: 🪙 ${user.coins})`;
 
     if (category === 'balls') {
       const pPoke = session.config.pricePokeball !== undefined ? session.config.pricePokeball : 10;
       const pGreat = session.config.priceGreatball !== undefined ? session.config.priceGreatball : 30;
       const pUltra = session.config.priceUltraball !== undefined ? session.config.priceUltraball : 80;
       const pMaster = session.config.priceMasterball !== undefined ? session.config.priceMasterball : 250;
-      const msg = `🛍️ Pokéballs Shop: Pokéball 🔴 (${pPoke}c) | Great Ball 🔵 (${pGreat}c) | Ultra Ball 🟡 (${pUltra}c) | Master Ball 🟣 (${pMaster}c). Buy using '!buy [ball_type] [amount]'.`;
+      const msg = `🛍️ Pokéballs Shop${coinsText}: Pokéball 🔴 (${pPoke}c) | Great Ball 🔵 (${pGreat}c) | Ultra Ball 🟡 (${pUltra}c) | Master Ball 🟣 (${pMaster}c). Buy using '!buy [ball_type] [amount]'.`;
       io.to(channelId).emit('command_feedback', { username, text: msg });
       return msg;
     } else if (category === 'packs') {
@@ -1065,7 +1067,7 @@ async function processCommand(channelId, username, displayName, messageText, bas
       const pKalos = session.config.pricePackKalos !== undefined ? session.config.pricePackKalos : 150;
       const pAlola = session.config.pricePackAlola !== undefined ? session.config.pricePackAlola : 150;
       const pLegendary = session.config.pricePackLegendary !== undefined ? session.config.pricePackLegendary : 500;
-      const msg = `🛍️ Booster Packs Shop: Kanto (${pKanto}c) | Johto (${pJohto}c) | Hoenn (${pHoenn}c) | Sinnoh (${pSinnoh}c) | Unova (${pUnova}c) | Kalos (${pKalos}c) | Alola (${pAlola}c) | Legendary (${pLegendary}c). Buy using '!buy pack [type]'.`;
+      const msg = `🛍️ Booster Packs Shop${coinsText}: Kanto (${pKanto}c) | Johto (${pJohto}c) | Hoenn (${pHoenn}c) | Sinnoh (${pSinnoh}c) | Unova (${pUnova}c) | Kalos (${pKalos}c) | Alola (${pAlola}c) | Legendary (${pLegendary}c). Buy using '!buy pack [type]'.`;
       io.to(channelId).emit('command_feedback', { username, text: msg });
       return msg;
     } else if (category === 'stones') {
@@ -1074,11 +1076,11 @@ async function processCommand(channelId, username, displayName, messageText, bas
       const pThunder = session.config.priceThunderStone !== undefined ? session.config.priceThunderStone : 150;
       const pLeaf = session.config.priceLeafStone !== undefined ? session.config.priceLeafStone : 150;
       const pMoon = session.config.priceMoonStone !== undefined ? session.config.priceMoonStone : 150;
-      const msg = `🛍️ Evolution Stones Shop: Fire 🔥 (${pFire}c) | Water 💧 (${pWater}c) | Thunder ⚡ (${pThunder}c) | Leaf 🍃 (${pLeaf}c) | Moon 🌙 (${pMoon}c). Buy using '!buy [stone_type] [amount]'.`;
+      const msg = `🛍️ Evolution Stones Shop${coinsText}: Fire 🔥 (${pFire}c) | Water 💧 (${pWater}c) | Thunder ⚡ (${pThunder}c) | Leaf 🍃 (${pLeaf}c) | Moon 🌙 (${pMoon}c). Buy using '!buy [stone_type] [amount]'.`;
       io.to(channelId).emit('command_feedback', { username, text: msg });
       return msg;
     } else {
-      const msg = `🛍️ Shop Categories: '!shop balls' | '!shop packs' | '!shop stones'. Type '!buy [item] [amount]' to purchase.`;
+      const msg = `🛍️ Shop Categories${coinsText}: '!shop balls' | '!shop packs' | '!shop stones'. Type '!buy [item] [amount]' to purchase.`;
       io.to(channelId).emit('command_feedback', { username, text: msg });
       return msg;
     }
