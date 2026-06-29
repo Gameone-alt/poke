@@ -544,7 +544,9 @@ async function runBattle(channelId, playerA, playerB) {
     challengerHp: pokeA.baseStats.hp || 100,
     opponentHp: pokeB.baseStats.hp || 100,
     challengerPower: Math.round(finalPowerA),
-    opponentPower: Math.round(finalPowerB)
+    opponentPower: Math.round(finalPowerB),
+    challengerMultiplier: multA,
+    opponentMultiplier: multB
   });
 
   sendGameLog(channelId, 'battle', `⚔️ Battle Started: @${playerA.displayName}'s ${pokeA.name} vs ${opponentName}'s ${pokeB.name}!`);
@@ -616,7 +618,7 @@ async function runBattle(channelId, playerA, playerB) {
     session.activeChallenge = null;
     
     io.to(channelId).emit('leaderboard_update', await db.getLeaderboard(channelId));
-  }, 4000);
+  }, 6500);
 }
 
 /**

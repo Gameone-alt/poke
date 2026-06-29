@@ -639,6 +639,120 @@ function showDamagePopup(x, y, text, color = '#ef4444') {
   }).onfinish = () => popup.remove();
 }
 
+// Projectile Attack Helper
+function shootProjectile(fromEl, toEl, types, callback) {
+  if (!fromEl || !toEl) {
+    if (callback) callback();
+    return;
+  }
+  
+  const fromRect = fromEl.getBoundingClientRect();
+  const toRect = toEl.getBoundingClientRect();
+  
+  const startX = fromRect.left + fromRect.width / 2;
+  const startY = fromRect.top + fromRect.height / 2;
+  
+  const endX = toRect.left + toRect.width / 2;
+  const endY = toRect.top + toRect.height / 2;
+  
+  let emoji = '💥'; // Default physical strike
+  let color = '#ef4444'; // Red default
+  let shadow = 'rgba(239, 68, 68, 0.6)';
+  
+  const tList = types ? types.map(t => t.toLowerCase()) : [];
+  if (tList.includes('fire')) {
+    emoji = '🔥';
+    color = '#f97316';
+    shadow = 'rgba(249, 115, 22, 0.8)';
+  } else if (tList.includes('water')) {
+    emoji = '💧';
+    color = '#3b82f6';
+    shadow = 'rgba(59, 130, 246, 0.8)';
+  } else if (tList.includes('electric')) {
+    emoji = '⚡';
+    color = '#eab308';
+    shadow = 'rgba(234, 179, 8, 0.8)';
+  } else if (tList.includes('grass')) {
+    emoji = '🍃';
+    color = '#22c55e';
+    shadow = 'rgba(34, 197, 94, 0.8)';
+  } else if (tList.includes('ghost') || tList.includes('psychic')) {
+    emoji = '🔮';
+    color = '#a855f7';
+    shadow = 'rgba(168, 85, 247, 0.8)';
+  } else if (tList.includes('ice')) {
+    emoji = '❄️';
+    color = '#06b6d4';
+    shadow = 'rgba(6, 182, 212, 0.8)';
+  } else if (tList.includes('rock') || tList.includes('ground')) {
+    emoji = '🪨';
+    color = '#78350f';
+    shadow = 'rgba(120, 53, 15, 0.8)';
+  }
+  
+  const proj = document.createElement('div');
+  proj.textContent = emoji;
+  proj.style.position = 'fixed';
+  proj.style.fontSize = '32px';
+  proj.style.left = `${startX - 16}px`;
+  proj.style.top = `${startY - 16}px`;
+  proj.style.zIndex = '1000';
+  proj.style.pointerEvents = 'none';
+  proj.style.display = 'flex';
+  proj.style.alignItems = 'center';
+  proj.style.justifyContent = 'center';
+  proj.style.filter = `drop-shadow(0 0 10px ${shadow})`;
+  document.body.appendChild(proj);
+  
+  const anim = proj.animate([
+    { left: `${startX - 16}px`, top: `${startY - 16}px`, transform: 'scale(1) rotate(0deg)' },
+    { left: `${endX - 16}px`, top: `${endY - 16}px`, transform: 'scale(1.5) rotate(720deg)' }
+  ], {
+    duration: 500,
+    easing: 'ease-in-out'
+  });
+  
+  anim.onfinish = () => {
+    proj.remove();
+    createHitParticles(endX, endY, color);
+    if (callback) callback();
+  };
+}
+
+// Sparkle/Particle explosion helper
+function createHitParticles(x, y, color) {
+  const count = 12;
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div');
+    p.style.position = 'fixed';
+    p.style.left = `${x}px`;
+    p.style.top = `${y}px`;
+    p.style.width = '6px';
+    p.style.height = '6px';
+    p.style.borderRadius = '50%';
+    p.style.backgroundColor = color;
+    p.style.boxShadow = `0 0 8px ${color}`;
+    p.style.zIndex = '999';
+    p.style.pointerEvents = 'none';
+    document.body.appendChild(p);
+    
+    const angle = Math.random() * Math.PI * 2;
+    const distance = 40 + Math.random() * 60;
+    const destX = x + Math.cos(angle) * distance;
+    const destY = y + Math.sin(angle) * distance;
+    
+    const pAnim = p.animate([
+      { transform: 'scale(1)', opacity: 1 },
+      { left: `${destX}px`, top: `${destY}px`, transform: 'scale(0)', opacity: 0 }
+    ], {
+      duration: 600,
+      easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+    });
+    
+    pAnim.onfinish = () => p.remove();
+  }
+}
+
 let activeBattleSimulationTimers = [];
 
 // Battle Start Event
@@ -728,108 +842,134 @@ socket.on('battle_start', (data) => {
   // Turn 1: Challenger strikes
   const timer2 = setTimeout(() => {
     impactFlash.classList.remove('impact-active');
-    challengerFighter.classList.add('fight-strike-left');
     
-    // Strike sound
-    playSound(sfxHit);
-    
-    // Animate hit on opponent
-    opponentFighter.style.animation = 'starBurstAnim 0.15s 2';
-    const timerFighterShake = setTimeout(() => { opponentFighter.style.animation = ''; }, 300);
-    activeBattleSimulationTimers.push(timerFighterShake);
+    shootProjectile(challengerSprite, opponentSprite, data.challengerTypes, () => {
+      challengerFighter.classList.add('fight-strike-left');
+      setTimeout(() => challengerFighter.classList.remove('fight-strike-left'), 400);
 
-    // Opponent takes damage
-    const damage = Math.round(data.opponentHp * (data.winner === 'challenger' ? 0.45 : 0.25));
-    const newHp = Math.max(0, data.opponentHp - damage);
-    const hpPercent = Math.max(0, (newHp / data.opponentHp) * 100);
-    
-    if (opponentHpFill) {
-      opponentHpFill.style.width = `${hpPercent}%`;
-      if (hpPercent < 30) opponentHpFill.style.backgroundColor = '#ef4444';
-      else if (hpPercent < 60) opponentHpFill.style.backgroundColor = '#f59e0b';
-    }
-    if (opponentHpText) opponentHpText.textContent = `HP: ${newHp}/${data.opponentHp}`;
+      // Strike sound
+      playSound(sfxHit);
+      
+      // Animate hit on opponent
+      opponentFighter.style.animation = 'starBurstAnim 0.15s 2';
+      const timerFighterShake = setTimeout(() => { opponentFighter.style.animation = ''; }, 300);
+      activeBattleSimulationTimers.push(timerFighterShake);
 
-    // Show floating damage text above Opponent Card
-    const oppRect = opponentFighter.getBoundingClientRect();
-    showDamagePopup(oppRect.left + oppRect.width / 2, oppRect.top - 20, `-${damage} HP!`);
+      // Opponent takes damage
+      const damage = Math.round(data.opponentHp * (data.winner === 'challenger' ? 0.45 : 0.25));
+      const newHp = Math.max(0, data.opponentHp - damage);
+      const hpPercent = Math.max(0, (newHp / data.opponentHp) * 100);
+      
+      if (opponentHpFill) {
+        opponentHpFill.style.width = `${hpPercent}%`;
+        if (hpPercent < 30) opponentHpFill.style.backgroundColor = '#ef4444';
+        else if (hpPercent < 60) opponentHpFill.style.backgroundColor = '#f59e0b';
+      }
+      if (opponentHpText) opponentHpText.textContent = `HP: ${newHp}/${data.opponentHp}`;
 
-  }, 2200);
+      // Show floating damage text above Opponent Card
+      const oppRect = opponentFighter.getBoundingClientRect();
+      showDamagePopup(oppRect.left + oppRect.width / 2, oppRect.top - 20, `-${damage} HP!`);
+
+      // Show type effectiveness popup
+      if (data.challengerMultiplier > 1) {
+        showDamagePopup(oppRect.left + oppRect.width / 2, oppRect.top - 50, 'SUPER EFFECTIVE!', '#eab308');
+      } else if (data.challengerMultiplier < 1) {
+        showDamagePopup(oppRect.left + oppRect.width / 2, oppRect.top - 50, 'Not very effective...', '#94a3b8');
+      }
+    });
+
+  }, 2000);
   activeBattleSimulationTimers.push(timer2);
 
   // Turn 2: Opponent strikes back
   const timer3 = setTimeout(() => {
-    challengerFighter.classList.remove('fight-strike-left');
-    opponentFighter.classList.add('fight-strike-right');
-    
-    // Strike sound
-    playSound(sfxHit);
-    
-    // Animate hit on challenger
-    challengerFighter.style.animation = 'starBurstAnim 0.15s 2';
-    const timerChalShake = setTimeout(() => { challengerFighter.style.animation = ''; }, 300);
-    activeBattleSimulationTimers.push(timerChalShake);
+    shootProjectile(opponentSprite, challengerSprite, data.opponentTypes, () => {
+      opponentFighter.classList.add('fight-strike-right');
+      setTimeout(() => opponentFighter.classList.remove('fight-strike-right'), 400);
 
-    // Challenger takes damage
-    const damage = Math.round(data.challengerHp * (data.winner === 'opponent' ? 0.45 : 0.25));
-    const newHp = Math.max(0, data.challengerHp - damage);
-    const hpPercent = Math.max(0, (newHp / data.challengerHp) * 100);
-    
-    if (challengerHpFill) {
-      challengerHpFill.style.width = `${hpPercent}%`;
-      if (hpPercent < 30) challengerHpFill.style.backgroundColor = '#ef4444';
-      else if (hpPercent < 60) challengerHpFill.style.backgroundColor = '#f59e0b';
-    }
-    if (challengerHpText) challengerHpText.textContent = `HP: ${newHp}/${data.challengerHp}`;
+      // Strike sound
+      playSound(sfxHit);
+      
+      // Animate hit on challenger
+      challengerFighter.style.animation = 'starBurstAnim 0.15s 2';
+      const timerChalShake = setTimeout(() => { challengerFighter.style.animation = ''; }, 300);
+      activeBattleSimulationTimers.push(timerChalShake);
 
-    // Show floating damage text above Challenger Card
-    const chalRect = challengerFighter.getBoundingClientRect();
-    showDamagePopup(chalRect.left + chalRect.width / 2, chalRect.top - 20, `-${damage} HP!`);
+      // Challenger takes damage
+      const damage = Math.round(data.challengerHp * (data.winner === 'opponent' ? 0.45 : 0.25));
+      const newHp = Math.max(0, data.challengerHp - damage);
+      const hpPercent = Math.max(0, (newHp / data.challengerHp) * 100);
+      
+      if (challengerHpFill) {
+        challengerHpFill.style.width = `${hpPercent}%`;
+        if (hpPercent < 30) challengerHpFill.style.backgroundColor = '#ef4444';
+        else if (hpPercent < 60) challengerHpFill.style.backgroundColor = '#f59e0b';
+      }
+      if (challengerHpText) challengerHpText.textContent = `HP: ${newHp}/${data.challengerHp}`;
 
-  }, 3400);
+      // Show floating damage text above Challenger Card
+      const chalRect = challengerFighter.getBoundingClientRect();
+      showDamagePopup(chalRect.left + chalRect.width / 2, chalRect.top - 20, `-${damage} HP!`);
+
+      // Show type effectiveness popup
+      if (data.opponentMultiplier > 1) {
+        showDamagePopup(chalRect.left + chalRect.width / 2, chalRect.top - 50, 'SUPER EFFECTIVE!', '#eab308');
+      } else if (data.opponentMultiplier < 1) {
+        showDamagePopup(chalRect.left + chalRect.width / 2, chalRect.top - 50, 'Not very effective...', '#94a3b8');
+      }
+    });
+
+  }, 3500);
   activeBattleSimulationTimers.push(timer3);
 
   // Turn 3: Final Blow!
   const timer4 = setTimeout(() => {
-    opponentFighter.classList.remove('fight-strike-right');
-    
     if (data.winner === 'challenger') {
-      challengerFighter.classList.add('fight-strike-left');
-      playSound(sfxHit);
-      
-      // Opponent KO
-      if (opponentHpFill) opponentHpFill.style.width = '0%';
-      if (opponentHpText) opponentHpText.textContent = `HP: 0/${data.opponentHp}`;
-      
-      const oppRect = opponentFighter.getBoundingClientRect();
-      showDamagePopup(oppRect.left + oppRect.width / 2, oppRect.top - 20, `KO!`, '#ef4444');
-      
-      opponentFighter.classList.add('fight-defeat-right');
-      battleStatusText.textContent = 'WINNER: CHALLENGER!';
-      playSound(sfxCatchSuccess);
+      shootProjectile(challengerSprite, opponentSprite, data.challengerTypes, () => {
+        challengerFighter.classList.add('fight-strike-left');
+        setTimeout(() => challengerFighter.classList.remove('fight-strike-left'), 400);
+
+        playSound(sfxHit);
+        
+        // Opponent KO
+        if (opponentHpFill) opponentHpFill.style.width = '0%';
+        if (opponentHpText) opponentHpText.textContent = `HP: 0/${data.opponentHp}`;
+        
+        const oppRect = opponentFighter.getBoundingClientRect();
+        showDamagePopup(oppRect.left + oppRect.width / 2, oppRect.top - 20, `KO!`, '#ef4444');
+        
+        opponentFighter.classList.add('fight-defeat-right');
+        battleStatusText.textContent = 'WINNER: CHALLENGER!';
+        playSound(sfxCatchSuccess);
+      });
     } else {
-      opponentFighter.classList.add('fight-strike-right');
-      playSound(sfxHit);
-      
-      // Challenger KO
-      if (challengerHpFill) challengerHpFill.style.width = '0%';
-      if (challengerHpText) challengerHpText.textContent = `HP: 0/${data.challengerHp}`;
-      
-      const chalRect = challengerFighter.getBoundingClientRect();
-      showDamagePopup(chalRect.left + chalRect.width / 2, chalRect.top - 20, `KO!`, '#ef4444');
-      
-      challengerFighter.classList.add('fight-defeat-left');
-      battleStatusText.textContent = 'WINNER: OPPONENT!';
-      playSound(sfxCatchFail);
+      shootProjectile(opponentSprite, challengerSprite, data.opponentTypes, () => {
+        opponentFighter.classList.add('fight-strike-right');
+        setTimeout(() => opponentFighter.classList.remove('fight-strike-right'), 400);
+
+        playSound(sfxHit);
+        
+        // Challenger KO
+        if (challengerHpFill) challengerHpFill.style.width = '0%';
+        if (challengerHpText) challengerHpText.textContent = `HP: 0/${data.challengerHp}`;
+        
+        const chalRect = challengerFighter.getBoundingClientRect();
+        showDamagePopup(chalRect.left + chalRect.width / 2, chalRect.top - 20, `KO!`, '#ef4444');
+        
+        challengerFighter.classList.add('fight-defeat-left');
+        battleStatusText.textContent = 'WINNER: OPPONENT!';
+        playSound(sfxCatchFail);
+      });
     }
 
-  }, 4600);
+  }, 5000);
   activeBattleSimulationTimers.push(timer4);
 });
 
 // Battle End Event (Handles cleanup)
 socket.on('battle_end', (data) => {
-  // We can let the dynamic simulation finish its final hits, then hide the overlay after 1.5 seconds
+  // We let the dynamic simulation finish its final hits, then hide the overlay after 3.0 seconds
   const timerEnd = setTimeout(() => {
     battleOverlay.classList.add('hidden');
     
@@ -838,7 +978,7 @@ socket.on('battle_end', (data) => {
     if (battleField) {
       battleField.className = 'battle-field';
     }
-  }, 1500);
+  }, 3000);
   activeBattleSimulationTimers.push(timerEnd);
 });
 
