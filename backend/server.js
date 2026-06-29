@@ -174,6 +174,18 @@ function findPokemonByName(name) {
   return null;
 }
 
+function getPokemonGen(pokemonId) {
+  const id = parseInt(pokemonId);
+  if (id >= 1 && id <= 151) return 1;
+  if (id >= 152 && id <= 251) return 2;
+  if (id >= 252 && id <= 386) return 3;
+  if (id >= 387 && id <= 493) return 4;
+  if (id >= 494 && id <= 649) return 5;
+  if (id >= 650 && id <= 721) return 6;
+  if (id >= 722 && id <= 809) return 7;
+  return 8; // Gen 8/Other
+}
+
 // Active multi-tenant sessions: Map<channelId, SessionState>
 const activeSessions = new Map();
 
@@ -363,7 +375,20 @@ async function spawnWildPokemon(channelId) {
     }
   }
 
-  const basePoke = targetPoke || pokemonDb[pokemonIds[Math.floor(Math.random() * pokemonIds.length)]];
+  let allowedIds = pokemonIds;
+  if (session.config.allowedGenerations && Array.isArray(session.config.allowedGenerations)) {
+    const allowedGens = session.config.allowedGenerations.map(Number);
+    if (allowedGens.length > 0) {
+      allowedIds = pokemonIds.filter(id => {
+        const gen = getPokemonGen(id);
+        return allowedGens.includes(gen);
+      });
+    }
+  }
+  if (allowedIds.length === 0) {
+    allowedIds = pokemonIds;
+  }
+  const basePoke = targetPoke || pokemonDb[allowedIds[Math.floor(Math.random() * allowedIds.length)]];
   
   const isShiny = Math.random() < session.config.shinyChance;
   const sprite = isShiny ? basePoke.shinySpriteUrl : basePoke.spriteUrl;
@@ -716,6 +741,18 @@ async function processCommand(channelId, username, displayName, messageText, bas
       ? `${session.config.inventoryBaseUrl.replace(/\/$/, '')}/trainer/${channelId}/${username}?backend=${finalBaseUrl}` 
       : `${finalBaseUrl}/trainer/${channelId}/${username}`;
     const msg = `@${displayName} View Inventory (Click Here): ${baseLink}`;
+    
+    io.to(channelId).emit('command_feedback', {
+      username,
+      text: msg
+    });
+    return msg;
+  }
+
+  // 2.5. !ball / !balls command
+  if (cleanMsg === '!ball' || cleanMsg === 'ball' || cleanMsg === '!balls' || cleanMsg === 'balls') {
+    const user = await db.getUser(channelId, username, displayName);
+    const msg = `@${displayName} has: 🔴 ${user.balls.pokeball || 0}x Pokéballs, 🔵 ${user.balls.greatball || 0}x Great Balls, 🟡 ${user.balls.ultraball || 0}x Ultra Balls, 🟣 ${user.balls.masterball || 0}x Master Balls.`;
     
     io.to(channelId).emit('command_feedback', {
       username,

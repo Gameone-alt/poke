@@ -105,6 +105,18 @@ const catchCooldownInput = document.getElementById('catch-cooldown');
 const shinyChanceInput = document.getElementById('shiny-chance');
 const configForm = document.getElementById('config-form');
 
+// Generation checkboxes
+const genCheckboxes = [
+  document.getElementById('gen-1'),
+  document.getElementById('gen-2'),
+  document.getElementById('gen-3'),
+  document.getElementById('gen-4'),
+  document.getElementById('gen-5'),
+  document.getElementById('gen-6'),
+  document.getElementById('gen-7'),
+  document.getElementById('gen-8')
+];
+
 // UI Customization DOM elements
 const themeSelect = document.getElementById('theme');
 const spriteFormatSelect = document.getElementById('sprite-format');
@@ -241,6 +253,14 @@ function populateConfig(config) {
   despawnTimeoutInput.value = Math.round(config.wildDespawnTimeoutMs / 1000);
   catchCooldownInput.value = Math.round(config.catchCooldownMs / 1000);
   shinyChanceInput.value = config.shinyChance * 100;
+  
+  // Set generation checkboxes
+  const allowedGens = config.allowedGenerations || [1,2,3,4,5,6,7,8];
+  genCheckboxes.forEach((chk, index) => {
+    if (chk) {
+      chk.checked = allowedGens.includes(index + 1);
+    }
+  });
   
   // Customization fields
   themeSelect.value = config.theme || 'modern';
@@ -398,7 +418,15 @@ configForm.addEventListener('submit', (e) => {
     videoId = videoIdRaw.split('youtu.be/')[1].split('?')[0];
   }
 
+  const allowedGenerations = [];
+  genCheckboxes.forEach((chk, index) => {
+    if (chk && chk.checked) {
+      allowedGenerations.push(index + 1);
+    }
+  });
+
   const updatedConfig = {
+    allowedGenerations,
     youtubeChannelId: channelIdInput.value.trim(),
     twitchChannel: twitchChannelInput.value.trim(),
     videoId: videoId,

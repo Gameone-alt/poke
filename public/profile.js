@@ -52,6 +52,14 @@ function renderTrainerProfile(user) {
   document.getElementById('coins-value').textContent = `🪙 ${user.coins}`;
   document.getElementById('caught-value').textContent = user.inventory ? user.inventory.length : 0;
 
+  // Balls Stock
+  if (user.balls) {
+    document.getElementById('balls-poke').textContent = user.balls.pokeball || 0;
+    document.getElementById('balls-great').textContent = user.balls.greatball || 0;
+    document.getElementById('balls-ultra').textContent = user.balls.ultraball || 0;
+    document.getElementById('balls-master').textContent = user.balls.masterball || 0;
+  }
+
   // Render Pokemon cards
   const grid = document.getElementById('pokemon-grid');
   grid.innerHTML = '';
