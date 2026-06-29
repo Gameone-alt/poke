@@ -80,7 +80,7 @@ function renderTrainerProfile(user) {
     const typeBadges = poke.types.map(t => `<span class="type-badge type-${t.toLowerCase()}">${t}</span>`).join(' ');
 
     // Sprite image URL resolving
-    const spriteUrl = getSafeSprite(poke.spriteUrl, poke.fallbackSpriteUrl);
+    const spriteUrl = getSafeSprite(poke.spriteUrl, poke.fallbackSpriteUrl, poke.pokemonId, poke.shiny);
 
     // Buddy Badge check
     const isBuddy = poke.instanceId === user.buddyInstanceId;
@@ -110,12 +110,18 @@ function renderTrainerProfile(user) {
   });
 }
 
-function getSafeSprite(spriteUrl, fallbackUrl) {
+function getSafeSprite(spriteUrl, fallbackUrl, pokemonId, isShiny) {
   if (spriteUrl && spriteUrl !== '/null' && !spriteUrl.endsWith('null') && !spriteUrl.endsWith('undefined')) {
     return spriteUrl;
   }
   if (fallbackUrl && fallbackUrl !== '/null' && !fallbackUrl.endsWith('null') && !fallbackUrl.endsWith('undefined')) {
     return fallbackUrl;
+  }
+  if (pokemonId) {
+    if (isShiny) {
+      return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${pokemonId}.png`;
+    }
+    return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonId}.png`;
   }
   return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png'; // default fallback icon
 }
