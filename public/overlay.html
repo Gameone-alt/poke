@@ -71,24 +71,7 @@
       </div>
     </div>
 
-    <!-- Catch Animation Overlay (Centered) -->
-    <div id="catch-anim-overlay" class="hidden">
-      <!-- We render the throw route dynamically -->
-      <img id="flying-ball" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="Throwing Ball" class="hidden">
-      
-      <div class="catch-box">
-        <div class="sprite-box-catch">
-          <img id="catch-target-sprite" src="" alt="Target" onerror="handleImageError(this)">
-        </div>
-        
-        <div class="ball-land-zone">
-          <img id="landing-ball" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="Catching Ball" class="hidden">
-          <div class="star-burst" id="star-burst"></div>
-        </div>
-        
-        <div id="catch-status-message" class="catch-status-text">SHAKING...</div>
-      </div>
-    </div>
+    <!-- Catch animation is rendered dynamically directly on the wild spawn card -->
 
     <!-- Battle Arena Overlay (Centered) -->
     <div id="battle-overlay" class="hidden">

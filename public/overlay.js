@@ -18,13 +18,7 @@ const wildShinyTag = document.getElementById('wild-shiny-tag');
 const wildPokemonStats = document.getElementById('wild-pokemon-stats');
 const sparkleEmitter = document.getElementById('sparkle-emitter');
 
-// Catch Anim references
-const catchAnimOverlay = document.getElementById('catch-anim-overlay');
-const catchTargetSprite = document.getElementById('catch-target-sprite');
-const flyingBall = document.getElementById('flying-ball');
-const landingBall = document.getElementById('landing-ball');
-const starBurst = document.getElementById('star-burst');
-const catchStatusMessage = document.getElementById('catch-status-message');
+// Catch Anim references are not needed since elements are built dynamically on the wild card
 
 // Battle Arena references
 const battleOverlay = document.getElementById('battle-overlay');
@@ -499,13 +493,13 @@ socket.on('catch_fail', (data) => {
 function runDynamicCatchAnimation(isSuccess, data) {
   const ballImage = BALL_SPRITES[data.ballType] || BALL_SPRITES.pokeball;
   
-  // Find target position on screen
+  // Find target position on screen (targeting the active spawn card)
   let targetX = window.innerWidth / 2;
   let targetY = window.innerHeight / 2 - 100;
   let useFallback = true;
   
-  if (wildPokemonSprite && wildPokemonSprite.offsetParent !== null) {
-    const rect = wildPokemonSprite.getBoundingClientRect();
+  if (wildSpawnContainer && !wildSpawnContainer.classList.contains('hidden')) {
+    const rect = wildSpawnContainer.getBoundingClientRect();
     if (rect.width > 0 && rect.height > 0) {
       targetX = rect.left + rect.width / 2;
       targetY = rect.top + rect.height / 2;
