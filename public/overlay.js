@@ -107,6 +107,42 @@ function triggerShinySparkles() {
 let currentOverlayConfig = {};
 let catchGuideInterval = null;
 
+function updateCatchGuideDisplay() {
+  const catchInstruction = wildSpawnContainer.querySelector('.catch-instruction');
+  if (!catchInstruction) return;
+
+  if (catchGuideInterval) {
+    clearInterval(catchGuideInterval);
+    catchGuideInterval = null;
+  }
+
+  if (currentOverlayConfig.showCardInstructions === false) {
+    catchInstruction.classList.add('hidden');
+  } else {
+    catchInstruction.classList.remove('hidden');
+    if (currentOverlayConfig.spawnCatchGuideMode === 'rotate') {
+      const rotations = [
+        'Type <span class="cmd-text">!catch</span> to use Pokéball!',
+        'Type <span class="cmd-text">!catch great</span> for Great Ball!',
+        'Type <span class="cmd-text">!catch ultra</span> for Ultra Ball!',
+        'Type <span class="cmd-text">!catch master</span> for Master Ball!'
+      ];
+      let rotateIdx = 0;
+      catchInstruction.innerHTML = rotations[rotateIdx];
+      catchGuideInterval = setInterval(() => {
+        rotateIdx = (rotateIdx + 1) % rotations.length;
+        catchInstruction.innerHTML = rotations[rotateIdx];
+      }, 4000);
+    } else {
+      let guideHtml = currentOverlayConfig.spawnCatchGuide || 'Type <span class="cmd-text">!catch</span> in chat!';
+      if (!guideHtml.includes('<span') && (guideHtml.toLowerCase().includes('catch') || guideHtml.toLowerCase().includes('!catch'))) {
+        guideHtml = guideHtml.replace(/(catch|!catch)/i, '<span class="cmd-text">$1</span>');
+      }
+      catchInstruction.innerHTML = guideHtml;
+    }
+  }
+}
+
 function applyConfig(config) {
   if (!config) return;
   currentOverlayConfig = config;
@@ -303,38 +339,7 @@ function applyConfig(config) {
     }
 
     // Catch Instruction Guide & Visibility
-    const catchInstruction = wildSpawnContainer.querySelector('.catch-instruction');
-    if (catchInstruction) {
-      if (catchGuideInterval) {
-        clearInterval(catchGuideInterval);
-        catchGuideInterval = null;
-      }
-      if (config.showCardInstructions === false) {
-        catchInstruction.classList.add('hidden');
-      } else {
-        catchInstruction.classList.remove('hidden');
-        if (config.spawnCatchGuideMode === 'rotate') {
-          const rotations = [
-            'Type <span class="cmd-text">!catch</span> to use Pokéball!',
-            'Type <span class="cmd-text">!catch great</span> for Great Ball!',
-            'Type <span class="cmd-text">!catch ultra</span> for Ultra Ball!',
-            'Type <span class="cmd-text">!catch master</span> for Master Ball!'
-          ];
-          let rotateIdx = 0;
-          catchInstruction.innerHTML = rotations[rotateIdx];
-          catchGuideInterval = setInterval(() => {
-            rotateIdx = (rotateIdx + 1) % rotations.length;
-            catchInstruction.innerHTML = rotations[rotateIdx];
-          }, 4000);
-        } else {
-          let guideHtml = config.spawnCatchGuide || 'Type <span class="cmd-text">!catch</span> in chat!';
-          if (!guideHtml.includes('<span') && (guideHtml.toLowerCase().includes('catch') || guideHtml.toLowerCase().includes('!catch'))) {
-            guideHtml = guideHtml.replace(/(catch|!catch)/i, '<span class="cmd-text">$1</span>');
-          }
-          catchInstruction.innerHTML = guideHtml;
-        }
-      }
-    }
+    updateCatchGuideDisplay();
   }
 
   // 5. Accent Color CSS Variable Override
@@ -464,6 +469,9 @@ socket.on('pokemon_spawned', (poke) => {
   } else {
     wildShinyTag.classList.add('hidden');
   }
+
+  // Update catch guide dynamic content
+  updateCatchGuideDisplay();
 
   // Remove and trigger card spawn slide in
   wildSpawnContainer.classList.add('hidden');
