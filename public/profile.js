@@ -83,6 +83,12 @@ function renderTrainerProfile(user) {
   sortedInventory.forEach(poke => {
     const card = document.createElement('div');
     card.className = 'pokemon-card';
+    
+    // Add legendary glow style if legendary
+    const isLegendary = poke.isLegendary || (poke.catchRate !== undefined && poke.catchRate <= 0.1);
+    if (isLegendary) {
+      card.classList.add('legendary');
+    }
 
     // Type classes styling
     const typeBadges = poke.types.map(t => `<span class="type-badge type-${t.toLowerCase()}">${t}</span>`).join(' ');

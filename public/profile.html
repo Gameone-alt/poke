@@ -252,6 +252,53 @@
       box-shadow: 0 15px 30px rgba(59, 130, 246, 0.15);
     }
 
+    .pokemon-card.legendary {
+      border: 2px solid transparent;
+      background-image: linear-gradient(var(--bg-card), var(--bg-card)), 
+                        linear-gradient(135deg, #f59e0b, #eab308, #3b82f6, #8b5cf6, #ec4899, #f59e0b);
+      background-origin: border-box;
+      background-clip: content-box, border-box;
+      background-size: 400% 400%;
+      animation: legendaryGlow 8s ease infinite;
+      box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.15), 0 8px 10px -6px rgba(245, 158, 11, 0.15);
+    }
+
+    .pokemon-card.legendary::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -150%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.25) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      transform: skewX(-25deg);
+      animation: shineSweep 4s infinite ease-in-out;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .pokemon-card.legendary:hover {
+      box-shadow: 0 15px 35px rgba(245, 158, 11, 0.35);
+      border-color: transparent;
+    }
+
+    @keyframes legendaryGlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes shineSweep {
+      0% { left: -150%; }
+      20% { left: 150%; }
+      100% { left: 150%; }
+    }
+
     .pokemon-sprite {
       width: 96px;
       height: 96px;
