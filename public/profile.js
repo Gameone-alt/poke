@@ -104,7 +104,6 @@ function renderTrainerProfile(user) {
     const shinySpark = poke.shiny ? '<span class="shiny-sparkle">✨</span>' : '';
 
     // Calculate dynamic CP
-    const isLegendary = poke.isLegendary || (poke.catchRate !== undefined && poke.catchRate <= 0.1);
     const cp = calculateCP(poke.baseStats, poke.wins, isLegendary);
 
     card.innerHTML = `
