@@ -1,5 +1,6 @@
-// Backend URL: empty on localhost (same-origin Express), Render URL in production
-const BACKEND_URL = window.location.origin.includes('localhost') ? '' : window.location.origin;
+const urlParams = new URLSearchParams(window.location.search);
+const backendParam = urlParams.get('backend');
+let BACKEND_URL = backendParam ? backendParam.replace(/\/$/, '') : (localStorage.getItem('backend_url') || (window.location.origin.includes('localhost') ? '' : window.location.origin));
 
 // DOM References
 const tabLogin = document.getElementById('tab-login');
@@ -7,6 +8,18 @@ const tabRegister = document.getElementById('tab-register');
 const loginForm = document.getElementById('login-form');
 const registerForm = document.getElementById('register-form');
 const feedbackMsg = document.getElementById('portal-feedback');
+const backendUrlGroup = document.getElementById('backend-url-group');
+const backendUrlInput = document.getElementById('backend-url');
+
+document.addEventListener('DOMContentLoaded', () => {
+  const isVercel = !window.location.origin.includes('localhost') && (window.location.origin.includes('vercel.app') || window.location.origin.includes('vercel'));
+  const hasSavedBackend = !!localStorage.getItem('backend_url') || !!backendParam;
+  
+  if (isVercel || hasSavedBackend) {
+    if (backendUrlGroup) backendUrlGroup.classList.remove('hidden');
+    if (backendUrlInput) backendUrlInput.value = BACKEND_URL;
+  }
+});
 
 // Tab toggling logic
 tabLogin.addEventListener('click', () => {
@@ -52,8 +65,9 @@ loginForm.addEventListener('submit', (e) => {
   
   // Use username as the channelId internally
   const channelId = username.toLowerCase().replace(/[^a-z0-9_-]/g, '');
+  const currentBackendUrl = backendUrlInput ? (backendUrlInput.value.trim().replace(/\/$/, '') || BACKEND_URL) : BACKEND_URL;
   
-  const socket = io(BACKEND_URL, {
+  const socket = io(currentBackendUrl, {
     query: { channelId },
     forceNew: true
   });
@@ -65,9 +79,13 @@ loginForm.addEventListener('submit', (e) => {
   socket.on('password_verified', (data) => {
     if (data.success) {
       localStorage.setItem('admin_password_' + channelId, password);
+      if (currentBackendUrl) {
+        localStorage.setItem('backend_url', currentBackendUrl);
+      }
       showFeedback('Logged in successfully! Redirecting...', true);
       setTimeout(() => {
-        window.location.href = `dashboard.html?channel=${channelId}`;
+        const backendParamStr = currentBackendUrl ? `&backend=${encodeURIComponent(currentBackendUrl)}` : '';
+        window.location.href = `dashboard.html?channel=${channelId}${backendParamStr}`;
       }, 800);
     } else {
       showFeedback(data.message || 'Incorrect username or password.');
@@ -112,8 +130,9 @@ registerForm.addEventListener('submit', (e) => {
   showFeedback('Creating your account...', true);
   
   const channelId = username.toLowerCase().replace(/[^a-z0-9_-]/g, '');
+  const currentBackendUrl = backendUrlInput ? (backendUrlInput.value.trim().replace(/\/$/, '') || BACKEND_URL) : BACKEND_URL;
   
-  const socket = io(BACKEND_URL, {
+  const socket = io(currentBackendUrl, {
     query: { channelId },
     forceNew: true
   });
@@ -130,9 +149,13 @@ registerForm.addEventListener('submit', (e) => {
   socket.on('password_verified', (data) => {
     if (data.success) {
       localStorage.setItem('admin_password_' + channelId, password);
+      if (currentBackendUrl) {
+        localStorage.setItem('backend_url', currentBackendUrl);
+      }
       showFeedback('Account created! Launching dashboard...', true);
       setTimeout(() => {
-        window.location.href = `dashboard.html?channel=${channelId}`;
+        const backendParamStr = currentBackendUrl ? `&backend=${encodeURIComponent(currentBackendUrl)}` : '';
+        window.location.href = `dashboard.html?channel=${channelId}${backendParamStr}`;
       }, 800);
     } else {
       showFeedback(data.message || 'Error creating account. Please try again.');

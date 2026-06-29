@@ -29,6 +29,13 @@
       </div>
 
       <div class="form-container">
+        <!-- Backend URL Configuration (visible when on Vercel/custom domain) -->
+        <div class="form-group hidden" id="backend-url-group" style="margin-bottom: 20px; border-bottom: 1px dashed var(--border-color); padding-bottom: 15px;">
+          <label for="backend-url" style="color: #60a5fa; font-weight: 600;">Render Backend URL</label>
+          <input type="url" id="backend-url" placeholder="e.g. https://my-pokemon-backend.onrender.com" style="background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px; width: 100%; display: block; margin-top: 4px;">
+          <small style="color: #94a3b8; font-size: 11px; display: block; margin-top: 4px;">Since this site is running on Vercel, enter your deployed Render backend link to connect.</small>
+        </div>
+
         <!-- Log In Form -->
         <form id="login-form" class="portal-form">
           <div class="form-group">

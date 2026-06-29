@@ -2,8 +2,8 @@
 const urlParams = new URLSearchParams(window.location.search);
 const channelId = urlParams.get('channel') || 'simulator';
 
-// Backend URL: empty on localhost (same-origin Express), Render URL in production
-const BACKEND_URL = window.location.origin.includes('localhost') ? '' : window.location.origin;
+const backendParam = urlParams.get('backend');
+const BACKEND_URL = backendParam ? backendParam.replace(/\/$/, '') : (localStorage.getItem('backend_url') || (window.location.origin.includes('localhost') ? '' : window.location.origin));
 const socket = io(BACKEND_URL, {
   query: { channelId }
 });

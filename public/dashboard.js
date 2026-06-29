@@ -6,8 +6,8 @@ if (!channelId) {
   window.location.href = 'index.html';
 }
 
-// Backend URL: empty on localhost (same-origin Express), Render URL in production
-const BACKEND_URL = window.location.origin.includes('localhost') ? '' : window.location.origin;
+const backendParam = urlParams.get('backend');
+const BACKEND_URL = backendParam ? backendParam.replace(/\/$/, '') : (localStorage.getItem('backend_url') || (window.location.origin.includes('localhost') ? '' : window.location.origin));
 const socket = io(BACKEND_URL, {
   query: { channelId }
 });
@@ -633,7 +633,8 @@ btnLogout.addEventListener('click', () => {
 // OBS Browser Source Link copy handler
 if (channelId) {
   const host = window.location.origin;
-  obsOverlayUrl.value = `${host}/overlay.html?channel=${channelId}`;
+  const backendParamStr = BACKEND_URL ? `&backend=${encodeURIComponent(BACKEND_URL)}` : '';
+  obsOverlayUrl.value = `${host}/overlay.html?channel=${channelId}${backendParamStr}`;
 }
 
 btnCopyUrl.addEventListener('click', () => {
