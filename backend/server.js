@@ -1099,9 +1099,18 @@ async function processCommand(channelId, username, displayName, messageText, bas
       candidates = allPokes;
     }
     
+    const legendaryCandidates = allPokes.filter(p => p.catchRate <= 0.1);
+    
     const cards = [];
     for (let i = 0; i < 3; i++) {
-      const randomPoke = candidates[Math.floor(Math.random() * candidates.length)];
+      let drawPool = candidates;
+      
+      // Card 1 (i === 0) is always a guaranteed legendary!
+      if (i === 0 && legendaryCandidates.length > 0) {
+        drawPool = legendaryCandidates;
+      }
+      
+      const randomPoke = drawPool[Math.floor(Math.random() * drawPool.length)];
       const isShiny = Math.random() < (session.config.shinyChance || 0.01);
       
       const newPoke = await db.addPokemon(channelId, username, displayName, randomPoke, isShiny);
