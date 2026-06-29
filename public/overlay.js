@@ -181,12 +181,18 @@ function applyConfig(config) {
     feedContainer.style.left = '';
     feedContainer.style.right = '';
     
+    // Scale and origin adjustment
+    const feedScale = config.feedScale !== undefined ? config.feedScale : 1.0;
+    feedContainer.style.transform = `scale(${feedScale})`;
+    
     if (feedPos === 'custom') {
       feedContainer.style.top = config.feedTop || 'auto';
       feedContainer.style.bottom = config.feedBottom || 'auto';
       feedContainer.style.left = config.feedLeft || 'auto';
       feedContainer.style.right = config.feedRight || 'auto';
+      feedContainer.style.transformOrigin = 'top left';
     } else {
+      feedContainer.style.transformOrigin = feedPos.includes('left') ? 'top left' : 'top right';
       if (feedPos === 'top-right') {
         feedContainer.style.top = '15px';
         feedContainer.style.right = '15px';
@@ -217,12 +223,17 @@ function applyConfig(config) {
       tickerBar.style.left = '';
       tickerBar.style.right = '';
       
+      const tickerScale = config.tickerScale !== undefined ? config.tickerScale : 1.0;
+      tickerBar.style.transform = `scale(${tickerScale})`;
+      
       if (tickerPos === 'custom') {
         tickerBar.style.top = config.tickerTop || 'auto';
         tickerBar.style.bottom = config.tickerBottom || 'auto';
         tickerBar.style.left = config.tickerLeft || 'auto';
         tickerBar.style.right = config.tickerRight || 'auto';
+        tickerBar.style.transformOrigin = 'top left';
       } else {
+        tickerBar.style.transformOrigin = tickerPos.includes('left') ? 'top left' : 'top right';
         if (tickerPos === 'top-left') {
           tickerBar.style.top = '15px';
           tickerBar.style.left = '15px';
@@ -249,27 +260,32 @@ function applyConfig(config) {
     battleOverlay.style.right = '';
     battleOverlay.style.transform = '';
     
+    const battleScale = config.battleScale !== undefined ? config.battleScale : 1.0;
+    
     if (battlePos === 'custom') {
       battleOverlay.style.top = config.battleTop || 'auto';
       battleOverlay.style.bottom = config.battleBottom || 'auto';
       battleOverlay.style.left = config.battleLeft || 'auto';
       battleOverlay.style.right = config.battleRight || 'auto';
+      
       if (config.battleLeft && config.battleLeft !== 'auto' && config.battleTop && config.battleTop !== 'auto') {
-        battleOverlay.style.transform = 'translate(-50%, -50%)';
+        battleOverlay.style.transform = `translate(-50%, -50%) scale(${battleScale})`;
+      } else {
+        battleOverlay.style.transform = `scale(${battleScale})`;
       }
     } else {
       if (battlePos === 'center') {
         battleOverlay.style.top = '50%';
         battleOverlay.style.left = '50%';
-        battleOverlay.style.transform = 'translate(-50%, -50%)';
+        battleOverlay.style.transform = `translate(-50%, -50%) scale(${battleScale})`;
       } else if (battlePos === 'top') {
         battleOverlay.style.top = '15px';
         battleOverlay.style.left = '50%';
-        battleOverlay.style.transform = 'translateX(-50%)';
+        battleOverlay.style.transform = `translateX(-50%) scale(${battleScale})`;
       } else if (battlePos === 'bottom') {
         battleOverlay.style.bottom = '15px';
         battleOverlay.style.left = '50%';
-        battleOverlay.style.transform = 'translateX(-50%)';
+        battleOverlay.style.transform = `translateX(-50%) scale(${battleScale})`;
       }
     }
   }

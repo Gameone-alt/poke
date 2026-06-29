@@ -1409,123 +1409,132 @@ async function processCommand(channelId, username, displayName, messageText, bas
     return msg;
   }
 
-  // 8.7. Trade System: !trade / !accepttrade / !declinetrade
-  if (cleanMsg.startsWith('!trade ') || cleanMsg.startsWith('trade ')) {
+  // 8.7. Open-Market Trade System: !trade / !accept
+  if (cleanMsg.startsWith('!trade') || cleanMsg === 'trade') {
     const parts = messageText.trim().split(/\s+/);
-    if (parts.length < 4) {
-      const msg = `❌ @${displayName}, syntax: !trade @username [your_pokemon] [their_pokemon]`;
+    if (!session.tradeOffers) session.tradeOffers = {};
+    if (!session.tradeAcceptances) session.tradeAcceptances = {};
+
+    if (parts.length < 2) {
+      const offers = Object.keys(session.tradeOffers).map(u => `@${session.tradeOffers[u].displayName} (${session.tradeOffers[u].pokemon.name})`).join(', ');
+      const msg = offers ? `🤝 Active Trade Offers: ${offers}. Type '!trade [your_pokemon]' to offer one, or '!accept @player' to trade.` : `🤝 No active trade offers. Type '!trade [your_pokemon]' to put a Pokémon up for trade!`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    
+    const query = parts.slice(1).join(' ').toLowerCase().trim();
+    if (query === 'cancel') {
+      delete session.tradeOffers[username.toLowerCase()];
+      delete session.tradeAcceptances[username.toLowerCase()];
+      const msg = `🤝 @${displayName}'s active trade offer has been cancelled.`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    
+    const user = await db.getUser(channelId, username, displayName);
+    const foundPoke = user.inventory.find(p => 
+      p.name.toLowerCase().replace('✨ shiny ', '') === query || 
+      p.originalName.toLowerCase() === query ||
+      p.pokemonId.toString() === query
+    );
+    
+    if (!foundPoke) {
+      const msg = `❌ @${displayName}, you don't own a "${query}" to offer for trade!`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    
+    session.tradeOffers[username.toLowerCase()] = {
+      pokemon: foundPoke,
+      displayName: displayName
+    };
+    delete session.tradeAcceptances[username.toLowerCase()];
+    
+    const msg = `🤝 @${displayName} is now offering their ${foundPoke.name} for trade! Type '!trade [your_pokemon]' to make an offer, or '!accept @${displayName}' to request an exchange.`;
+    io.to(channelId).emit('command_feedback', { username, text: msg });
+    return msg;
+  }
+
+  if (cleanMsg.startsWith('!accept ') || cleanMsg.startsWith('accept ')) {
+    const parts = messageText.trim().split(/\s+/);
+    if (!session.tradeOffers) session.tradeOffers = {};
+    if (!session.tradeAcceptances) session.tradeAcceptances = {};
+
+    if (parts.length < 2) {
+      const msg = `❌ @${displayName}, syntax: !accept @username`;
       io.to(channelId).emit('command_feedback', { username, text: msg });
       return msg;
     }
     
     const targetMention = parts[1].replace('@', '').toLowerCase().trim();
-    const myPokeQuery = parts[2].toLowerCase().trim();
-    const theirPokeQuery = parts[3].toLowerCase().trim();
-    
     if (targetMention === username.toLowerCase()) {
       const msg = `❌ @${displayName}, you cannot trade with yourself!`;
       io.to(channelId).emit('command_feedback', { username, text: msg });
       return msg;
     }
     
-    const userA = await db.getUser(channelId, username, displayName);
-    const foundPokeA = userA.inventory.find(p => 
-      p.name.toLowerCase().replace('✨ shiny ', '') === myPokeQuery || 
-      p.originalName.toLowerCase() === myPokeQuery ||
-      p.pokemonId.toString() === myPokeQuery
-    );
-    
-    if (!foundPokeA) {
-      const msg = `❌ @${displayName}, you don't own a "${myPokeQuery}" to trade!`;
+    const myOffer = session.tradeOffers[username.toLowerCase()];
+    if (!myOffer) {
+      const msg = `❌ @${displayName}, you must first offer a Pokémon for trade using '!trade [your_pokemon]' before accepting!`;
       io.to(channelId).emit('command_feedback', { username, text: msg });
       return msg;
     }
     
-    const userB = await db.getUser(channelId, targetMention);
-    const foundPokeB = userB.inventory.find(p => 
-      p.name.toLowerCase().replace('✨ shiny ', '') === theirPokeQuery || 
-      p.originalName.toLowerCase() === theirPokeQuery ||
-      p.pokemonId.toString() === theirPokeQuery
-    );
-    
-    if (!foundPokeB) {
-      const msg = `❌ @${displayName}, @${userB.displayName} doesn't own a "${theirPokeQuery}"!`;
+    const targetOffer = session.tradeOffers[targetMention];
+    if (!targetOffer) {
+      const msg = `❌ @${displayName}, @${targetMention} is not currently offering any Pokémon for trade.`;
       io.to(channelId).emit('command_feedback', { username, text: msg });
       return msg;
     }
     
-    session.activeTrade = {
-      sender: username,
-      senderDisplayName: displayName,
-      receiver: targetMention,
-      receiverDisplayName: userB.displayName,
-      senderPokeId: foundPokeA.instanceId,
-      senderPokeName: foundPokeA.name,
-      receiverPokeId: foundPokeB.instanceId,
-      receiverPokeName: foundPokeB.name,
-      timestamp: Date.now()
-    };
+    session.tradeAcceptances[username.toLowerCase()] = targetMention;
     
-    const msg = `🤝 Trade Offer: @${displayName} wants to trade their ${foundPokeA.name} for @${userB.displayName}'s ${foundPokeB.name}! @${userB.displayName}, type !accepttrade to accept, or !declinetrade to refuse.`;
-    io.to(channelId).emit('command_feedback', { username, text: msg });
-    return msg;
-  }
-
-  if (cleanMsg === '!accepttrade' || cleanMsg === 'accepttrade' || cleanMsg === '!tradeaccept' || cleanMsg === 'tradeaccept') {
-    if (!session.activeTrade || session.activeTrade.receiver !== username.toLowerCase()) {
-      const msg = `❌ @${displayName}, you do not have any pending trade requests to accept.`;
+    if (session.tradeAcceptances[targetMention] === username.toLowerCase()) {
+      try {
+        const userA = await db.getUser(channelId, username, displayName);
+        const userB = await db.getUser(channelId, targetMention);
+        
+        const ownA = userA.inventory.some(p => p.instanceId === myOffer.pokemon.instanceId);
+        const ownB = userB.inventory.some(p => p.instanceId === targetOffer.pokemon.instanceId);
+        
+        if (!ownA || !ownB) {
+          const msg = `❌ Trade cancelled: One or both trainers no longer own the offered Pokémon.`;
+          delete session.tradeOffers[username.toLowerCase()];
+          delete session.tradeOffers[targetMention];
+          delete session.tradeAcceptances[username.toLowerCase()];
+          delete session.tradeAcceptances[targetMention];
+          io.to(channelId).emit('command_feedback', { username, text: msg });
+          return msg;
+        }
+        
+        await db.swapPokemonOwnership(channelId, username, myOffer.pokemon.instanceId, targetMention, targetOffer.pokemon.instanceId);
+        
+        const msg = `🤝 Trade successful! @${displayName} traded ${myOffer.pokemon.name} to @${targetOffer.displayName} for ${targetOffer.pokemon.name}!`;
+        sendGameLog(channelId, 'system', msg);
+        
+        io.to(channelId).emit('trade_completed', {
+          playerA: displayName,
+          pokeA: myOffer.pokemon.name,
+          playerB: targetOffer.displayName,
+          pokeB: targetOffer.pokemon.name
+        });
+        
+        delete session.tradeOffers[username.toLowerCase()];
+        delete session.tradeOffers[targetMention];
+        delete session.tradeAcceptances[username.toLowerCase()];
+        delete session.tradeAcceptances[targetMention];
+        return msg;
+      } catch (err) {
+        console.error('[Trade] Error swapping ownership:', err.message);
+        const msg = `❌ Error completing trade: ${err.message}`;
+        io.to(channelId).emit('command_feedback', { username, text: msg });
+        return msg;
+      }
+    } else {
+      const msg = `🤝 @${displayName} wants to trade their ${myOffer.pokemon.name} for @${targetOffer.displayName}'s ${targetOffer.pokemon.name}! @${targetOffer.displayName}, type '!accept @${displayName}' to complete the trade!`;
       io.to(channelId).emit('command_feedback', { username, text: msg });
       return msg;
     }
-    
-    const trade = session.activeTrade;
-    const userA = await db.getUser(channelId, trade.sender, trade.senderDisplayName);
-    const userB = await db.getUser(channelId, trade.receiver, trade.receiverDisplayName);
-    
-    const ownA = userA.inventory.some(p => p.instanceId === trade.senderPokeId);
-    const ownB = userB.inventory.some(p => p.instanceId === trade.receiverPokeId);
-    
-    if (!ownA || !ownB) {
-      const msg = `❌ Trade cancelled: One or both trainers no longer own the target Pokémon.`;
-      session.activeTrade = null;
-      io.to(channelId).emit('command_feedback', { username, text: msg });
-      return msg;
-    }
-    
-    try {
-      await db.swapPokemonOwnership(channelId, trade.sender, trade.senderPokeId, trade.receiver, trade.receiverPokeId);
-      
-      const msg = `✅ Trade successful! @${trade.senderDisplayName} traded ${trade.senderPokeName} to @${trade.receiverDisplayName} for ${trade.receiverPokeName}!`;
-      sendGameLog(channelId, 'system', msg);
-      
-      io.to(channelId).emit('trade_completed', {
-        playerA: trade.senderDisplayName,
-        pokeA: trade.senderPokeName,
-        playerB: trade.receiverDisplayName,
-        pokeB: trade.receiverPokeName
-      });
-      
-      session.activeTrade = null;
-      return msg;
-    } catch (err) {
-      console.error('[Trade] Error swapping ownership:', err.message);
-      const msg = `❌ Error completing trade: ${err.message}`;
-      io.to(channelId).emit('command_feedback', { username, text: msg });
-      return msg;
-    }
-  }
-
-  if (cleanMsg === '!declinetrade' || cleanMsg === 'declinetrade' || cleanMsg === '!tradedecline' || cleanMsg === 'tradedecline') {
-    if (!session.activeTrade || session.activeTrade.receiver !== username.toLowerCase()) {
-      const msg = `❌ @${displayName}, you do not have any pending trade requests to decline.`;
-      io.to(channelId).emit('command_feedback', { username, text: msg });
-      return msg;
-    }
-    const trade = session.activeTrade;
-    session.activeTrade = null;
-    const msg = `❌ Trade offer declined by @${trade.receiverDisplayName}.`;
-    io.to(channelId).emit('command_feedback', { username, text: msg });
-    return msg;
   }
 
   // 8.8. Boss Raids: !attack / !raid

@@ -177,6 +177,7 @@
             <button type="button" class="config-tab-btn" data-panel="panel-shop">🛒 Shop & Multipliers</button>
             <button type="button" class="config-tab-btn" data-panel="panel-overlay">🎨 Overlay Theme</button>
             <button type="button" class="config-tab-btn" data-panel="panel-raid">🦖 Raid Boss</button>
+            <button type="button" class="config-tab-btn" data-panel="panel-layout">📐 Layout Editor</button>
           </div>
 
           <!-- Content Panels -->
@@ -723,6 +724,56 @@
                   <label for="raid-drop-stone-chance">Evolution Stone Drop Chance (%)</label>
                   <input type="number" id="raid-drop-stone-chance" min="0" max="100" value="25">
                   <small>Chance for active participants to drop a random Evolution Stone upon victory.</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Panel 7: Layout Editor -->
+            <div class="config-tab-panel" id="panel-layout" style="display: none;">
+              <h3>📐 Visual Layout Editor</h3>
+              <p style="margin-bottom: 15px; font-size: 13px; color: var(--text-muted);">
+                Drag the boxes inside the preview screen below to reposition overlay components. Use the scale slider below to resize the selected component. Changes are saved automatically when you click "Save Settings"!
+              </p>
+              
+              <!-- Screen Preview Box (16:9 Aspect Ratio) -->
+              <div id="layout-screen-preview" style="position: relative; width: 100%; aspect-ratio: 16/9; background: #0b0f19; border: 2px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); margin-bottom: 15px;">
+                <!-- Grid Lines Backdrop -->
+                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px); background-size: 20px 20px; pointer-events: none;"></div>
+                
+                <!-- Draggable components -->
+                <!-- 1. Wild Spawn Card -->
+                <div id="drag-spawn-card" class="draggable-widget" style="position: absolute; width: 120px; height: 75px; background: rgba(59, 130, 246, 0.25); border: 2px dashed #3b82f6; color: #fff; cursor: move; border-radius: 8px; font-weight: bold; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; z-index: 10;">
+                  <span>🦖 Wild Spawn Card</span>
+                  <div style="font-size: 9px; opacity: 0.8; margin-top: 4px;">Scale: <span class="widget-scale-val" id="lbl-scale-spawn">1.0</span>x</div>
+                </div>
+
+                <!-- 2. Leaderboard Ticker -->
+                <div id="drag-ticker" class="draggable-widget" style="position: absolute; width: 180px; height: 35px; background: rgba(16, 185, 129, 0.25); border: 2px dashed #10b981; color: #fff; cursor: move; border-radius: 8px; font-weight: bold; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; z-index: 10;">
+                  <span>👑 Ticker Bar</span>
+                  <div style="font-size: 9px; opacity: 0.8; margin-top: 2px;">Scale: <span class="widget-scale-val" id="lbl-scale-ticker">1.0</span>x</div>
+                </div>
+
+                <!-- 3. Live Game Feed -->
+                <div id="drag-feed" class="draggable-widget" style="position: absolute; width: 130px; height: 100px; background: rgba(245, 158, 11, 0.25); border: 2px dashed #f59e0b; color: #fff; cursor: move; border-radius: 8px; font-weight: bold; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; z-index: 10;">
+                  <span>📰 Live Feed</span>
+                  <div style="font-size: 9px; opacity: 0.8; margin-top: 4px;">Scale: <span class="widget-scale-val" id="lbl-scale-feed">1.0</span>x</div>
+                </div>
+
+                <!-- 4. Battle Arena -->
+                <div id="drag-battle" class="draggable-widget" style="position: absolute; width: 220px; height: 110px; background: rgba(239, 68, 68, 0.25); border: 2px dashed #ef4444; color: #fff; cursor: move; border-radius: 8px; font-weight: bold; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; z-index: 10;">
+                  <span>⚔️ Battle Arena</span>
+                  <div style="font-size: 9px; opacity: 0.8; margin-top: 4px;">Scale: <span class="widget-scale-val" id="lbl-scale-battle">1.0</span>x</div>
+                </div>
+              </div>
+
+              <!-- Controls for selected widget -->
+              <div id="layout-controls" style="padding: 15px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 10px; display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 20px;">
+                <div style="flex: 1;">
+                  <label for="layout-scale-slider" style="font-size: 12px; display: block; margin-bottom: 5px; color: #fff; font-weight: 600;">Selected Component Scale: <strong id="layout-scale-display" style="color: var(--color-primary);">1.0x</strong></label>
+                  <input type="range" id="layout-scale-slider" min="0.5" max="2.0" step="0.05" value="1.0" style="width: 100%; cursor: pointer;">
+                </div>
+                <div>
+                  <button type="button" id="btn-reset-layout" class="btn btn-secondary" style="font-size: 12px; padding: 10px 15px; border-radius: 8px; background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: #fff;">Reset Positions</button>
                 </div>
               </div>
             </div>

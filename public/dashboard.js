@@ -357,6 +357,15 @@ function populateConfig(config) {
   raidRewardCoinsInput.value = config.raidRewardCoins !== undefined ? config.raidRewardCoins : 250;
   raidRewardXpInput.value = config.raidRewardXp !== undefined ? config.raidRewardXp : 150;
   raidDropStoneChanceInput.value = config.raidDropStoneChance !== undefined ? Math.round(config.raidDropStoneChance * 100) : 15;
+  
+  // Set layout editor scale labels
+  document.getElementById('lbl-scale-spawn').textContent = (config.spawnCardScale !== undefined ? config.spawnCardScale : 1.0).toFixed(2);
+  document.getElementById('lbl-scale-battle').textContent = (config.battleScale !== undefined ? config.battleScale : 1.0).toFixed(2);
+  document.getElementById('lbl-scale-ticker').textContent = (config.tickerScale !== undefined ? config.tickerScale : 1.0).toFixed(2);
+  document.getElementById('lbl-scale-feed').textContent = (config.feedScale !== undefined ? config.feedScale : 1.0).toFixed(2);
+
+  // Initialize drag & drop layout editor settings
+  setupLayoutEditor(config);
 }
 
 const btnForceSpawn = document.getElementById('btn-force-spawn');
@@ -518,6 +527,11 @@ configForm.addEventListener('submit', (e) => {
     battleTop: battleTopInput.value.trim(),
     battleBottom: battleBottomInput.value.trim(),
     
+    // Custom scales saved from layout editor
+    battleScale: parseFloat(document.getElementById('lbl-scale-battle').textContent) || 1.0,
+    tickerScale: parseFloat(document.getElementById('lbl-scale-ticker').textContent) || 1.0,
+    feedScale: parseFloat(document.getElementById('lbl-scale-feed').textContent) || 1.0,
+
     // Retain spawn target if set
     spawnTarget: spawnTargetInput.value.trim()
   };
@@ -1184,5 +1198,191 @@ if (viewerSearch) {
       p.displayName.toLowerCase().includes(term)
     );
     renderViewersTable(filtered);
+  });
+}
+
+// Visual Layout Editor controller
+let selectedWidget = null;
+let currentConfigRef = null;
+
+function setupLayoutEditor(config) {
+  currentConfigRef = config;
+  const container = document.getElementById('layout-screen-preview');
+  if (!container) return;
+  
+  const widgets = [
+    { id: 'drag-spawn-card', type: 'spawn', scaleKey: 'spawnCardScale', posKey: 'spawnCardPosition', topKey: 'spawnCardTop', leftKey: 'spawnCardLeft', defaultTop: '75%', defaultLeft: '5%' },
+    { id: 'drag-ticker', type: 'ticker', scaleKey: 'tickerScale', posKey: 'tickerPosition', topKey: 'tickerTop', leftKey: 'tickerLeft', defaultTop: '5%', defaultLeft: '5%' },
+    { id: 'drag-feed', type: 'feed', scaleKey: 'feedScale', posKey: 'feedPosition', topKey: 'feedTop', leftKey: 'feedLeft', defaultTop: '5%', defaultLeft: '70%' },
+    { id: 'drag-battle', type: 'battle', scaleKey: 'battleScale', posKey: 'battlePosition', topKey: 'battleTop', leftKey: 'battleLeft', defaultTop: '40%', defaultLeft: '40%' }
+  ];
+  
+  const scaleSlider = document.getElementById('layout-scale-slider');
+  const scaleDisplay = document.getElementById('layout-scale-display');
+  
+  widgets.forEach(w => {
+    const el = document.getElementById(w.id);
+    if (!el) return;
+    
+    // 1. Initial Scale display
+    const scale = config[w.scaleKey] !== undefined ? config[w.scaleKey] : 1.0;
+    el.querySelector('.widget-scale-val').textContent = scale.toFixed(2);
+    el.style.transform = `scale(${scale})`;
+    
+    // 2. Initial Position placement
+    let topVal = w.defaultTop;
+    let leftVal = w.defaultLeft;
+    
+    const pos = config[w.posKey] || '';
+    if (pos === 'custom' || config[w.leftKey] || config[w.topKey]) {
+      if (config[w.leftKey]) leftVal = config[w.leftKey];
+      if (config[w.topKey]) topVal = config[w.topKey];
+    } else if (pos) {
+      if (pos === 'top-left') { topVal = '5%'; leftVal = '5%'; }
+      else if (pos === 'top-right') { topVal = '5%'; leftVal = '70%'; }
+      else if (pos === 'bottom-left') { topVal = '75%'; leftVal = '5%'; }
+      else if (pos === 'bottom-right') { topVal = '75%'; leftVal = '70%'; }
+      else if (pos === 'center') { topVal = '40%'; leftVal = '40%'; }
+      else if (pos === 'top') { topVal = '5%'; leftVal = '40%'; }
+      else if (pos === 'bottom') { topVal = '75%'; leftVal = '40%'; }
+    }
+    
+    el.style.top = topVal;
+    el.style.left = leftVal;
+    el.style.right = 'auto';
+    el.style.bottom = 'auto';
+    
+    // 3. Selection Event
+    el.addEventListener('mousedown', (e) => {
+      document.querySelectorAll('.draggable-widget').forEach(node => {
+        node.style.borderColor = el.id === node.id ? 'var(--color-primary)' : 'rgba(255,255,255,0.2)';
+        node.style.boxShadow = el.id === node.id ? '0 0 15px var(--color-primary)' : '';
+      });
+      
+      selectedWidget = w;
+      const currentScale = parseFloat(el.querySelector('.widget-scale-val').textContent) || 1.0;
+      scaleSlider.value = currentScale;
+      scaleDisplay.textContent = `${currentScale.toFixed(2)}x`;
+    });
+    
+    // 4. Drag Logic
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let initialLeft = 0, initialTop = 0;
+    
+    el.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      initialLeft = el.offsetLeft;
+      initialTop = el.offsetTop;
+      e.preventDefault();
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      
+      let newLeft = initialLeft + dx;
+      let newTop = initialTop + dy;
+      
+      const maxLeft = container.clientWidth - el.offsetWidth;
+      const maxTop = container.clientHeight - el.offsetHeight;
+      
+      newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+      newTop = Math.max(0, Math.min(newTop, maxTop));
+      
+      const pctLeft = ((newLeft / container.clientWidth) * 100).toFixed(1) + '%';
+      const pctTop = ((newTop / container.clientHeight) * 100).toFixed(1) + '%';
+      
+      el.style.left = pctLeft;
+      el.style.top = pctTop;
+      
+      if (w.type === 'spawn') {
+        spawnCardPositionSelect.value = 'custom';
+        spawnCardLeftInput.value = pctLeft;
+        spawnCardTopInput.value = pctTop;
+        spawnCardRightInput.value = 'auto';
+        spawnCardBottomInput.value = 'auto';
+      } else if (w.type === 'ticker') {
+        tickerPositionSelect.value = 'custom';
+        tickerLeftInput.value = pctLeft;
+        tickerTopInput.value = pctTop;
+        tickerRightInput.value = 'auto';
+        tickerBottomInput.value = 'auto';
+      } else if (w.type === 'feed') {
+        feedPositionSelect.value = 'custom';
+        feedLeftInput.value = pctLeft;
+        feedTopInput.value = pctTop;
+        feedRightInput.value = 'auto';
+        feedBottomInput.value = 'auto';
+      } else if (w.type === 'battle') {
+        battlePositionSelect.value = 'custom';
+        battleLeftInput.value = pctLeft;
+        battleTopInput.value = pctTop;
+        battleRightInput.value = 'auto';
+        battleBottomInput.value = 'auto';
+      }
+    });
+    
+    document.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+  });
+  
+  // Select default
+  const defaultSpawnEl = document.getElementById('drag-spawn-card');
+  if (defaultSpawnEl) {
+    defaultSpawnEl.dispatchEvent(new Event('mousedown'));
+  }
+}
+
+// Bind scale slider inputs
+const layoutScaleSlider = document.getElementById('layout-scale-slider');
+const layoutScaleDisplay = document.getElementById('layout-scale-display');
+if (layoutScaleSlider && layoutScaleDisplay) {
+  layoutScaleSlider.addEventListener('input', () => {
+    if (!selectedWidget) return;
+    const val = parseFloat(layoutScaleSlider.value);
+    layoutScaleDisplay.textContent = `${val.toFixed(2)}x`;
+    
+    const el = document.getElementById(selectedWidget.id);
+    if (el) {
+      el.style.transform = `scale(${val})`;
+      el.querySelector('.widget-scale-val').textContent = val.toFixed(2);
+    }
+    
+    if (selectedWidget.type === 'spawn') {
+      spawnCardScaleInput.value = val;
+    }
+  });
+}
+
+// Reset Layout
+const layoutResetBtn = document.getElementById('btn-reset-layout');
+if (layoutResetBtn) {
+  layoutResetBtn.addEventListener('click', () => {
+    if (!confirm('Are you sure you want to reset all positions to presets?')) return;
+    spawnCardPositionSelect.value = 'bottom-left';
+    tickerPositionSelect.value = 'top-left';
+    feedPositionSelect.value = 'top-right';
+    battlePositionSelect.value = 'center';
+    
+    [spawnCardLeftInput, spawnCardTopInput, spawnCardRightInput, spawnCardBottomInput,
+     tickerLeftInput, tickerTopInput, tickerRightInput, tickerBottomInput,
+     feedLeftInput, feedTopInput, feedRightInput, feedBottomInput,
+     battleLeftInput, battleTopInput, battleRightInput, battleBottomInput].forEach(inp => {
+       if (inp) inp.value = '';
+     });
+     
+    [spawnCardPositionSelect, tickerPositionSelect, feedPositionSelect, battlePositionSelect].forEach(select => {
+      if (select) select.dispatchEvent(new Event('change'));
+    });
+    
+    if (currentConfigRef) {
+      setupLayoutEditor(currentConfigRef);
+    }
   });
 }
