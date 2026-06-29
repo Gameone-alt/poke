@@ -598,7 +598,7 @@ btnTriggerRaid.addEventListener('click', async () => {
   const bossName = raidBossTargetInput.value.trim();
   
   try {
-    const res = await fetch('/api/trigger-raid', {
+    const res = await fetch(`${BACKEND_URL}/api/trigger-raid`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
