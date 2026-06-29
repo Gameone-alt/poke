@@ -458,6 +458,9 @@ async function addPokemon(streamerId, username, displayName, pokemonData, isShin
   const streamer = streamerId.toLowerCase().trim();
   const key = username.toLowerCase().trim();
   
+  // Use pre-rolled IVs from spawn time if available, otherwise roll fresh (for gacha packs)
+  const preIVs = pokemonData.spawnIVs || null;
+  
   if (useLocalFallback) {
     const user = await getUser(streamerId, username, displayName);
     const instanceId = Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
@@ -466,10 +469,10 @@ async function addPokemon(streamerId, username, displayName, pokemonData, isShin
     const baseAtk = pokemonData.stats ? pokemonData.stats.attack : pokemonData.baseStats.attack;
     const baseDef = pokemonData.stats ? pokemonData.stats.defense : pokemonData.baseStats.defense;
     const baseSpd = pokemonData.stats ? pokemonData.stats.speed : pokemonData.baseStats.speed;
-    const hp = baseHp + Math.floor(Math.random() * 16);
-    const attack = baseAtk + Math.floor(Math.random() * 16);
-    const defense = baseDef + Math.floor(Math.random() * 16);
-    const speed = baseSpd + Math.floor(Math.random() * 16);
+    const hp = preIVs ? (baseHp + preIVs.hp) : (baseHp + Math.floor(Math.random() * 16));
+    const attack = preIVs ? (baseAtk + preIVs.attack) : (baseAtk + Math.floor(Math.random() * 16));
+    const defense = preIVs ? (baseDef + preIVs.defense) : (baseDef + Math.floor(Math.random() * 16));
+    const speed = preIVs ? (baseSpd + preIVs.speed) : (baseSpd + Math.floor(Math.random() * 16));
     const types = pokemonData.types;
     
     const newPoke = {
@@ -503,10 +506,10 @@ async function addPokemon(streamerId, username, displayName, pokemonData, isShin
   const baseAtk = pokemonData.stats ? pokemonData.stats.attack : pokemonData.baseStats.attack;
   const baseDef = pokemonData.stats ? pokemonData.stats.defense : pokemonData.baseStats.defense;
   const baseSpd = pokemonData.stats ? pokemonData.stats.speed : pokemonData.baseStats.speed;
-  const hp = baseHp + Math.floor(Math.random() * 16);
-  const attack = baseAtk + Math.floor(Math.random() * 16);
-  const defense = baseDef + Math.floor(Math.random() * 16);
-  const speed = baseSpd + Math.floor(Math.random() * 16);
+  const hp = preIVs ? (baseHp + preIVs.hp) : (baseHp + Math.floor(Math.random() * 16));
+  const attack = preIVs ? (baseAtk + preIVs.attack) : (baseAtk + Math.floor(Math.random() * 16));
+  const defense = preIVs ? (baseDef + preIVs.defense) : (baseDef + Math.floor(Math.random() * 16));
+  const speed = preIVs ? (baseSpd + preIVs.speed) : (baseSpd + Math.floor(Math.random() * 16));
   const types = pokemonData.types;
   
   await query(

@@ -404,12 +404,28 @@ async function spawnWildPokemon(channelId) {
   const sprite = isShiny ? basePoke.shinySpriteUrl : basePoke.spriteUrl;
   const fallbackSprite = isShiny ? basePoke.fallbackShinySpriteUrl : basePoke.fallbackSpriteUrl;
 
+  // Roll Individual Values (IVs, 0–15) at spawn time so overlay CP matches inventory CP
+  const spawnIVs = {
+    hp: Math.floor(Math.random() * 16),
+    attack: Math.floor(Math.random() * 16),
+    defense: Math.floor(Math.random() * 16),
+    speed: Math.floor(Math.random() * 16)
+  };
+  const ivBoostedStats = {
+    hp: (basePoke.stats?.hp || 50) + spawnIVs.hp,
+    attack: (basePoke.stats?.attack || 50) + spawnIVs.attack,
+    defense: (basePoke.stats?.defense || 50) + spawnIVs.defense,
+    speed: (basePoke.stats?.speed || 50) + spawnIVs.speed
+  };
+
   session.activeWildPokemon = {
     ...basePoke,
     isShiny: isShiny,
     spriteUrl: sprite,
     fallbackSpriteUrl: fallbackSprite,
-    spawnedAt: Date.now()
+    spawnedAt: Date.now(),
+    spawnIVs: spawnIVs,
+    ivBoostedStats: ivBoostedStats
   };
 
   console.log(`[Game Loop] [${channelId}] Spawned: ${isShiny ? '✨ Shiny ' : ''}${basePoke.name}`);
@@ -423,7 +439,7 @@ async function spawnWildPokemon(channelId) {
     fallbackSpriteUrl: fallbackSprite,
     catchRate: session.activeWildPokemon.catchRate,
     statsSum: session.activeWildPokemon.statsSum,
-    stats: session.activeWildPokemon.stats
+    stats: ivBoostedStats
   });
 
   sendGameLog(channelId, 'spawn', `🌟 A wild ${isShiny ? '✨ Shiny ' : ''}${basePoke.name} has spawned! Type '!catch' to capture it!`);
@@ -588,6 +604,7 @@ async function runBattle(channelId, playerA, playerB) {
   sendGameLog(channelId, 'battle', `⚔️ Battle Started: @${playerA.displayName}'s ${pokeA.name} vs ${opponentName}'s ${pokeB.name}!`);
   
   setTimeout(async () => {
+    // 12s delay to allow multi-turn client animation to finish
     // Guard clause: ensure the session still exists
     if (!activeSessions.has(channelId)) return;
     
@@ -654,7 +671,7 @@ async function runBattle(channelId, playerA, playerB) {
     session.activeChallenge = null;
     
     io.to(channelId).emit('leaderboard_update', await db.getLeaderboard(channelId));
-  }, 6500);
+  }, 12000);
 }
 
 /**

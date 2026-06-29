@@ -887,78 +887,96 @@ function createHitParticles(x, y, color) {
 }
 
 let activeBattleSimulationTimers = [];
+let currentBattleId = 0; // Unique ID to guard against stale callbacks
 
-// Battle Start Event
+// Battle Start Event — Dynamic Multi-Turn System
 socket.on('battle_start', (data) => {
   if (currentOverlayConfig.showBattleArena === false) return;
-  playSound(sfxSpawn);
-  
-  // Clear any existing active battle simulation timers to prevent overlap
+
+  // ── 0. Cancel all previous battle timers to prevent overlap ──
   activeBattleSimulationTimers.forEach(clearTimeout);
   activeBattleSimulationTimers = [];
+  const battleId = ++currentBattleId; // Guard: all timers check this
 
-  // Reset all fighter and arena classes
+  // ── 1. Force-reset the overlay for a clean re-entry ──
+  battleOverlay.classList.add('hidden');
+  battleOverlay.style.animation = 'none';
+
+  // Hard-reset fighter classes & inline styles
   challengerFighter.className = 'fighter left-fighter';
   opponentFighter.className = 'fighter right-fighter';
+  challengerFighter.style.opacity = '';
+  challengerFighter.style.transform = '';
+  opponentFighter.style.opacity = '';
+  opponentFighter.style.transform = '';
   impactFlash.classList.remove('impact-active');
-  
+
   const battleField = document.querySelector('.battle-field');
-  if (battleField) {
-    battleField.className = 'battle-field';
-  }
-  
-  // Get HP Bar Elements
+  if (battleField) battleField.className = 'battle-field';
+
+  clearWeather();
+
+  // ── 2. Get HP bar elements ──
   const challengerHpFill = document.getElementById('challenger-hp-fill');
   const challengerHpText = document.getElementById('challenger-hp-text');
   const opponentHpFill = document.getElementById('opponent-hp-fill');
   const opponentHpText = document.getElementById('opponent-hp-text');
-  
-  // Clear previous weather backdrops
-  clearWeather();
 
-  // Set initial HP, labels, and impact trails
-  if (challengerHpFill) {
-    challengerHpFill.style.width = '100%';
-    challengerHpFill.style.backgroundColor = '#10b981';
-  }
-  if (challengerHpTrail) {
-    challengerHpTrail.style.width = '100%';
-  }
+  // Reset HP bars to full
+  if (challengerHpFill) { challengerHpFill.style.width = '100%'; challengerHpFill.style.backgroundColor = '#10b981'; }
+  if (challengerHpTrail) challengerHpTrail.style.width = '100%';
   if (challengerHpText) challengerHpText.textContent = `HP: ${data.challengerHp}/${data.challengerHp}`;
-  
-  if (opponentHpFill) {
-    opponentHpFill.style.width = '100%';
-    opponentHpFill.style.backgroundColor = '#10b981';
-  }
-  if (opponentHpTrail) {
-    opponentHpTrail.style.width = '100%';
-  }
+  if (opponentHpFill) { opponentHpFill.style.width = '100%'; opponentHpFill.style.backgroundColor = '#10b981'; }
+  if (opponentHpTrail) opponentHpTrail.style.width = '100%';
   if (opponentHpText) opponentHpText.textContent = `HP: ${data.opponentHp}/${data.opponentHp}`;
 
-  // Set text details
+  // ── 3. Set fighter labels & sprites ──
   challengerTrainer.textContent = `@${data.challenger}`;
   challengerPoke.textContent = data.challengerPoke;
   challengerSprite.src = data.challengerSprite;
-  
   opponentTrainer.textContent = data.opponent === 'Wild' ? 'Wild Pokémon' : `@${data.opponent}`;
   opponentPoke.textContent = data.opponentPoke;
   opponentSprite.src = data.opponentSprite;
-  
   battleStatusText.textContent = 'BATTLE START!';
-  
-  // Open battle board
-  battleOverlay.classList.remove('hidden');
-  
-  // Slide in fighters
-  challengerFighter.classList.add('slide-in-left');
-  opponentFighter.classList.add('slide-in-right');
-  
-  // Phase 2: Strike Collision (after sliding in)
-  const timer1 = setTimeout(() => {
+
+  // ── 4. Re-trigger pop-in animation & show ──
+  requestAnimationFrame(() => {
+    if (battleId !== currentBattleId) return;
+    battleOverlay.style.animation = '';
+    battleOverlay.classList.remove('hidden');
+    playSound(sfxSpawn);
+
+    // Slide in fighters
+    challengerFighter.classList.add('slide-in-left');
+    opponentFighter.classList.add('slide-in-right');
+  });
+
+  // ── 5. Build the dynamic turn schedule ──
+  const totalTurns = 4 + Math.floor(Math.random() * 3); // 4–6 turns
+  const chalMaxHp = data.challengerHp || 100;
+  const oppMaxHp = data.opponentHp || 100;
+
+  // Pre-compute damage per turn so winner always KOs on the last turn
+  const isWinnerChallenger = data.winner === 'challenger';
+  // Winner's attacks: split opponent's full HP across their attack turns
+  // Loser's attacks: drain only 40-60% of winner's HP
+  const winnerAttackTurns = Math.ceil(totalTurns / 2);
+  const loserAttackTurns = Math.floor(totalTurns / 2);
+  const loserHpToDrain = (isWinnerChallenger ? oppMaxHp : chalMaxHp);
+  const winnerHpToDrain = (isWinnerChallenger ? chalMaxHp : oppMaxHp) * (0.4 + Math.random() * 0.2);
+
+  // Current HP trackers
+  let chalCurrentHp = chalMaxHp;
+  let oppCurrentHp = oppMaxHp;
+  let chalAttackCount = 0;
+  let oppAttackCount = 0;
+
+  // ── INTRO PHASE: 1.2s — Impact flash after slide-in ──
+  const t1 = setTimeout(() => {
+    if (battleId !== currentBattleId) return;
     challengerFighter.classList.remove('slide-in-left');
     opponentFighter.classList.remove('slide-in-right');
-    
-    // Apply dynamic type strike style based on challenger typing
+
     if (battleField && data.challengerTypes && data.challengerTypes.length > 0) {
       const types = data.challengerTypes.map(t => t.toLowerCase());
       if (types.includes('fire')) battleField.classList.add('strike-fire');
@@ -966,217 +984,185 @@ socket.on('battle_start', (data) => {
       else if (types.includes('grass')) battleField.classList.add('strike-grass');
       else if (types.includes('electric')) battleField.classList.add('strike-electric');
     }
-    
+
     playSound(sfxHit);
     impactFlash.classList.add('impact-active');
-    battleStatusText.textContent = 'FIGHT STARTED!';
-    
-    // Add screen shake effect to the overlay wrapper
+    battleStatusText.textContent = 'FIGHT!';
+
     battleOverlay.style.animation = 'starBurstAnim 0.2s 2';
-    const timerShake = setTimeout(() => {
-      battleOverlay.style.animation = '';
-    }, 400);
-    activeBattleSimulationTimers.push(timerShake);
-
+    const ts = setTimeout(() => { battleOverlay.style.animation = ''; }, 400);
+    activeBattleSimulationTimers.push(ts);
   }, 1200);
-  activeBattleSimulationTimers.push(timer1);
+  activeBattleSimulationTimers.push(t1);
 
-  // Turn 1: Challenger strikes
-  const timer2 = setTimeout(() => {
-    impactFlash.classList.remove('impact-active');
-    
-    // Start fire/water/grass weather on screen based on strike element
-    startWeatherEffect(data.challengerTypes);
-    
-    shootProjectile(challengerSprite, opponentSprite, data.challengerTypes, () => {
-      challengerFighter.classList.add('fight-strike-left');
-      setTimeout(() => challengerFighter.classList.remove('fight-strike-left'), 400);
+  // ── TURN LOOP ──
+  const TURN_DELAY_BASE = 2000; // first turn starts at 2s
+  const TURN_INTERVAL = 1500;   // 1.5s per turn
 
-      // Strike sound
-      playSound(sfxHit);
-      
-      // Animate hit on opponent (Shake & Damage Flash)
-      opponentFighter.classList.add('hit-shake', 'damage-flash');
-      const timerFighterShake = setTimeout(() => {
-        opponentFighter.classList.remove('hit-shake', 'damage-flash');
-      }, 400);
-      activeBattleSimulationTimers.push(timerFighterShake);
+  for (let turn = 0; turn < totalTurns; turn++) {
+    const turnDelay = TURN_DELAY_BASE + turn * TURN_INTERVAL;
+    const isChallengerTurn = turn % 2 === 0; // Challenger attacks on even, opponent on odd
+    const isFinalTurn = turn === totalTurns - 1;
 
-      // Opponent takes damage
-      const damage = Math.round(data.opponentHp * (data.winner === 'challenger' ? 0.45 : 0.25));
-      const newHp = Math.max(0, data.opponentHp - damage);
-      const hpPercent = Math.max(0, (newHp / data.opponentHp) * 100);
-      
-      if (opponentHpFill) {
-        opponentHpFill.style.width = `${hpPercent}%`;
-        if (hpPercent < 30) opponentHpFill.style.backgroundColor = '#ef4444';
-        else if (hpPercent < 60) opponentHpFill.style.backgroundColor = '#f59e0b';
-      }
-      // Delayed impact trail catch up
-      if (opponentHpTrail) {
-        setTimeout(() => {
-          opponentHpTrail.style.width = `${hpPercent}%`;
-        }, 400);
-      }
-      if (opponentHpText) opponentHpText.textContent = `HP: ${newHp}/${data.opponentHp}`;
+    const tt = setTimeout(() => {
+      if (battleId !== currentBattleId) return;
+      impactFlash.classList.remove('impact-active');
 
-      // Show floating damage text above Opponent Card
-      const oppRect = opponentFighter.getBoundingClientRect();
-      showDamagePopup(oppRect.left + oppRect.width / 2, oppRect.top - 20, `-${damage} HP!`);
-      
-      // Comic popup bubble
-      showComicPop(oppRect.left + oppRect.width / 2, oppRect.top + oppRect.height / 2);
+      if (isChallengerTurn) {
+        // ── Challenger attacks Opponent ──
+        chalAttackCount++;
+        startWeatherEffect(data.challengerTypes);
 
-      // Show type effectiveness popup
-      if (data.challengerMultiplier > 1) {
-        showDamagePopup(oppRect.left + oppRect.width / 2, oppRect.top - 50, 'SUPER EFFECTIVE!', '#eab308');
-      } else if (data.challengerMultiplier < 1) {
-        showDamagePopup(oppRect.left + oppRect.width / 2, oppRect.top - 50, 'Not very effective...', '#94a3b8');
-      }
-    });
-
-  }, 2000);
-  activeBattleSimulationTimers.push(timer2);
-
-  // Turn 2: Opponent strikes back
-  const timer3 = setTimeout(() => {
-    // Start weather on screen based on strike element
-    startWeatherEffect(data.opponentTypes);
-    
-    shootProjectile(opponentSprite, challengerSprite, data.opponentTypes, () => {
-      opponentFighter.classList.add('fight-strike-right');
-      setTimeout(() => opponentFighter.classList.remove('fight-strike-right'), 400);
-
-      // Strike sound
-      playSound(sfxHit);
-      
-      // Animate hit on challenger (Shake & Damage Flash)
-      challengerFighter.classList.add('hit-shake', 'damage-flash');
-      const timerChalShake = setTimeout(() => {
-        challengerFighter.classList.remove('hit-shake', 'damage-flash');
-      }, 400);
-      activeBattleSimulationTimers.push(timerChalShake);
-
-      // Challenger takes damage
-      const damage = Math.round(data.challengerHp * (data.winner === 'opponent' ? 0.45 : 0.25));
-      const newHp = Math.max(0, data.challengerHp - damage);
-      const hpPercent = Math.max(0, (newHp / data.challengerHp) * 100);
-      
-      if (challengerHpFill) {
-        challengerHpFill.style.width = `${hpPercent}%`;
-        if (hpPercent < 30) challengerHpFill.style.backgroundColor = '#ef4444';
-        else if (hpPercent < 60) challengerHpFill.style.backgroundColor = '#f59e0b';
-      }
-      // Delayed impact trail catch up
-      if (challengerHpTrail) {
-        setTimeout(() => {
-          challengerHpTrail.style.width = `${hpPercent}%`;
-        }, 400);
-      }
-      if (challengerHpText) challengerHpText.textContent = `HP: ${newHp}/${data.challengerHp}`;
-
-      // Show floating damage text above Challenger Card
-      const chalRect = challengerFighter.getBoundingClientRect();
-      showDamagePopup(chalRect.left + chalRect.width / 2, chalRect.top - 20, `-${damage} HP!`);
-      
-      // Comic popup bubble
-      showComicPop(chalRect.left + chalRect.width / 2, chalRect.top + chalRect.height / 2);
-
-      // Show type effectiveness popup
-      if (data.opponentMultiplier > 1) {
-        showDamagePopup(chalRect.left + chalRect.width / 2, chalRect.top - 50, 'SUPER EFFECTIVE!', '#eab308');
-      } else if (data.opponentMultiplier < 1) {
-        showDamagePopup(chalRect.left + chalRect.width / 2, chalRect.top - 50, 'Not very effective...', '#94a3b8');
-      }
-    });
-
-  }, 3500);
-  activeBattleSimulationTimers.push(timer3);
-
-  // Turn 3: Final Blow!
-  const timer4 = setTimeout(() => {
-    if (data.winner === 'challenger') {
-      startWeatherEffect(data.challengerTypes);
-      
-      shootProjectile(challengerSprite, opponentSprite, data.challengerTypes, () => {
-        challengerFighter.classList.add('fight-strike-left');
-        setTimeout(() => challengerFighter.classList.remove('fight-strike-left'), 400);
-
-        playSound(sfxHit);
-        
-        // Shake & flash opponent
-        opponentFighter.classList.add('hit-shake', 'damage-flash');
-        
-        // Opponent KO
-        if (opponentHpFill) opponentHpFill.style.width = '0%';
-        if (opponentHpTrail) {
-          setTimeout(() => {
-            opponentHpTrail.style.width = '0%';
-          }, 400);
+        let damage;
+        if (isWinnerChallenger && isFinalTurn) {
+          // Final KO blow — drain all remaining HP
+          damage = oppCurrentHp;
+        } else if (isWinnerChallenger) {
+          // Winner's normal attack
+          damage = Math.round(loserHpToDrain / winnerAttackTurns) + Math.floor(Math.random() * 5);
+        } else {
+          // Loser's attack (challenger is loser, attacking opponent)
+          damage = Math.round(winnerHpToDrain / loserAttackTurns) + Math.floor(Math.random() * 5);
         }
-        if (opponentHpText) opponentHpText.textContent = `HP: 0/${data.opponentHp}`;
-        
-        const oppRect = opponentFighter.getBoundingClientRect();
-        showDamagePopup(oppRect.left + oppRect.width / 2, oppRect.top - 20, `KO!`, '#ef4444');
-        
-        // Comic popup bubble (K.O.)
-        showComicPop(oppRect.left + oppRect.width / 2, oppRect.top + oppRect.height / 2, 'defeat');
-        
-        opponentFighter.classList.add('fight-defeat-right');
-        battleStatusText.textContent = 'WINNER: CHALLENGER!';
-        playSound(sfxCatchSuccess);
-      });
-    } else {
-      startWeatherEffect(data.opponentTypes);
-      
-      shootProjectile(opponentSprite, challengerSprite, data.opponentTypes, () => {
-        opponentFighter.classList.add('fight-strike-right');
-        setTimeout(() => opponentFighter.classList.remove('fight-strike-right'), 400);
+        damage = Math.min(damage, oppCurrentHp);
 
-        playSound(sfxHit);
-        
-        // Shake & flash challenger
-        challengerFighter.classList.add('hit-shake', 'damage-flash');
-        
-        // Challenger KO
-        if (challengerHpFill) challengerHpFill.style.width = '0%';
-        if (challengerHpTrail) {
-          setTimeout(() => {
-            challengerHpTrail.style.width = '0%';
-          }, 400);
+        shootProjectile(challengerSprite, opponentSprite, data.challengerTypes, () => {
+          if (battleId !== currentBattleId) return;
+          challengerFighter.classList.add('fight-strike-left');
+          setTimeout(() => challengerFighter.classList.remove('fight-strike-left'), 400);
+
+          playSound(sfxHit);
+          opponentFighter.classList.add('hit-shake', 'damage-flash');
+          const ts2 = setTimeout(() => opponentFighter.classList.remove('hit-shake', 'damage-flash'), 400);
+          activeBattleSimulationTimers.push(ts2);
+
+          oppCurrentHp = Math.max(0, oppCurrentHp - damage);
+          const hpPct = Math.max(0, (oppCurrentHp / oppMaxHp) * 100);
+          if (opponentHpFill) {
+            opponentHpFill.style.width = `${hpPct}%`;
+            if (hpPct < 30) opponentHpFill.style.backgroundColor = '#ef4444';
+            else if (hpPct < 60) opponentHpFill.style.backgroundColor = '#f59e0b';
+          }
+          if (opponentHpTrail) {
+            setTimeout(() => { opponentHpTrail.style.width = `${hpPct}%`; }, 400);
+          }
+          if (opponentHpText) opponentHpText.textContent = `HP: ${oppCurrentHp}/${oppMaxHp}`;
+
+          const oppRect = opponentFighter.getBoundingClientRect();
+          if (oppCurrentHp <= 0) {
+            showDamagePopup(oppRect.left + oppRect.width / 2, oppRect.top - 20, 'KO!', '#ef4444');
+            showComicPop(oppRect.left + oppRect.width / 2, oppRect.top + oppRect.height / 2, 'defeat');
+            opponentFighter.classList.add('fight-defeat-right');
+            battleStatusText.textContent = `🏆 WINNER: @${data.challenger}!`;
+            playSound(sfxCatchSuccess);
+          } else {
+            showDamagePopup(oppRect.left + oppRect.width / 2, oppRect.top - 20, `-${damage} HP!`);
+            showComicPop(oppRect.left + oppRect.width / 2, oppRect.top + oppRect.height / 2);
+            if (chalAttackCount === 1) {
+              if (data.challengerMultiplier > 1) {
+                showDamagePopup(oppRect.left + oppRect.width / 2, oppRect.top - 50, 'SUPER EFFECTIVE!', '#eab308');
+              } else if (data.challengerMultiplier < 1) {
+                showDamagePopup(oppRect.left + oppRect.width / 2, oppRect.top - 50, 'Not very effective...', '#94a3b8');
+              }
+            }
+            battleStatusText.textContent = `${data.challengerPoke} attacks!`;
+          }
+        });
+
+      } else {
+        // ── Opponent attacks Challenger ──
+        oppAttackCount++;
+        startWeatherEffect(data.opponentTypes);
+
+        let damage;
+        if (!isWinnerChallenger && isFinalTurn) {
+          damage = chalCurrentHp;
+        } else if (!isWinnerChallenger) {
+          damage = Math.round(loserHpToDrain / winnerAttackTurns) + Math.floor(Math.random() * 5);
+        } else {
+          damage = Math.round(winnerHpToDrain / loserAttackTurns) + Math.floor(Math.random() * 5);
         }
-        if (challengerHpText) challengerHpText.textContent = `HP: 0/${data.challengerHp}`;
-        
-        const chalRect = challengerFighter.getBoundingClientRect();
-        showDamagePopup(chalRect.left + chalRect.width / 2, chalRect.top - 20, `KO!`, '#ef4444');
-        
-        // Comic popup bubble (K.O.)
-        showComicPop(chalRect.left + chalRect.width / 2, chalRect.top + chalRect.height / 2, 'defeat');
-        
-        challengerFighter.classList.add('fight-defeat-left');
-        battleStatusText.textContent = 'WINNER: OPPONENT!';
-        playSound(sfxCatchFail);
-      });
-    }
+        damage = Math.min(damage, chalCurrentHp);
 
-  }, 5000);
-  activeBattleSimulationTimers.push(timer4);
+        shootProjectile(opponentSprite, challengerSprite, data.opponentTypes, () => {
+          if (battleId !== currentBattleId) return;
+          opponentFighter.classList.add('fight-strike-right');
+          setTimeout(() => opponentFighter.classList.remove('fight-strike-right'), 400);
+
+          playSound(sfxHit);
+          challengerFighter.classList.add('hit-shake', 'damage-flash');
+          const ts3 = setTimeout(() => challengerFighter.classList.remove('hit-shake', 'damage-flash'), 400);
+          activeBattleSimulationTimers.push(ts3);
+
+          chalCurrentHp = Math.max(0, chalCurrentHp - damage);
+          const hpPct = Math.max(0, (chalCurrentHp / chalMaxHp) * 100);
+          if (challengerHpFill) {
+            challengerHpFill.style.width = `${hpPct}%`;
+            if (hpPct < 30) challengerHpFill.style.backgroundColor = '#ef4444';
+            else if (hpPct < 60) challengerHpFill.style.backgroundColor = '#f59e0b';
+          }
+          if (challengerHpTrail) {
+            setTimeout(() => { challengerHpTrail.style.width = `${hpPct}%`; }, 400);
+          }
+          if (challengerHpText) challengerHpText.textContent = `HP: ${chalCurrentHp}/${chalMaxHp}`;
+
+          const chalRect = challengerFighter.getBoundingClientRect();
+          if (chalCurrentHp <= 0) {
+            showDamagePopup(chalRect.left + chalRect.width / 2, chalRect.top - 20, 'KO!', '#ef4444');
+            showComicPop(chalRect.left + chalRect.width / 2, chalRect.top + chalRect.height / 2, 'defeat');
+            challengerFighter.classList.add('fight-defeat-left');
+            const oppLabel = data.opponent === 'Wild' ? 'Wild Pokémon' : `@${data.opponent}`;
+            battleStatusText.textContent = `🏆 WINNER: ${oppLabel}!`;
+            playSound(sfxCatchFail);
+          } else {
+            showDamagePopup(chalRect.left + chalRect.width / 2, chalRect.top - 20, `-${damage} HP!`);
+            showComicPop(chalRect.left + chalRect.width / 2, chalRect.top + chalRect.height / 2);
+            if (oppAttackCount === 1) {
+              if (data.opponentMultiplier > 1) {
+                showDamagePopup(chalRect.left + chalRect.width / 2, chalRect.top - 50, 'SUPER EFFECTIVE!', '#eab308');
+              } else if (data.opponentMultiplier < 1) {
+                showDamagePopup(chalRect.left + chalRect.width / 2, chalRect.top - 50, 'Not very effective...', '#94a3b8');
+              }
+            }
+            battleStatusText.textContent = `${data.opponentPoke} attacks!`;
+          }
+        });
+      }
+    }, turnDelay);
+    activeBattleSimulationTimers.push(tt);
+  }
+
+  // ── CLEANUP PHASE: hide overlay after last turn + 3s ──
+  const cleanupDelay = TURN_DELAY_BASE + totalTurns * TURN_INTERVAL + 3000;
+  const tCleanup = setTimeout(() => {
+    if (battleId !== currentBattleId) return;
+    battleOverlay.classList.add('hidden');
+    battleOverlay.style.animation = 'none';
+    clearWeather();
+    if (battleField) battleField.className = 'battle-field';
+    challengerFighter.className = 'fighter left-fighter';
+    opponentFighter.className = 'fighter right-fighter';
+  }, cleanupDelay);
+  activeBattleSimulationTimers.push(tCleanup);
 });
 
-// Battle End Event (Handles cleanup)
+// Battle End Event — Server signals results are processed; client may already be cleaned up
 socket.on('battle_end', (data) => {
-  // We let the dynamic simulation finish its final hits, then hide the overlay after 3.0 seconds
-  const timerEnd = setTimeout(() => {
-    battleOverlay.classList.add('hidden');
-    clearWeather();
-    
-    // Clear strike overlay indicators
-    const battleField = document.querySelector('.battle-field');
-    if (battleField) {
-      battleField.className = 'battle-field';
+  // The client-side cleanup is already handled by the timed cleanup above.
+  // This event is now purely for server-side state sync (leaderboard, etc.)
+  // If overlay is somehow still visible, hide it as a safety net.
+  const safetyTimer = setTimeout(() => {
+    if (!battleOverlay.classList.contains('hidden')) {
+      battleOverlay.classList.add('hidden');
+      battleOverlay.style.animation = 'none';
+      clearWeather();
+      const battleField = document.querySelector('.battle-field');
+      if (battleField) battleField.className = 'battle-field';
+      challengerFighter.className = 'fighter left-fighter';
+      opponentFighter.className = 'fighter right-fighter';
     }
-  }, 3000);
-  activeBattleSimulationTimers.push(timerEnd);
+  }, 500);
+  activeBattleSimulationTimers.push(safetyTimer);
 });
 
 // Evolution Animation Event
