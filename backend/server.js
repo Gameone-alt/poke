@@ -967,12 +967,13 @@ async function processCommand(channelId, username, displayName, messageText, bas
       clearTimeout(session.activeChallenge.timeoutId);
     }
 
+    const challengeTimeoutSecs = session.config.battleAcceptTimeoutSeconds !== undefined ? session.config.battleAcceptTimeoutSeconds : 30;
     const timeoutId = setTimeout(() => {
       if (session.activeChallenge && session.activeChallenge.challenger.username === username) {
         sendGameLog(channelId, 'system', `⏳ Challenge from @${displayName} to @${targetUser.displayName} expired.`);
         session.activeChallenge = null;
       }
-    }, 30000); // 30 seconds challenge window
+    }, challengeTimeoutSecs * 1000);
 
     session.activeChallenge = {
       challenger: { username, displayName, pokemonInstanceId: foundPokeA.instanceId },

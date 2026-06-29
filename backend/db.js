@@ -244,7 +244,8 @@ async function runAutoMigrations() {
       ADD COLUMN IF NOT EXISTS allowed_generations JSONB DEFAULT '[1,2,3,4,5,6,7,8]',
       ADD COLUMN IF NOT EXISTS battle_scale NUMERIC DEFAULT 1.0,
       ADD COLUMN IF NOT EXISTS ticker_scale NUMERIC DEFAULT 1.0,
-      ADD COLUMN IF NOT EXISTS feed_scale NUMERIC DEFAULT 1.0;
+      ADD COLUMN IF NOT EXISTS feed_scale NUMERIC DEFAULT 1.0,
+      ADD COLUMN IF NOT EXISTS battle_accept_timeout_seconds INTEGER DEFAULT 30;
     `);
 
     client.release();
@@ -899,7 +900,8 @@ async function getStreamerConfig(streamerId) {
         allowedGenerations: [1,2,3,4,5,6,7,8],
         battleScale: 1.0,
         tickerScale: 1.0,
-        feedScale: 1.0
+        feedScale: 1.0,
+        battleAcceptTimeoutSeconds: 30
       };
       saveLocalConfigs();
     } else {
@@ -1002,7 +1004,8 @@ async function getStreamerConfig(streamerId) {
       allowedGenerations: [1,2,3,4,5,6,7,8],
       battleScale: 1.0,
       tickerScale: 1.0,
-      feedScale: 1.0
+      feedScale: 1.0,
+      battleAcceptTimeoutSeconds: 30
     };
     
     await query(
@@ -1122,7 +1125,8 @@ async function getStreamerConfig(streamerId) {
     allowedGenerations: row.allowed_generations ? (typeof row.allowed_generations === 'string' ? JSON.parse(row.allowed_generations) : row.allowed_generations) : [1,2,3,4,5,6,7,8],
     battleScale: row.battle_scale !== null && row.battle_scale !== undefined ? Number(row.battle_scale) : 1.0,
     tickerScale: row.ticker_scale !== null && row.ticker_scale !== undefined ? Number(row.ticker_scale) : 1.0,
-    feedScale: row.feed_scale !== null && row.feed_scale !== undefined ? Number(row.feed_scale) : 1.0
+    feedScale: row.feed_scale !== null && row.feed_scale !== undefined ? Number(row.feed_scale) : 1.0,
+    battleAcceptTimeoutSeconds: row.battle_accept_timeout_seconds !== null && row.battle_accept_timeout_seconds !== undefined ? Number(row.battle_accept_timeout_seconds) : 30
   };
 }
 
@@ -1165,8 +1169,9 @@ async function saveStreamerConfig(streamerId, config) {
          price_fire_stone = $72, price_water_stone = $73, price_thunder_stone = $74, price_leaf_stone = $75, price_moon_stone = $76,
          raid_chance = $77, raid_boss_hp = $78, raid_reward_coins = $79, raid_reward_xp = $80, raid_drop_stone_chance = $81,
          inventory_base_url = $82, sprite_format = $83, spawn_catch_guide_mode = $84, allowed_generations = $85,
-         battle_scale = $86, ticker_scale = $87, feed_scale = $88
-     WHERE channel_id = $89`,
+         battle_scale = $86, ticker_scale = $87, feed_scale = $88,
+         battle_accept_timeout_seconds = $89
+     WHERE channel_id = $90`,
     [
       config.videoId || '',
       config.spawnIntervalMs,
@@ -1256,6 +1261,7 @@ async function saveStreamerConfig(streamerId, config) {
       config.battleScale !== undefined ? config.battleScale : 1.0,
       config.tickerScale !== undefined ? config.tickerScale : 1.0,
       config.feedScale !== undefined ? config.feedScale : 1.0,
+      config.battleAcceptTimeoutSeconds !== undefined ? config.battleAcceptTimeoutSeconds : 30,
       streamer
     ]
   );

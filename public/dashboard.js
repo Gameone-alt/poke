@@ -172,6 +172,7 @@ const raidBossHpInput = document.getElementById('raid-boss-hp');
 const raidRewardCoinsInput = document.getElementById('raid-reward-coins');
 const raidRewardXpInput = document.getElementById('raid-reward-xp');
 const raidDropStoneChanceInput = document.getElementById('raid-drop-stone-chance');
+const battleAcceptTimeoutInput = document.getElementById('battle-accept-timeout');
 
 // Spawn Card Specific Elements
 const spawnCardScaleInput = document.getElementById('spawn-card-scale');
@@ -357,6 +358,7 @@ function populateConfig(config) {
   raidRewardCoinsInput.value = config.raidRewardCoins !== undefined ? config.raidRewardCoins : 250;
   raidRewardXpInput.value = config.raidRewardXp !== undefined ? config.raidRewardXp : 150;
   raidDropStoneChanceInput.value = config.raidDropStoneChance !== undefined ? Math.round(config.raidDropStoneChance * 100) : 15;
+  battleAcceptTimeoutInput.value = config.battleAcceptTimeoutSeconds !== undefined ? config.battleAcceptTimeoutSeconds : 30;
   
   // Set layout editor scale labels
   document.getElementById('lbl-scale-spawn').textContent = (config.spawnCardScale !== undefined ? config.spawnCardScale : 1.0).toFixed(2);
@@ -491,6 +493,7 @@ configForm.addEventListener('submit', (e) => {
     raidRewardCoins: parseInt(raidRewardCoinsInput.value, 10),
     raidRewardXp: parseInt(raidRewardXpInput.value, 10),
     raidDropStoneChance: parseFloat(raidDropStoneChanceInput.value) / 100,
+    battleAcceptTimeoutSeconds: parseInt(battleAcceptTimeoutInput.value, 10),
     showLiveFeed: showLiveFeedInput.checked,
     liveFeedTitle: liveFeedTitleInput.value.trim(),
     showSpawnAlert: showSpawnAlertInput.checked,
