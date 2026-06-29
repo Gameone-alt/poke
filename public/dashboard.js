@@ -949,14 +949,22 @@ socket.on('all_players_data', (players) => {
   renderViewersTable(players);
 });
 
+let selectedViewerUsernames = new Set();
+
 // Render table entries
 function renderViewersTable(players) {
   if (!viewerDbBody) return;
   
+  // Reset selected list
+  selectedViewerUsernames.clear();
+  const checkAllHeader = document.getElementById('check-all-viewers');
+  if (checkAllHeader) checkAllHeader.checked = false;
+  updateBulkActionPanel();
+  
   if (!players || players.length === 0) {
     viewerDbBody.innerHTML = `
       <tr>
-        <td colspan="7" class="text-center muted" style="padding:30px;">No players registered. Sim a catch to start!</td>
+        <td colspan="8" class="text-center muted" style="padding:30px;">No players registered. Sim a catch to start!</td>
       </tr>
     `;
     return;
@@ -971,6 +979,9 @@ function renderViewersTable(players) {
     const buddyName = p.buddyInstanceId ? 'Buddy Active' : 'None';
     
     tr.innerHTML = `
+      <td style="text-align: center; vertical-align: middle;">
+        <input type="checkbox" class="viewer-select-check" data-user="${p.username}" style="cursor: pointer; width: 15px; height: 15px; vertical-align: middle;">
+      </td>
       <td><strong>@${p.displayName}</strong><br><small class="muted" style="font-size:11px;">username: ${p.username}</small></td>
       <td style="vertical-align: middle;">
         <input type="number" id="edit-level-${p.username}" value="${p.level}" style="width:50px; padding:4px 6px; border-radius:4px; text-align:center;">
@@ -1020,7 +1031,108 @@ function renderViewersTable(players) {
       });
     });
   });
+
+  // Bind checkbox change listeners
+  viewerDbBody.querySelectorAll('.viewer-select-check').forEach(chk => {
+    chk.addEventListener('change', () => {
+      const user = chk.getAttribute('data-user');
+      if (chk.checked) {
+        selectedViewerUsernames.add(user);
+      } else {
+        selectedViewerUsernames.delete(user);
+      }
+      
+      // Update check all header status if all or not all are checked
+      const allChecks = viewerDbBody.querySelectorAll('.viewer-select-check');
+      const checkedCount = selectedViewerUsernames.size;
+      const checkAllHeader = document.getElementById('check-all-viewers');
+      if (checkAllHeader) {
+        checkAllHeader.checked = (checkedCount === allChecks.length && allChecks.length > 0);
+      }
+      updateBulkActionPanel();
+    });
+  });
 }
+
+// Bulk action panel controls
+const bulkActionPanel = document.getElementById('bulk-action-panel');
+const selectedCountSpan = document.getElementById('selected-count');
+const bulkItemSelect = document.getElementById('bulk-item');
+const bulkActionTypeSelect = document.getElementById('bulk-action-type');
+const bulkAmountInput = document.getElementById('bulk-amount');
+const btnApplyBulk = document.getElementById('btn-apply-bulk');
+const checkAllHeader = document.getElementById('check-all-viewers');
+
+function updateBulkActionPanel() {
+  if (!bulkActionPanel || !selectedCountSpan) return;
+  const count = selectedViewerUsernames.size;
+  selectedCountSpan.textContent = count;
+  if (count > 0) {
+    bulkActionPanel.style.display = 'flex';
+  } else {
+    bulkActionPanel.style.display = 'none';
+  }
+}
+
+if (checkAllHeader) {
+  checkAllHeader.addEventListener('change', () => {
+    const isChecked = checkAllHeader.checked;
+    const allChecks = viewerDbBody.querySelectorAll('.viewer-select-check');
+    
+    allChecks.forEach(chk => {
+      chk.checked = isChecked;
+      const user = chk.getAttribute('data-user');
+      if (isChecked) {
+        selectedViewerUsernames.add(user);
+      } else {
+        selectedViewerUsernames.delete(user);
+      }
+    });
+    
+    updateBulkActionPanel();
+  });
+}
+
+if (btnApplyBulk) {
+  btnApplyBulk.addEventListener('click', () => {
+    const count = selectedViewerUsernames.size;
+    if (count === 0) return;
+    
+    const item = bulkItemSelect.value;
+    const actionType = bulkActionTypeSelect.value;
+    const amount = parseInt(bulkAmountInput.value);
+    
+    if (isNaN(amount)) {
+      alert('Please enter a valid amount!');
+      return;
+    }
+    
+    const actionLabel = actionType === 'add' ? `give ${amount} of` : `set stock to ${amount} for`;
+    const confirmMsg = `Are you sure you want to ${actionLabel} ${item} for the ${count} selected viewers?`;
+    if (!confirm(confirmMsg)) return;
+    
+    socket.emit('admin_bulk_update_players', {
+      password: adminPassword,
+      usernames: Array.from(selectedViewerUsernames),
+      item,
+      actionType,
+      amount
+    });
+  });
+}
+
+// Receive bulk update acknowledgements
+socket.on('players_bulk_updated_ack', (data) => {
+  if (data.success) {
+    alert(`Successfully bulk updated ${data.count} players!`);
+    selectedViewerUsernames.clear();
+    const checkAllHeader = document.getElementById('check-all-viewers');
+    if (checkAllHeader) checkAllHeader.checked = false;
+    updateBulkActionPanel();
+  } else {
+    alert(`Bulk update failed: ${data.error}`);
+  }
+});
 
 // Receive update confirmations
 socket.on('player_updated_ack', (data) => {

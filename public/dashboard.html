@@ -727,10 +727,31 @@
           <input type="text" id="viewer-search" placeholder="Search viewer by username..." style="width: 280px; padding: 10px 15px; border-radius: 8px; background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); color: #fff; font-family: inherit; font-size: 13px;">
         </div>
         
+        <!-- Bulk Action Panel (collapsible, shows when selections > 0) -->
+        <div id="bulk-action-panel" style="display: none; background: rgba(59, 130, 246, 0.1); border: 1px dashed var(--color-primary); padding: 15px; border-radius: 8px; margin-bottom: 20px; align-items: center; justify-content: space-between; gap: 15px; flex-wrap: wrap;">
+          <div style="font-weight: 600; color: #fff; font-size: 13px;">⚡ Bulk Edit (<span id="selected-count">0</span> selected):</div>
+          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 0;">
+            <select id="bulk-item" style="background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border-color); color: #fff; padding: 8px 12px; border-radius: 6px; font-family: inherit; font-size: 12px; cursor: pointer;">
+              <option value="pokeball">🔴 Pokéball Stock</option>
+              <option value="greatball">🔵 Great Ball Stock</option>
+              <option value="ultraball">🟡 Ultra Ball Stock</option>
+              <option value="masterball">🟣 Master Ball Stock</option>
+              <option value="coins">🪙 Pokécoins Balance</option>
+            </select>
+            <select id="bulk-action-type" style="background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border-color); color: #fff; padding: 8px 12px; border-radius: 6px; font-family: inherit; font-size: 12px; cursor: pointer;">
+              <option value="add">Add/Give (+)</option>
+              <option value="set">Set To (=)</option>
+            </select>
+            <input type="number" id="bulk-amount" value="10" style="width: 80px; padding: 8px; border-radius: 6px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); color: #fff; text-align: center; font-family: inherit; font-size: 12px;">
+            <button type="button" class="btn" id="btn-apply-bulk" style="margin: 0; background: var(--color-primary); border: none; color: #fff; padding: 8px 16px; font-size: 12px; font-weight: 600; border-radius: 6px; cursor: pointer; transition: background 0.2s;">Apply Bulk Update</button>
+          </div>
+        </div>
+
         <div class="table-wrap" style="overflow-x: auto;">
           <table class="leaderboard-table" style="width: 100%;">
             <thead>
               <tr>
+                <th style="width: 40px; text-align: center;"><input type="checkbox" id="check-all-viewers" style="cursor: pointer; width: 15px; height: 15px; margin: 0; vertical-align: middle;"></th>
                 <th>Viewer Name</th>
                 <th>Level</th>
                 <th>XP (Current)</th>
@@ -742,7 +763,7 @@
             </thead>
             <tbody id="viewer-db-body">
               <tr>
-                <td colspan="7" class="text-center muted" style="padding: 30px;">No viewers registered. Simulate active chats to register viewer accounts.</td>
+                <td colspan="8" class="text-center muted" style="padding: 30px;">No viewers registered. Simulate active chats to register viewer accounts.</td>
               </tr>
             </tbody>
           </table>

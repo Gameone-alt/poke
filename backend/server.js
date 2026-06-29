@@ -1791,6 +1791,64 @@ io.on('connection', async (socket) => {
     }
   });
 
+  // Admin bulk update player details (from dashboard viewer management table multi-selection)
+  socket.on('admin_bulk_update_players', async (data) => {
+    const { password, usernames, item, actionType, amount } = data;
+    if (session.config.adminPassword && password !== session.config.adminPassword) {
+      socket.emit('command_feedback', { text: '❌ Unauthorized: Incorrect admin password!' });
+      return;
+    }
+    
+    if (!usernames || !Array.isArray(usernames) || usernames.length === 0) {
+      socket.emit('players_bulk_updated_ack', { success: false, error: 'No viewers selected!' });
+      return;
+    }
+
+    try {
+      console.log(`[Admin] [${channelId}] Bulk updating ${usernames.length} players...`);
+      let successCount = 0;
+      
+      for (const username of usernames) {
+        const user = await db.getUser(channelId, username);
+        if (user) {
+          const value = parseInt(amount);
+          
+          if (item === 'pokeball') {
+            if (actionType === 'add') user.balls.pokeball = Math.max(0, user.balls.pokeball + value);
+            else user.balls.pokeball = Math.max(0, value);
+          } else if (item === 'greatball') {
+            if (actionType === 'add') user.balls.greatball = Math.max(0, user.balls.greatball + value);
+            else user.balls.greatball = Math.max(0, value);
+          } else if (item === 'ultraball') {
+            if (actionType === 'add') user.balls.ultraball = Math.max(0, user.balls.ultraball + value);
+            else user.balls.ultraball = Math.max(0, value);
+          } else if (item === 'masterball') {
+            if (actionType === 'add') user.balls.masterball = Math.max(0, user.balls.masterball + value);
+            else user.balls.masterball = Math.max(0, value);
+          } else if (item === 'coins') {
+            if (actionType === 'add') user.coins = Math.max(0, user.coins + value);
+            else user.coins = Math.max(0, value);
+          }
+          
+          await db.saveUser(channelId, user);
+          successCount++;
+        }
+      }
+      
+      // Notify all clients of update
+      io.to(channelId).emit('leaderboard_update', await db.getLeaderboard(channelId));
+      
+      // Refresh player list for dashboard
+      const list = await db.getAllPlayers(channelId);
+      socket.emit('all_players_data', list);
+      
+      socket.emit('players_bulk_updated_ack', { success: true, count: successCount });
+    } catch (err) {
+      console.error(`[Admin] [${channelId}] Bulk update failed:`, err.message);
+      socket.emit('players_bulk_updated_ack', { success: false, error: err.message });
+    }
+  });
+
   // Clean up timers/listeners on complete disconnect
   socket.on('disconnect', () => {
     console.log(`[Sockets] Client disconnected: ${socket.id} from room: ${channelId}`);
