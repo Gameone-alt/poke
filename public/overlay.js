@@ -362,15 +362,33 @@ function renderTypes(typesContainer, types) {
   });
 }
 
+function calculateCP(baseStats, wins, isLegendary) {
+  const hp = baseStats ? (baseStats.hp || 50) : 50;
+  const attack = baseStats ? (baseStats.attack || 50) : 50;
+  const defense = baseStats ? (baseStats.defense || 50) : 50;
+  const speed = baseStats ? (baseStats.speed || 50) : 50;
+  
+  let baseCP = (hp + attack * 1.5 + defense + speed) * 3.5;
+  if (isLegendary) {
+    baseCP *= 1.8;
+  }
+  let finalCP = baseCP * (1 + (wins || 0) * 0.02);
+  return Math.max(10, Math.floor(finalCP));
+}
+
 // Render dynamic CP, Weight, and Height stats in Pokemon GO style
 function updateWildPokemonStats(poke) {
   if (!wildPokemonStats) return;
+  
+  const isLegendary = poke.catchRate <= 0.1;
+  const cp = calculateCP(poke.stats, 0, isLegendary);
+  
   const statsSum = poke.statsSum || 300;
   const seed = (poke.id || 1) * 31;
   const mockWeight = ((statsSum * 0.12) + (seed % 15) + 5).toFixed(1);
   const mockHeight = ((statsSum * 0.0028) + (seed % 8) * 0.1 + 0.3).toFixed(2);
   
-  wildPokemonStats.innerHTML = `<div style="font-weight: bold; margin-bottom: 2px;">CP ${statsSum}</div><div style="font-size: 11px; opacity: 0.85;">${mockWeight}kg / ${mockHeight}m</div>`;
+  wildPokemonStats.innerHTML = `<div style="font-weight: bold; margin-bottom: 2px;">CP ${cp}</div><div style="font-size: 11px; opacity: 0.85;">${mockWeight}kg / ${mockHeight}m</div>`;
   wildPokemonStats.classList.remove('hidden');
 }
 

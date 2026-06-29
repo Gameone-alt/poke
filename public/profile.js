@@ -98,7 +98,8 @@ function renderTrainerProfile(user) {
     const shinySpark = poke.shiny ? '<span class="shiny-sparkle">✨</span>' : '';
 
     // Calculate dynamic CP
-    const cp = Math.max(10, Math.floor((poke.baseStats.hp + poke.baseStats.attack * 2 + poke.baseStats.defense) * (1 + (poke.wins || 0) * 0.02)));
+    const isLegendary = poke.isLegendary || (poke.catchRate !== undefined && poke.catchRate <= 0.1);
+    const cp = calculateCP(poke.baseStats, poke.wins, isLegendary);
 
     card.innerHTML = `
       ${buddyTag}
@@ -132,4 +133,18 @@ function getSafeSprite(spriteUrl, fallbackUrl, pokemonId, isShiny) {
     return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonId}.png`;
   }
   return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png'; // default fallback icon
+}
+
+function calculateCP(baseStats, wins, isLegendary) {
+  const hp = baseStats ? (baseStats.hp || 50) : 50;
+  const attack = baseStats ? (baseStats.attack || 50) : 50;
+  const defense = baseStats ? (baseStats.defense || 50) : 50;
+  const speed = baseStats ? (baseStats.speed || 50) : 50;
+  
+  let baseCP = (hp + attack * 1.5 + defense + speed) * 3.5;
+  if (isLegendary) {
+    baseCP *= 1.8;
+  }
+  let finalCP = baseCP * (1 + (wins || 0) * 0.02);
+  return Math.max(10, Math.floor(finalCP));
 }

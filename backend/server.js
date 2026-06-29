@@ -63,6 +63,16 @@ app.get('/api/trainer/:channel/:username', async (req, res) => {
   const username = req.params.username.toLowerCase().trim();
   try {
     const user = await db.getUser(channel, username);
+    if (user && user.inventory) {
+      user.inventory = user.inventory.map(poke => {
+        const staticPoke = pokemonDb[poke.pokemonId];
+        return {
+          ...poke,
+          catchRate: staticPoke ? staticPoke.catchRate : 0.5,
+          isLegendary: staticPoke ? (staticPoke.catchRate <= 0.1) : false
+        };
+      });
+    }
     res.status(200).json(user);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -412,7 +422,8 @@ async function spawnWildPokemon(channelId) {
     spriteUrl: sprite,
     fallbackSpriteUrl: fallbackSprite,
     catchRate: session.activeWildPokemon.catchRate,
-    statsSum: session.activeWildPokemon.statsSum
+    statsSum: session.activeWildPokemon.statsSum,
+    stats: session.activeWildPokemon.stats
   });
 
   sendGameLog(channelId, 'spawn', `🌟 A wild ${isShiny ? '✨ Shiny ' : ''}${basePoke.name} has spawned! Type '!catch' to capture it!`);

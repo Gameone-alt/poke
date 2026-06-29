@@ -478,7 +478,8 @@ async function addPokemon(streamerId, username, displayName, pokemonData, isShin
       shiny: isShiny,
       wins: 0,
       currentStage: 1,
-      caughtAt: Date.now()
+      caughtAt: Date.now(),
+      catchRate: pokemonData.catchRate
     };
     
     user.inventory.push(newPoke);
