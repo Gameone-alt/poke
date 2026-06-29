@@ -524,7 +524,12 @@ async function runBattle(channelId, playerA, playerB) {
     challengerTypes: pokeA.types,
     opponentTypes: pokeB.types,
     challengerPoke: pokeA.name,
-    opponentPoke: pokeB.name
+    opponentPoke: pokeB.name,
+    winner: winner,
+    challengerHp: pokeA.baseStats.hp || 100,
+    opponentHp: pokeB.baseStats.hp || 100,
+    challengerPower: Math.round(finalPowerA),
+    opponentPower: Math.round(finalPowerB)
   });
 
   sendGameLog(channelId, 'battle', `⚔️ Battle Started: @${playerA.displayName}'s ${pokeA.name} vs ${opponentName}'s ${pokeB.name}!`);

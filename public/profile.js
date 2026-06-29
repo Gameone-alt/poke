@@ -86,14 +86,23 @@ function renderTrainerProfile(user) {
     const isBuddy = poke.instanceId === user.buddyInstanceId;
     const buddyTag = isBuddy ? '<div class="buddy-badge">★ BUDDY</div>' : '';
 
-    // Shiny spark indicator
+        // Shiny spark indicator
     const shinySpark = poke.shiny ? '<span class="shiny-sparkle">✨</span>' : '';
+
+    // Calculate dynamic CP
+    const cp = Math.max(10, Math.floor((poke.baseStats.hp + poke.baseStats.attack * 2 + poke.baseStats.defense) * (1 + (poke.wins || 0) * 0.02)));
 
     card.innerHTML = `
       ${buddyTag}
+      <div class="pokemon-cp">CP ${cp}</div>
       <img src="${spriteUrl}" alt="${poke.name}" class="pokemon-sprite">
       <div class="pokemon-name">${shinySpark}${poke.name}</div>
       <div class="pokemon-types">${typeBadges}</div>
+      <div class="pokemon-stats-block">
+        <div class="stat-row"><span>HP:</span> <strong>${poke.baseStats.hp}</strong></div>
+        <div class="stat-row"><span>ATK:</span> <strong>${poke.baseStats.attack}</strong></div>
+        <div class="stat-row"><span>DEF:</span> <strong>${poke.baseStats.defense}</strong></div>
+      </div>
       <div class="pokemon-wins">🏆 Wins: ${poke.wins || 0}</div>
     `;
 

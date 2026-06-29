@@ -455,10 +455,14 @@ async function addPokemon(streamerId, username, displayName, pokemonData, isShin
     const user = await getUser(streamerId, username, displayName);
     const instanceId = Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
     const name = isShiny ? `✨ Shiny ${pokemonData.name}` : pokemonData.name;
-    const hp = pokemonData.stats ? pokemonData.stats.hp : pokemonData.baseStats.hp;
-    const attack = pokemonData.stats ? pokemonData.stats.attack : pokemonData.baseStats.attack;
-    const defense = pokemonData.stats ? pokemonData.stats.defense : pokemonData.baseStats.defense;
-    const speed = pokemonData.stats ? pokemonData.stats.speed : pokemonData.baseStats.speed;
+    const baseHp = pokemonData.stats ? pokemonData.stats.hp : pokemonData.baseStats.hp;
+    const baseAtk = pokemonData.stats ? pokemonData.stats.attack : pokemonData.baseStats.attack;
+    const baseDef = pokemonData.stats ? pokemonData.stats.defense : pokemonData.baseStats.defense;
+    const baseSpd = pokemonData.stats ? pokemonData.stats.speed : pokemonData.baseStats.speed;
+    const hp = baseHp + Math.floor(Math.random() * 16);
+    const attack = baseAtk + Math.floor(Math.random() * 16);
+    const defense = baseDef + Math.floor(Math.random() * 16);
+    const speed = baseSpd + Math.floor(Math.random() * 16);
     const types = pokemonData.types;
     
     const newPoke = {
@@ -487,10 +491,14 @@ async function addPokemon(streamerId, username, displayName, pokemonData, isShin
   const instanceId = Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
   const name = isShiny ? `✨ Shiny ${pokemonData.name}` : pokemonData.name;
   
-  const hp = pokemonData.stats ? pokemonData.stats.hp : pokemonData.baseStats.hp;
-  const attack = pokemonData.stats ? pokemonData.stats.attack : pokemonData.baseStats.attack;
-  const defense = pokemonData.stats ? pokemonData.stats.defense : pokemonData.baseStats.defense;
-  const speed = pokemonData.stats ? pokemonData.stats.speed : pokemonData.baseStats.speed;
+  const baseHp = pokemonData.stats ? pokemonData.stats.hp : pokemonData.baseStats.hp;
+  const baseAtk = pokemonData.stats ? pokemonData.stats.attack : pokemonData.baseStats.attack;
+  const baseDef = pokemonData.stats ? pokemonData.stats.defense : pokemonData.baseStats.defense;
+  const baseSpd = pokemonData.stats ? pokemonData.stats.speed : pokemonData.baseStats.speed;
+  const hp = baseHp + Math.floor(Math.random() * 16);
+  const attack = baseAtk + Math.floor(Math.random() * 16);
+  const defense = baseDef + Math.floor(Math.random() * 16);
+  const speed = baseSpd + Math.floor(Math.random() * 16);
   const types = pokemonData.types;
   
   await query(
