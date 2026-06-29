@@ -545,12 +545,12 @@ function runDynamicCatchAnimation(isSuccess, data) {
     }
   }
 
-  // 1. Create a dynamic flying ball
+  // 1. Create a dynamic flying ball (increased to 75px for higher visibility)
   const ball = document.createElement('img');
   ball.src = ballImage;
   ball.style.position = 'fixed';
-  ball.style.width = '50px';
-  ball.style.height = '50px';
+  ball.style.width = '75px';
+  ball.style.height = '75px';
   ball.style.zIndex = '9999';
   ball.style.pointerEvents = 'none';
   document.body.appendChild(ball);
@@ -563,8 +563,8 @@ function runDynamicCatchAnimation(isSuccess, data) {
   const startY = window.innerHeight;
 
   const throwAnim = ball.animate([
-    { left: `${startX - 25}px`, top: `${startY}px`, transform: 'scale(1) rotate(0deg)' },
-    { left: `${targetX - 25}px`, top: `${targetY - 25}px`, transform: 'scale(1.3) rotate(720deg)' }
+    { left: `${startX - 37}px`, top: `${startY}px`, transform: 'scale(1) rotate(0deg)' },
+    { left: `${targetX - 37}px`, top: `${targetY - 37}px`, transform: 'scale(1.3) rotate(720deg)' }
   ], {
     duration: 800,
     easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
@@ -581,15 +581,15 @@ function runDynamicCatchAnimation(isSuccess, data) {
       wildPokemonSprite.style.opacity = '0';
     }
 
-    // Create landing ball at target location
+    // Create landing ball at target location (increased to 68px for higher visibility)
     const landBall = document.createElement('img');
     landBall.src = ballImage;
     landBall.className = 'shaking'; // Uses existing CSS shaking animation!
     landBall.style.position = 'fixed';
-    landBall.style.width = '45px';
-    landBall.style.height = '45px';
-    landBall.style.left = `${targetX - 22}px`;
-    landBall.style.top = `${targetY - 22}px`;
+    landBall.style.width = '68px';
+    landBall.style.height = '68px';
+    landBall.style.left = `${targetX - 34}px`;
+    landBall.style.top = `${targetY - 34}px`;
     landBall.style.zIndex = '9999';
     landBall.style.pointerEvents = 'none';
     document.body.appendChild(landBall);
