@@ -345,11 +345,22 @@ function applyConfig(config) {
 
     // Types Visibility
     if (wildPokemonTypes) {
-      if (config.showCardTypes === false) {
+      if (config.showCardTypes === false || config.hideSpawnDetails === true) {
         wildPokemonTypes.classList.add('hidden');
       } else {
         wildPokemonTypes.classList.remove('hidden');
       }
+    }
+
+    // Simplified Mode / Hide Spawn Details
+    const statsEl = document.getElementById('wild-pokemon-stats');
+    const ratesEl = document.getElementById('wild-catch-rates');
+    if (config.hideSpawnDetails === true) {
+      if (statsEl) statsEl.classList.add('hidden');
+      if (ratesEl) ratesEl.classList.add('hidden');
+    } else {
+      if (statsEl) statsEl.classList.remove('hidden');
+      if (ratesEl) ratesEl.classList.remove('hidden');
     }
 
     // Catch Instruction Guide & Visibility
@@ -399,6 +410,11 @@ function calculateCP(baseStats, wins, isLegendary) {
 // Render dynamic CP, Weight, and Height stats in Pokemon GO style
 function updateWildPokemonStats(poke) {
   if (!wildPokemonStats) return;
+  
+  if (currentOverlayConfig && currentOverlayConfig.hideSpawnDetails === true) {
+    wildPokemonStats.classList.add('hidden');
+    return;
+  }
   
   const isLegendary = poke.catchRate <= 0.1;
   const cp = calculateCP(poke.stats, 0, isLegendary);
@@ -475,16 +491,26 @@ socket.on('pokemon_spawned', (poke) => {
   wildPokemonSprite.src = getSafeSprite(poke.spriteUrl, poke.fallbackSpriteUrl);
   wildPokemonName.textContent = poke.name;
   renderTypes(wildPokemonTypes, poke.types);
+  if (currentOverlayConfig && currentOverlayConfig.hideSpawnDetails === true) {
+    if (wildPokemonTypes) wildPokemonTypes.classList.add('hidden');
+  } else if (currentOverlayConfig && currentOverlayConfig.showCardTypes !== false) {
+    if (wildPokemonTypes) wildPokemonTypes.classList.remove('hidden');
+  }
   updateWildPokemonStats(poke);
 
   const ratesEl = document.getElementById('wild-catch-rates');
-  if (ratesEl && poke.ballRates) {
-    ratesEl.innerHTML = `
-      <span>🔴<strong>${poke.ballRates.pokeball}%</strong></span>
-      <span>🔵<strong>${poke.ballRates.greatball}%</strong></span>
-      <span>🟡<strong>${poke.ballRates.ultraball}%</strong></span>
-      <span>🟣<strong>${poke.ballRates.masterball}%</strong></span>
-    `;
+  if (ratesEl) {
+    if (currentOverlayConfig && currentOverlayConfig.hideSpawnDetails === true) {
+      ratesEl.classList.add('hidden');
+    } else if (poke.ballRates) {
+      ratesEl.classList.remove('hidden');
+      ratesEl.innerHTML = `
+        <span>🔴<strong>${poke.ballRates.pokeball}%</strong></span>
+        <span>🔵<strong>${poke.ballRates.greatball}%</strong></span>
+        <span>🟡<strong>${poke.ballRates.ultraball}%</strong></span>
+        <span>🟣<strong>${poke.ballRates.masterball}%</strong></span>
+      `;
+    }
   }
 
   // Check if Legendary (catchRate <= 0.1)

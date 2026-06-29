@@ -181,6 +181,7 @@ const spawnCardPositionSelect = document.getElementById('spawn-card-position');
 const showCardSpriteCheckbox = document.getElementById('show-card-sprite');
 const showCardTypesCheckbox = document.getElementById('show-card-types');
 const showCardInstructionsCheckbox = document.getElementById('show-card-instructions');
+const hideSpawnDetailsCheckbox = document.getElementById('hide-spawn-details');
 
 // Custom layout inputs
 const spawnCustomPosRow = document.getElementById('spawn-custom-pos-row');
@@ -287,6 +288,7 @@ function populateConfig(config) {
   showCardSpriteCheckbox.checked = config.showCardSprite !== false;
   showCardTypesCheckbox.checked = config.showCardTypes !== false;
   showCardInstructionsCheckbox.checked = config.showCardInstructions !== false;
+  hideSpawnDetailsCheckbox.checked = config.hideSpawnDetails || false;
 
   // Custom offsets
   spawnCardLeftInput.value = config.spawnCardLeft || '';
@@ -511,6 +513,7 @@ configForm.addEventListener('submit', (e) => {
     showCardSprite: showCardSpriteCheckbox.checked,
     showCardTypes: showCardTypesCheckbox.checked,
     showCardInstructions: showCardInstructionsCheckbox.checked,
+    hideSpawnDetails: hideSpawnDetailsCheckbox.checked,
     
     // Custom positioning offsets
     spawnCardLeft: spawnCardLeftInput.value.trim(),
@@ -616,6 +619,7 @@ btnSaveTarget.addEventListener('click', () => {
     showCardSprite: showCardSpriteCheckbox.checked,
     showCardTypes: showCardTypesCheckbox.checked,
     showCardInstructions: showCardInstructionsCheckbox.checked,
+    hideSpawnDetails: hideSpawnDetailsCheckbox.checked,
     
     spawnCardLeft: spawnCardLeftInput.value.trim(),
     spawnCardRight: spawnCardRightInput.value.trim(),

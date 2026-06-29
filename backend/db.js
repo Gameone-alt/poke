@@ -246,7 +246,8 @@ async function runAutoMigrations() {
       ADD COLUMN IF NOT EXISTS ticker_scale NUMERIC DEFAULT 1.0,
       ADD COLUMN IF NOT EXISTS feed_scale NUMERIC DEFAULT 1.0,
       ADD COLUMN IF NOT EXISTS battle_accept_timeout_seconds INTEGER DEFAULT 30,
-      ADD COLUMN IF NOT EXISTS stream_delay_seconds INTEGER DEFAULT 0;
+      ADD COLUMN IF NOT EXISTS stream_delay_seconds INTEGER DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS hide_spawn_details BOOLEAN DEFAULT FALSE;
     `);
 
     // Add columns to inventories table
@@ -915,7 +916,8 @@ async function getStreamerConfig(streamerId) {
         tickerScale: 1.0,
         feedScale: 1.0,
         battleAcceptTimeoutSeconds: 30,
-        streamDelaySeconds: 0
+        streamDelaySeconds: 0,
+        hideSpawnDetails: false
       };
       saveLocalConfigs();
     } else {
@@ -1020,7 +1022,8 @@ async function getStreamerConfig(streamerId) {
       tickerScale: 1.0,
       feedScale: 1.0,
       battleAcceptTimeoutSeconds: 30,
-      streamDelaySeconds: 0
+      streamDelaySeconds: 0,
+      hideSpawnDetails: false
     };
     
     await query(
@@ -1142,7 +1145,8 @@ async function getStreamerConfig(streamerId) {
     tickerScale: row.ticker_scale !== null && row.ticker_scale !== undefined ? Number(row.ticker_scale) : 1.0,
     feedScale: row.feed_scale !== null && row.feed_scale !== undefined ? Number(row.feed_scale) : 1.0,
     battleAcceptTimeoutSeconds: row.battle_accept_timeout_seconds !== null && row.battle_accept_timeout_seconds !== undefined ? Number(row.battle_accept_timeout_seconds) : 30,
-    streamDelaySeconds: row.stream_delay_seconds !== null && row.stream_delay_seconds !== undefined ? Number(row.stream_delay_seconds) : 0
+    streamDelaySeconds: row.stream_delay_seconds !== null && row.stream_delay_seconds !== undefined ? Number(row.stream_delay_seconds) : 0,
+    hideSpawnDetails: row.hide_spawn_details !== null && row.hide_spawn_details !== undefined ? Boolean(row.hide_spawn_details) : false
   };
 }
 
@@ -1187,8 +1191,9 @@ async function saveStreamerConfig(streamerId, config) {
          inventory_base_url = $82, sprite_format = $83, spawn_catch_guide_mode = $84, allowed_generations = $85,
          battle_scale = $86, ticker_scale = $87, feed_scale = $88,
          battle_accept_timeout_seconds = $89,
-         stream_delay_seconds = $90
-     WHERE channel_id = $91`,
+         stream_delay_seconds = $90,
+         hide_spawn_details = $91
+     WHERE channel_id = $92`,
     [
       config.videoId || '',
       config.spawnIntervalMs,
@@ -1280,6 +1285,7 @@ async function saveStreamerConfig(streamerId, config) {
       config.feedScale !== undefined ? config.feedScale : 1.0,
       config.battleAcceptTimeoutSeconds !== undefined ? config.battleAcceptTimeoutSeconds : 30,
       config.streamDelaySeconds !== undefined ? config.streamDelaySeconds : 0,
+      config.hideSpawnDetails !== undefined ? config.hideSpawnDetails : false,
       streamer
     ]
   );
