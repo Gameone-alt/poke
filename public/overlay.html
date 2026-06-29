@@ -75,6 +75,9 @@
 
     <!-- Battle Arena Overlay (Centered) -->
     <div id="battle-overlay" class="hidden">
+      <!-- Dynamic weather container background -->
+      <div id="weather-arena" class="weather-backdrop"></div>
+      
       <div class="battle-header-bar">
         <span class="arena-tag">BATTLE ARENA</span>
       </div>
@@ -86,8 +89,9 @@
             <div class="trainer-name" id="challenger-trainer">Challenger</div>
             <div class="fighter-poke-name" id="challenger-poke">Bulbasaur</div>
             <div class="fighter-hp-container">
-              <div class="hp-bar-outer">
-                <div class="hp-fill-bar" id="challenger-hp-fill" style="width: 100%;"></div>
+              <div class="hp-bar-outer" style="position: relative;">
+                <div class="hp-fill-trail" id="challenger-hp-trail" style="width: 100%;"></div>
+                <div class="hp-fill-bar" id="challenger-hp-fill" style="width: 100%; position: absolute; top: 0; left: 0; height: 100%;"></div>
               </div>
               <div class="hp-text-label" id="challenger-hp-text">HP: 100/100</div>
             </div>
@@ -108,8 +112,9 @@
             <div class="trainer-name" id="opponent-trainer">Opponent</div>
             <div class="fighter-poke-name" id="opponent-poke">Charmander</div>
             <div class="fighter-hp-container">
-              <div class="hp-bar-outer">
-                <div class="hp-fill-bar" id="opponent-hp-fill" style="width: 100%;"></div>
+              <div class="hp-bar-outer" style="position: relative;">
+                <div class="hp-fill-trail" id="opponent-hp-trail" style="width: 100%;"></div>
+                <div class="hp-fill-bar" id="opponent-hp-fill" style="width: 100%; position: absolute; top: 0; left: 0; height: 100%;"></div>
               </div>
               <div class="hp-text-label" id="opponent-hp-text">HP: 100/100</div>
             </div>

@@ -22,8 +22,11 @@ const sparkleEmitter = document.getElementById('sparkle-emitter');
 
 // Battle Arena references
 const battleOverlay = document.getElementById('battle-overlay');
+const weatherArena = document.getElementById('weather-arena');
 const challengerFighter = document.getElementById('fighter-challenger');
 const opponentFighter = document.getElementById('fighter-opponent');
+const challengerHpTrail = document.getElementById('challenger-hp-trail');
+const opponentHpTrail = document.getElementById('opponent-hp-trail');
 const challengerTrainer = document.getElementById('challenger-trainer');
 const challengerPoke = document.getElementById('challenger-poke');
 const challengerSprite = document.getElementById('challenger-sprite');
@@ -635,12 +638,13 @@ function runDynamicCatchAnimation(isSuccess, data) {
 function showDamagePopup(x, y, text, color = '#ef4444') {
   const popup = document.createElement('div');
   popup.textContent = text;
+  popup.className = 'damage-popup-bounce';
   popup.style.position = 'fixed';
   popup.style.left = `${x}px`;
   popup.style.top = `${y}px`;
   popup.style.transform = 'translate(-50%, -50%)';
   popup.style.fontFamily = "'Outfit', sans-serif";
-  popup.style.fontSize = '24px';
+  popup.style.fontSize = '26px';
   popup.style.fontWeight = '900';
   popup.style.color = color;
   popup.style.textShadow = '0 0 10px rgba(0,0,0,0.8), 0 0 5px ' + color;
@@ -648,13 +652,107 @@ function showDamagePopup(x, y, text, color = '#ef4444') {
   popup.style.pointerEvents = 'none';
   document.body.appendChild(popup);
   
-  popup.animate([
-    { transform: 'translate(-50%, -50%) scale(1) translateY(0)', opacity: 1 },
-    { transform: 'translate(-50%, -50%) scale(1.4) translateY(-50px)', opacity: 0 }
-  ], {
-    duration: 1000,
-    easing: 'ease-out'
-  }).onfinish = () => popup.remove();
+  setTimeout(() => popup.remove(), 1200);
+}
+
+const comicWords = ["BAM!", "POW!", "BOOM!", "CRACK!", "SMASH!", "WHACK!", "K.O.!"];
+const comicColors = ["#ef4444", "#f59e0b", "#3b82f6", "#10b981", "#8b5cf6", "#ec4899"];
+
+function showComicPop(x, y, type = 'normal') {
+  const popup = document.createElement('div');
+  let word = comicWords[Math.floor(Math.random() * (comicWords.length - 1))];
+  if (type === 'defeat') {
+    word = "K.O.!";
+  }
+  
+  popup.textContent = word;
+  popup.className = 'comic-bubble';
+  popup.style.left = `${x}px`;
+  popup.style.top = `${y}px`;
+  
+  const color = comicColors[Math.floor(Math.random() * comicColors.length)];
+  popup.style.backgroundColor = color;
+  popup.style.border = '4px solid #000';
+  
+  document.body.appendChild(popup);
+  setTimeout(() => popup.remove(), 800);
+}
+
+let weatherInterval = null;
+
+function clearWeather() {
+  if (weatherInterval) clearInterval(weatherInterval);
+  if (weatherArena) weatherArena.innerHTML = '';
+}
+
+function startWeatherEffect(types) {
+  clearWeather();
+  if (!weatherArena) return;
+  if (!types || types.length === 0) return;
+  
+  const type = types[0].toLowerCase();
+  let emoji = '';
+  let animName = '';
+  let rate = 300; // ms
+  
+  if (type === 'fire') {
+    emoji = '🔥';
+    animName = 'weatherFire';
+    rate = 200;
+  } else if (type === 'water') {
+    emoji = '💧';
+    animName = 'weatherWater';
+    rate = 250;
+  } else if (type === 'grass') {
+    emoji = '🍃';
+    animName = 'weatherGrass';
+    rate = 300;
+  } else if (type === 'electric') {
+    emoji = '⚡';
+    animName = 'weatherElectric';
+    rate = 150;
+  } else if (type === 'ice') {
+    emoji = '❄️';
+    animName = 'weatherIce';
+    rate = 250;
+  } else {
+    emoji = '✨';
+    animName = 'weatherWater';
+    rate = 400;
+  }
+  
+  weatherInterval = setInterval(() => {
+    const p = document.createElement('div');
+    p.className = 'weather-particle';
+    p.textContent = emoji;
+    
+    const startX = Math.random() * 100;
+    p.style.left = `${startX}%`;
+    
+    if (type === 'grass' || type === 'ice') {
+      p.style.top = `-20px`;
+    } else {
+      p.style.bottom = `-20px`;
+    }
+    
+    const size = Math.floor(Math.random() * 16) + 12;
+    const duration = (Math.random() * 2 + 2).toFixed(1);
+    const delay = (Math.random() * 0.5).toFixed(1);
+    const drift = Math.floor(Math.random() * 100) - 50;
+    const rot = Math.floor(Math.random() * 360);
+    const dx = Math.floor(Math.random() * 40) - 20;
+    const dy = Math.floor(Math.random() * 40) - 20;
+    
+    p.style.fontSize = `${size}px`;
+    p.style.animation = `${animName} ${duration}s ${delay}s ease-in-out infinite`;
+    p.style.setProperty('--drift', `${drift}px`);
+    p.style.setProperty('--rot', `${rot}deg`);
+    p.style.setProperty('--dx', `${dx}px`);
+    p.style.setProperty('--dy', `${dy}px`);
+    
+    weatherArena.appendChild(p);
+    setTimeout(() => p.remove(), (parseFloat(duration) + parseFloat(delay)) * 1000);
+  }, rate);
 }
 
 // Projectile Attack Helper
@@ -798,16 +896,25 @@ socket.on('battle_start', (data) => {
   const opponentHpFill = document.getElementById('opponent-hp-fill');
   const opponentHpText = document.getElementById('opponent-hp-text');
   
-  // Set initial HP and labels
+  // Clear previous weather backdrops
+  clearWeather();
+
+  // Set initial HP, labels, and impact trails
   if (challengerHpFill) {
     challengerHpFill.style.width = '100%';
     challengerHpFill.style.backgroundColor = '#10b981';
+  }
+  if (challengerHpTrail) {
+    challengerHpTrail.style.width = '100%';
   }
   if (challengerHpText) challengerHpText.textContent = `HP: ${data.challengerHp}/${data.challengerHp}`;
   
   if (opponentHpFill) {
     opponentHpFill.style.width = '100%';
     opponentHpFill.style.backgroundColor = '#10b981';
+  }
+  if (opponentHpTrail) {
+    opponentHpTrail.style.width = '100%';
   }
   if (opponentHpText) opponentHpText.textContent = `HP: ${data.opponentHp}/${data.opponentHp}`;
 
@@ -861,6 +968,9 @@ socket.on('battle_start', (data) => {
   const timer2 = setTimeout(() => {
     impactFlash.classList.remove('impact-active');
     
+    // Start fire/water/grass weather on screen based on strike element
+    startWeatherEffect(data.challengerTypes);
+    
     shootProjectile(challengerSprite, opponentSprite, data.challengerTypes, () => {
       challengerFighter.classList.add('fight-strike-left');
       setTimeout(() => challengerFighter.classList.remove('fight-strike-left'), 400);
@@ -868,9 +978,11 @@ socket.on('battle_start', (data) => {
       // Strike sound
       playSound(sfxHit);
       
-      // Animate hit on opponent
-      opponentFighter.style.animation = 'starBurstAnim 0.15s 2';
-      const timerFighterShake = setTimeout(() => { opponentFighter.style.animation = ''; }, 300);
+      // Animate hit on opponent (Shake & Damage Flash)
+      opponentFighter.classList.add('hit-shake', 'damage-flash');
+      const timerFighterShake = setTimeout(() => {
+        opponentFighter.classList.remove('hit-shake', 'damage-flash');
+      }, 400);
       activeBattleSimulationTimers.push(timerFighterShake);
 
       // Opponent takes damage
@@ -883,11 +995,20 @@ socket.on('battle_start', (data) => {
         if (hpPercent < 30) opponentHpFill.style.backgroundColor = '#ef4444';
         else if (hpPercent < 60) opponentHpFill.style.backgroundColor = '#f59e0b';
       }
+      // Delayed impact trail catch up
+      if (opponentHpTrail) {
+        setTimeout(() => {
+          opponentHpTrail.style.width = `${hpPercent}%`;
+        }, 400);
+      }
       if (opponentHpText) opponentHpText.textContent = `HP: ${newHp}/${data.opponentHp}`;
 
       // Show floating damage text above Opponent Card
       const oppRect = opponentFighter.getBoundingClientRect();
       showDamagePopup(oppRect.left + oppRect.width / 2, oppRect.top - 20, `-${damage} HP!`);
+      
+      // Comic popup bubble
+      showComicPop(oppRect.left + oppRect.width / 2, oppRect.top + oppRect.height / 2);
 
       // Show type effectiveness popup
       if (data.challengerMultiplier > 1) {
@@ -902,6 +1023,9 @@ socket.on('battle_start', (data) => {
 
   // Turn 2: Opponent strikes back
   const timer3 = setTimeout(() => {
+    // Start weather on screen based on strike element
+    startWeatherEffect(data.opponentTypes);
+    
     shootProjectile(opponentSprite, challengerSprite, data.opponentTypes, () => {
       opponentFighter.classList.add('fight-strike-right');
       setTimeout(() => opponentFighter.classList.remove('fight-strike-right'), 400);
@@ -909,9 +1033,11 @@ socket.on('battle_start', (data) => {
       // Strike sound
       playSound(sfxHit);
       
-      // Animate hit on challenger
-      challengerFighter.style.animation = 'starBurstAnim 0.15s 2';
-      const timerChalShake = setTimeout(() => { challengerFighter.style.animation = ''; }, 300);
+      // Animate hit on challenger (Shake & Damage Flash)
+      challengerFighter.classList.add('hit-shake', 'damage-flash');
+      const timerChalShake = setTimeout(() => {
+        challengerFighter.classList.remove('hit-shake', 'damage-flash');
+      }, 400);
       activeBattleSimulationTimers.push(timerChalShake);
 
       // Challenger takes damage
@@ -924,11 +1050,20 @@ socket.on('battle_start', (data) => {
         if (hpPercent < 30) challengerHpFill.style.backgroundColor = '#ef4444';
         else if (hpPercent < 60) challengerHpFill.style.backgroundColor = '#f59e0b';
       }
+      // Delayed impact trail catch up
+      if (challengerHpTrail) {
+        setTimeout(() => {
+          challengerHpTrail.style.width = `${hpPercent}%`;
+        }, 400);
+      }
       if (challengerHpText) challengerHpText.textContent = `HP: ${newHp}/${data.challengerHp}`;
 
       // Show floating damage text above Challenger Card
       const chalRect = challengerFighter.getBoundingClientRect();
       showDamagePopup(chalRect.left + chalRect.width / 2, chalRect.top - 20, `-${damage} HP!`);
+      
+      // Comic popup bubble
+      showComicPop(chalRect.left + chalRect.width / 2, chalRect.top + chalRect.height / 2);
 
       // Show type effectiveness popup
       if (data.opponentMultiplier > 1) {
@@ -944,36 +1079,62 @@ socket.on('battle_start', (data) => {
   // Turn 3: Final Blow!
   const timer4 = setTimeout(() => {
     if (data.winner === 'challenger') {
+      startWeatherEffect(data.challengerTypes);
+      
       shootProjectile(challengerSprite, opponentSprite, data.challengerTypes, () => {
         challengerFighter.classList.add('fight-strike-left');
         setTimeout(() => challengerFighter.classList.remove('fight-strike-left'), 400);
 
         playSound(sfxHit);
         
+        // Shake & flash opponent
+        opponentFighter.classList.add('hit-shake', 'damage-flash');
+        
         // Opponent KO
         if (opponentHpFill) opponentHpFill.style.width = '0%';
+        if (opponentHpTrail) {
+          setTimeout(() => {
+            opponentHpTrail.style.width = '0%';
+          }, 400);
+        }
         if (opponentHpText) opponentHpText.textContent = `HP: 0/${data.opponentHp}`;
         
         const oppRect = opponentFighter.getBoundingClientRect();
         showDamagePopup(oppRect.left + oppRect.width / 2, oppRect.top - 20, `KO!`, '#ef4444');
+        
+        // Comic popup bubble (K.O.)
+        showComicPop(oppRect.left + oppRect.width / 2, oppRect.top + oppRect.height / 2, 'defeat');
         
         opponentFighter.classList.add('fight-defeat-right');
         battleStatusText.textContent = 'WINNER: CHALLENGER!';
         playSound(sfxCatchSuccess);
       });
     } else {
+      startWeatherEffect(data.opponentTypes);
+      
       shootProjectile(opponentSprite, challengerSprite, data.opponentTypes, () => {
         opponentFighter.classList.add('fight-strike-right');
         setTimeout(() => opponentFighter.classList.remove('fight-strike-right'), 400);
 
         playSound(sfxHit);
         
+        // Shake & flash challenger
+        challengerFighter.classList.add('hit-shake', 'damage-flash');
+        
         // Challenger KO
         if (challengerHpFill) challengerHpFill.style.width = '0%';
+        if (challengerHpTrail) {
+          setTimeout(() => {
+            challengerHpTrail.style.width = '0%';
+          }, 400);
+        }
         if (challengerHpText) challengerHpText.textContent = `HP: 0/${data.challengerHp}`;
         
         const chalRect = challengerFighter.getBoundingClientRect();
         showDamagePopup(chalRect.left + chalRect.width / 2, chalRect.top - 20, `KO!`, '#ef4444');
+        
+        // Comic popup bubble (K.O.)
+        showComicPop(chalRect.left + chalRect.width / 2, chalRect.top + chalRect.height / 2, 'defeat');
         
         challengerFighter.classList.add('fight-defeat-left');
         battleStatusText.textContent = 'WINNER: OPPONENT!';
@@ -990,6 +1151,7 @@ socket.on('battle_end', (data) => {
   // We let the dynamic simulation finish its final hits, then hide the overlay after 3.0 seconds
   const timerEnd = setTimeout(() => {
     battleOverlay.classList.add('hidden');
+    clearWeather();
     
     // Clear strike overlay indicators
     const battleField = document.querySelector('.battle-field');
