@@ -106,12 +106,19 @@ function renderTrainerProfile(user) {
     // Calculate dynamic CP
     const cp = calculateCP(poke.baseStats, poke.wins, isLegendary);
 
+    // Calculate dynamic weight & height matching the overlay stats
+    const statsSum = (poke.baseStats.hp || 50) + (poke.baseStats.attack || 50) + (poke.baseStats.defense || 50) + (poke.baseStats.speed || 50);
+    const seed = (poke.pokemonId || 1) * 31;
+    const mockWeight = ((statsSum * 0.12) + (seed % 15) + 5).toFixed(1);
+    const mockHeight = ((statsSum * 0.0028) + (seed % 8) * 0.1 + 0.3).toFixed(2);
+
     card.innerHTML = `
       ${buddyTag}
       <div class="pokemon-cp">CP ${cp}</div>
       <img src="${spriteUrl}" alt="${poke.name}" class="pokemon-sprite">
       <div class="pokemon-name">${shinySpark}${poke.name}</div>
       <div class="pokemon-types">${typeBadges}</div>
+      <div class="pokemon-dimensions" style="font-size: 11px; color: var(--text-muted); margin: 5px 0 8px 0; font-weight: 600;">${mockWeight}kg / ${mockHeight}m</div>
       <div class="pokemon-stats-block">
         <div class="stat-row"><span>HP:</span> <strong>${poke.baseStats.hp}</strong></div>
         <div class="stat-row"><span>ATK:</span> <strong>${poke.baseStats.attack}</strong></div>
