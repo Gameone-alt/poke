@@ -106,6 +106,26 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
+// HTTP GET endpoint for simple web requests (like Streamer.bot Fetch URL)
+app.get('/api/chat', async (req, res) => {
+  const { channelId, username, displayName, messageText } = req.query;
+  if (!channelId || !username || !messageText) {
+    return res.status(400).send('Missing required fields (channelId, username, messageText)');
+  }
+  
+  try {
+    console.log(`[API Chat Relay GET] [${channelId}] ${displayName || username}: ${messageText}`);
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+    const baseUrl = `${protocol}://${req.headers.host}`;
+    await ensureSessionInitialized(channelId.toLowerCase().trim());
+    const reply = await processCommand(channelId.toLowerCase().trim(), username, displayName || username, messageText, baseUrl);
+    res.status(200).send(reply); // Send raw text reply directly
+  } catch (err) {
+    console.error('[API Chat Relay GET] Error processing command:', err.message);
+    res.status(500).send('Error: ' + err.message);
+  }
+});
+
 // Load Static Pokémon Database
 let pokemonDb = {};
 const POKEMON_DB_FILE = path.join(__dirname, 'data', 'pokemon.json');
