@@ -1,3 +1,8 @@
+if (process.env.VERCEL) {
+  console.log('[Build] Vercel build detected. Skipping database seeding.');
+  process.exit(0);
+}
+
 const fs = require('fs');
 const path = require('path');
 
