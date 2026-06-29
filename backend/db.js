@@ -248,6 +248,12 @@ async function runAutoMigrations() {
       ADD COLUMN IF NOT EXISTS battle_accept_timeout_seconds INTEGER DEFAULT 30;
     `);
 
+    // Add columns to inventories table
+    await client.query(`
+      ALTER TABLE inventories
+      ADD COLUMN IF NOT EXISTS fusion_count INTEGER DEFAULT 0;
+    `);
+
     client.release();
     console.log('[Database] Auto-migrations check completed successfully.');
   } catch (err) {
@@ -398,7 +404,8 @@ async function getUser(streamerId, username, displayName = null) {
       shiny: p.shiny,
       wins: p.wins,
       currentStage: p.current_stage,
-      caughtAt: Number(p.caught_at)
+      caughtAt: Number(p.caught_at),
+      fusionCount: p.fusion_count || 0
     })),
     activePokemonId: dbUser.active_pokemon_id,
     items: dbUser.items || {},
@@ -486,7 +493,8 @@ async function addPokemon(streamerId, username, displayName, pokemonData, isShin
       wins: 0,
       currentStage: 1,
       caughtAt: Date.now(),
-      catchRate: pokemonData.catchRate
+      catchRate: pokemonData.catchRate,
+      fusionCount: 0
     };
     
     user.inventory.push(newPoke);
@@ -536,7 +544,8 @@ async function addPokemon(streamerId, username, displayName, pokemonData, isShin
     shiny: isShiny,
     wins: 0,
     currentStage: 1,
-    caughtAt: Date.now()
+    caughtAt: Date.now(),
+    fusionCount: 0
   };
 }
 
@@ -1465,6 +1474,115 @@ async function evolvePokemon(streamerId, username, instanceId, newPokemonData) {
   };
 }
 
+/**
+ * Merges duplicate Pokémon of the same type.
+ */
+async function fusePokemon(streamerId, username, targetName) {
+  const streamer = streamerId.toLowerCase().trim();
+  const key = username.toLowerCase().trim();
+  const searchName = targetName.toLowerCase().replace('✨ shiny ', '').trim();
+
+  const user = await getUser(streamerId, username);
+  if (!user || !user.inventory || user.inventory.length === 0) {
+    throw new Error("You don't have any Pokémon in your inventory.");
+  }
+
+  // Find all matches in the user's inventory
+  const matches = user.inventory.filter(p => {
+    const original = p.originalName ? p.originalName.toLowerCase() : p.name.toLowerCase().replace('✨ shiny ', '');
+    const currentName = p.name.toLowerCase().replace('✨ shiny ', '');
+    return original === searchName || currentName === searchName;
+  });
+
+  if (matches.length < 2) {
+    throw new Error(`You need at least 2 of '${targetName}' to fuse them. You have ${matches.length}.`);
+  }
+
+  // Determine survivor: active buddy takes priority, then highest stats sum
+  let survivor = matches.find(p => p.instanceId === user.activePokemonId);
+  if (!survivor) {
+    // Sort by stats sum descending
+    matches.sort((a, b) => {
+      const sumA = a.baseStats.hp + a.baseStats.attack + a.baseStats.defense + a.baseStats.speed;
+      const sumB = b.baseStats.hp + b.baseStats.attack + b.baseStats.defense + b.baseStats.speed;
+      return sumB - sumA;
+    });
+    survivor = matches[0];
+  }
+
+  const sacrifices = matches.filter(p => p.instanceId !== survivor.instanceId);
+
+  // Perform fusion calculation:
+  // survivor gets max(survivor_stat, sacrifice_stat) + 5 per sacrifice.
+  let newHp = survivor.baseStats.hp;
+  let newAtk = survivor.baseStats.attack;
+  let newDef = survivor.baseStats.defense;
+  let newSpd = survivor.baseStats.speed;
+  let addedWins = 0;
+
+  for (const sac of sacrifices) {
+    newHp = Math.max(newHp, sac.baseStats.hp) + 5;
+    newAtk = Math.max(newAtk, sac.baseStats.attack) + 5;
+    newDef = Math.max(newDef, sac.baseStats.defense) + 5;
+    newSpd = Math.max(newSpd, sac.baseStats.speed) + 5;
+    addedWins += sac.wins || 0;
+  }
+
+  const finalWins = survivor.wins + addedWins;
+  const finalFusionCount = (survivor.fusionCount || 0) + sacrifices.length;
+
+  if (useLocalFallback) {
+    // Local fallback update
+    const freshUser = await getUser(streamerId, username);
+    const mappedSurvivor = freshUser.inventory.find(p => p.instanceId === survivor.instanceId);
+    mappedSurvivor.baseStats = { hp: newHp, attack: newAtk, defense: newDef, speed: newSpd };
+    mappedSurvivor.wins = finalWins;
+    mappedSurvivor.fusionCount = finalFusionCount;
+
+    // Delete sacrifices
+    const sacIds = sacrifices.map(s => s.instanceId);
+    freshUser.inventory = freshUser.inventory.filter(p => !sacIds.includes(p.instanceId));
+
+    // Reset active buddy if it was a sacrifice
+    if (sacIds.includes(freshUser.activePokemonId)) {
+      freshUser.activePokemonId = survivor.instanceId;
+    }
+    await saveUser(streamerId, freshUser);
+  } else {
+    // PostgreSQL database update
+    // Update survivor
+    await query(
+      `UPDATE inventories 
+       SET base_hp = $1, base_atk = $2, base_def = $3, base_spd = $4, wins = $5, fusion_count = $6
+       WHERE streamer_id = $7 AND username = $8 AND instance_id = $9`,
+      [newHp, newAtk, newDef, newSpd, finalWins, finalFusionCount, streamer, key, survivor.instanceId]
+    );
+
+    // Delete sacrifices
+    const sacIds = sacrifices.map(s => s.instanceId);
+    await query(
+      'DELETE FROM inventories WHERE streamer_id = $1 AND username = $2 AND instance_id = ANY($3)',
+      [streamer, key, sacIds]
+    );
+
+    // Reset active buddy if it was a sacrifice
+    const playerRow = (await query('SELECT active_pokemon_id FROM players WHERE streamer_id = $1 AND username = $2', [streamer, key])).rows[0];
+    if (playerRow && sacIds.includes(playerRow.active_pokemon_id)) {
+      await query(
+        'UPDATE players SET active_pokemon_id = $1 WHERE streamer_id = $2 AND username = $3',
+        [survivor.instanceId, streamer, key]
+      );
+    }
+  }
+
+  return {
+    survivorName: survivor.name,
+    fusionCount: finalFusionCount,
+    sacrificedCount: sacrifices.length,
+    stats: { hp: newHp, attack: newAtk, defense: newDef, speed: newSpd }
+  };
+}
+
 module.exports = {
   getUser,
   saveUser,
@@ -1478,5 +1596,6 @@ module.exports = {
   resetDatabase,
   getAllPlayers,
   swapPokemonOwnership,
-  evolvePokemon
+  evolvePokemon,
+  fusePokemon
 };

@@ -477,6 +477,16 @@ socket.on('pokemon_spawned', (poke) => {
   renderTypes(wildPokemonTypes, poke.types);
   updateWildPokemonStats(poke);
 
+  const ratesEl = document.getElementById('wild-catch-rates');
+  if (ratesEl && poke.ballRates) {
+    ratesEl.innerHTML = `
+      <span>🔴<strong>${poke.ballRates.pokeball}%</strong></span>
+      <span>🔵<strong>${poke.ballRates.greatball}%</strong></span>
+      <span>🟡<strong>${poke.ballRates.ultraball}%</strong></span>
+      <span>🟣<strong>${poke.ballRates.masterball}%</strong></span>
+    `;
+  }
+
   // Check if Legendary (catchRate <= 0.1)
   const cardWrapper = wildSpawnContainer.querySelector('.pokemon-card-wrapper');
   if (cardWrapper) {

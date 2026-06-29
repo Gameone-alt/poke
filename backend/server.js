@@ -430,6 +430,26 @@ async function spawnWildPokemon(channelId) {
 
   console.log(`[Game Loop] [${channelId}] Spawned: ${isShiny ? '✨ Shiny ' : ''}${basePoke.name}`);
   
+  // Calculate ball specific catch rates
+  const baseCatchRate = basePoke.catchRate || 0.2;
+  let categoryMultiplier = 1.0;
+  if (baseCatchRate <= 0.1) {
+    categoryMultiplier = session.config.catchMultiplierLegendary !== undefined ? Number(session.config.catchMultiplierLegendary) : 1.0;
+  } else if (baseCatchRate <= 0.25) {
+    categoryMultiplier = session.config.catchMultiplierRare !== undefined ? Number(session.config.catchMultiplierRare) : 1.0;
+  } else {
+    categoryMultiplier = session.config.catchMultiplierNormal !== undefined ? Number(session.config.catchMultiplierNormal) : 1.0;
+  }
+
+  const multPoke = session.config.catchMultiplierPokeball !== undefined ? session.config.catchMultiplierPokeball : 1.0;
+  const multGreat = session.config.catchMultiplierGreatball !== undefined ? session.config.catchMultiplierGreatball : 1.5;
+  const multUltra = session.config.catchMultiplierUltraball !== undefined ? session.config.catchMultiplierUltraball : 2.0;
+
+  const ratePoke = Math.min(100, Math.round(baseCatchRate * multPoke * categoryMultiplier * 100));
+  const rateGreat = Math.min(100, Math.round(baseCatchRate * multGreat * categoryMultiplier * 100));
+  const rateUltra = Math.min(100, Math.round(baseCatchRate * multUltra * categoryMultiplier * 100));
+  const rateMaster = 100;
+
   io.to(channelId).emit('pokemon_spawned', {
     id: session.activeWildPokemon.id,
     name: session.activeWildPokemon.name,
@@ -439,7 +459,13 @@ async function spawnWildPokemon(channelId) {
     fallbackSpriteUrl: fallbackSprite,
     catchRate: session.activeWildPokemon.catchRate,
     statsSum: session.activeWildPokemon.statsSum,
-    stats: ivBoostedStats
+    stats: ivBoostedStats,
+    ballRates: {
+      pokeball: ratePoke,
+      greatball: rateGreat,
+      ultraball: rateUltra,
+      masterball: rateMaster
+    }
   });
 
   sendGameLog(channelId, 'spawn', `🌟 A wild ${isShiny ? '✨ Shiny ' : ''}${basePoke.name} has spawned! Type '!catch' to capture it!`);
@@ -1427,6 +1453,33 @@ async function processCommand(channelId, username, displayName, messageText, bas
     return msg;
   }
 
+  // 8.6.5. Pokémon Fusion: !fuse [pokemon_name]
+  if (cleanMsg.startsWith('!fuse') || cleanMsg.startsWith('fuse')) {
+    const parts = messageText.trim().split(/\s+/);
+    if (parts.length < 2) {
+      const msg = `❌ @${displayName}, please specify which duplicate Pokémon you want to fuse! Syntax: !fuse [pokemon_name]`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    const targetPokeName = parts.slice(1).join(' ');
+    
+    try {
+      const result = await db.fusePokemon(channelId, username, targetPokeName);
+      
+      const msg = `🧬 Fusion: @${displayName} fused ${result.sacrificedCount} duplicates of ${result.survivorName}! Stats boosted by +${result.sacrificedCount * 5}! (★${result.fusionCount})`;
+      
+      // Update leaderboards
+      io.to(channelId).emit('leaderboard_update', await db.getLeaderboard(channelId));
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      sendGameLog(channelId, 'evolution', msg);
+      return msg;
+    } catch (err) {
+      const msg = `❌ @${displayName}: ${err.message}`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+  }
+
   // 8.7. Open-Market Trade System: !trade / !accept
   if (cleanMsg.startsWith('!trade') || cleanMsg === 'trade') {
     const parts = messageText.trim().split(/\s+/);
@@ -1721,7 +1774,7 @@ async function processCommand(channelId, username, displayName, messageText, bas
 
   // 11. !help / !commands command
   if (cleanMsg === '!help' || cleanMsg === 'help' || cleanMsg === '!commands' || cleanMsg === 'commands') {
-    return `🎮 Pokémon Game: !daily | !inventory | !coins | !shop | !buy [ball/stone] [amt] | !buddy [name] | !select [name] | !catch [ball_type] | !fight [@user/wild] [your_poke] | !trade @user [my_poke] [their_poke] | !use [stone] [poke] | !attack`;
+    return `🎮 Pokémon Game: !daily | !inventory | !coins | !shop | !buy [ball/stone] [amt] | !buddy [name] | !select [name] | !catch [ball_type] | !fight [@user/wild] [your_poke] | !trade @user [my_poke] [their_poke] | !use [stone] [poke] | !fuse [name] | !attack`;
   }
 
   return null;
