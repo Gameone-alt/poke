@@ -1105,9 +1105,15 @@ async function processCommand(channelId, username, displayName, messageText, bas
     for (let i = 0; i < 3; i++) {
       let drawPool = candidates;
       
-      // Card 1 (i === 0) is always a guaranteed legendary!
-      if (i === 0 && legendaryCandidates.length > 0) {
-        drawPool = legendaryCandidates;
+      // Only for the Legendary Pack:
+      if (packType === 'legendary') {
+        if (i === 0 && legendaryCandidates.length > 0) {
+          // Card 1 is guaranteed legendary
+          drawPool = legendaryCandidates;
+        } else {
+          // Card 2 & 3 are completely random from the entire database (luck-based)
+          drawPool = allPokes;
+        }
       }
       
       const randomPoke = drawPool[Math.floor(Math.random() * drawPool.length)];
