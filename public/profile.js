@@ -89,6 +89,11 @@ function renderTrainerProfile(user) {
     if (isLegendary) {
       card.classList.add('legendary');
     }
+    
+    // Add shiny class for shiny styling
+    if (poke.shiny) {
+      card.classList.add('shiny');
+    }
 
     // Type classes styling
     const typeBadges = poke.types.map(t => `<span class="type-badge type-${t.toLowerCase()}">${t}</span>`).join(' ');

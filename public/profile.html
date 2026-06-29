@@ -287,6 +287,45 @@
       border-color: transparent;
     }
 
+    /* Shiny Card Visual Upgrade */
+    .pokemon-card.shiny {
+      background: linear-gradient(135deg, rgba(253, 244, 255, 0.08) 0%, rgba(219, 39, 119, 0.08) 100%);
+      border: 2px solid transparent;
+      background-clip: padding-box, border-box;
+      background-origin: padding-box, border-box;
+      background-image: 
+        linear-gradient(135deg, #1e293b, #0f172a),
+        linear-gradient(135deg, #ec4899 0%, #a855f7 50%, #3b82f6 100%);
+      box-shadow: 0 5px 15px rgba(236, 72, 153, 0.25);
+      position: relative;
+      overflow: hidden;
+      animation: shinyTwinkle 6s ease-in-out infinite alternate;
+    }
+
+    .pokemon-card.shiny::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .pokemon-card.shiny.legendary {
+      background-image: 
+        linear-gradient(135deg, #1e293b, #0f172a),
+        linear-gradient(135deg, #f59e0b 0%, #ec4899 50%, #3b82f6 100%);
+      box-shadow: 0 5px 25px rgba(245, 158, 11, 0.4);
+    }
+
+    @keyframes shinyTwinkle {
+      0% { box-shadow: 0 5px 15px rgba(236, 72, 153, 0.25); }
+      100% { box-shadow: 0 8px 25px rgba(168, 85, 247, 0.45); }
+    }
+
     @keyframes legendaryGlow {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
@@ -469,11 +508,11 @@
           <div class="stat-label">Total Caught</div>
           <div class="stat-value" id="caught-value">0</div>
         </div>
-        <div class="stat-box" style="grid-column: span 2; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; font-size: 12px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color); color: var(--text-muted); text-align: left;">
-          <div>🔴 Pokéball: <strong id="balls-poke">0</strong></div>
-          <div>🔵 Great Ball: <strong id="balls-great">0</strong></div>
-          <div>🟡 Ultra Ball: <strong id="balls-ultra">0</strong></div>
-          <div>🟣 Master Ball: <strong id="balls-master">0</strong></div>
+        <div class="stat-box" style="grid-column: span 2; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; font-size: 13px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color); color: var(--text-muted); text-align: left;">
+          <div><span style="font-size: 18px; margin-right: 6px; vertical-align: middle; display: inline-block;">🔴</span> Pokéball: <strong id="balls-poke">0</strong></div>
+          <div><span style="font-size: 18px; margin-right: 6px; vertical-align: middle; display: inline-block;">🔵</span> Great Ball: <strong id="balls-great">0</strong></div>
+          <div><span style="font-size: 18px; margin-right: 6px; vertical-align: middle; display: inline-block;">🟡</span> Ultra Ball: <strong id="balls-ultra">0</strong></div>
+          <div><span style="font-size: 18px; margin-right: 6px; vertical-align: middle; display: inline-block;">🟣</span> Master Ball: <strong id="balls-master">0</strong></div>
         </div>
       </div>
     </div>
