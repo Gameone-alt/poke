@@ -7,7 +7,8 @@ if (!channelId) {
 }
 
 const backendParam = urlParams.get('backend');
-const BACKEND_URL = backendParam ? backendParam.replace(/\/$/, '') : (localStorage.getItem('backend_url') || (window.location.origin.includes('localhost') ? '' : window.location.origin));
+const DEFAULT_RENDER_BACKEND = 'https://pokemon-overlay-backend-hfpf.onrender.com';
+const BACKEND_URL = backendParam ? backendParam.replace(/\/$/, '') : (localStorage.getItem('backend_url') || (window.location.origin.includes('localhost') ? '' : DEFAULT_RENDER_BACKEND));
 const socket = io(BACKEND_URL, {
   query: { channelId }
 });
