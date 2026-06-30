@@ -444,7 +444,9 @@ async function triggerBossRaid(channelId, customBossName = null) {
     shiny: isShiny,
     spriteUrl: isShiny ? boss.shinySpriteUrl : boss.spriteUrl,
     fallbackSpriteUrl: isShiny ? boss.fallbackShinySpriteUrl : boss.fallbackSpriteUrl,
-    participants: {}
+    participants: {},
+    startTime: Date.now(),
+    durationMs: 5 * 60 * 1000
   };
   
   session.activeWildPokemon = null;
@@ -455,7 +457,9 @@ async function triggerBossRaid(channelId, customBossName = null) {
     name: bossName,
     maxHp,
     spriteUrl: session.activeRaidBoss.spriteUrl,
-    fallbackSpriteUrl: session.activeRaidBoss.fallbackSpriteUrl
+    fallbackSpriteUrl: session.activeRaidBoss.fallbackSpriteUrl,
+    startTime: session.activeRaidBoss.startTime,
+    durationMs: session.activeRaidBoss.durationMs
   });
   
   const msg = `🚨 BOSS RAID ALERT! A giant ${bossName} has appeared with ${maxHp} HP! Type !attack to damage it using your buddy Pokémon!`;

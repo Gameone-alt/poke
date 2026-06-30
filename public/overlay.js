@@ -541,6 +541,42 @@ socket.on('init_state', (state) => {
         card.classList.add('gigantamax-active');
       }
       
+      // Calculate remaining time for countdown timer
+      if (raidCountdownInterval) {
+        clearInterval(raidCountdownInterval);
+        raidCountdownInterval = null;
+      }
+      
+      const elapsedSeconds = Math.round((Date.now() - (boss.startTime || Date.now())) / 1000);
+      const totalDurationSeconds = (boss.durationMs || (5 * 60 * 1000)) / 1000;
+      let timeLeft = Math.max(0, Math.round(totalDurationSeconds - elapsedSeconds));
+      
+      const timeTicker = document.querySelector('.boss-time-ticker');
+      if (timeTicker) {
+        const mins = Math.floor(timeLeft / 60);
+        const secs = timeLeft % 60;
+        const formattedSecs = secs < 10 ? `0${secs}` : secs;
+        timeTicker.textContent = `⏳ ${mins}:${formattedSecs}`;
+      }
+      
+      if (timeLeft > 0) {
+        raidCountdownInterval = setInterval(() => {
+          timeLeft--;
+          if (timeLeft <= 0) {
+            clearInterval(raidCountdownInterval);
+            raidCountdownInterval = null;
+            if (timeTicker) timeTicker.textContent = `⏳ 0:00`;
+            return;
+          }
+          const mins = Math.floor(timeLeft / 60);
+          const secs = timeLeft % 60;
+          const formattedSecs = secs < 10 ? `0${secs}` : secs;
+          if (timeTicker) {
+            timeTicker.textContent = `⏳ ${mins}:${formattedSecs}`;
+          }
+        }, 1000);
+      }
+      
       raidOverlay.classList.remove('hidden');
     }
   }
@@ -1429,8 +1465,45 @@ socket.on('gacha_pack_opened', (data) => {
 });
 
 // Boss Raid Events
+let raidCountdownInterval = null;
+
 socket.on('raid_start', (data) => {
   playSound(sfxSpawn);
+  
+  // Clear any existing countdown interval
+  if (raidCountdownInterval) {
+    clearInterval(raidCountdownInterval);
+    raidCountdownInterval = null;
+  }
+
+  // Calculate remaining time dynamically using start and duration parameters
+  const elapsedSeconds = data.startTime ? Math.round((Date.now() - data.startTime) / 1000) : 0;
+  const totalDurationSeconds = (data.durationMs || (5 * 60 * 1000)) / 1000;
+  let timeLeft = Math.max(0, Math.round(totalDurationSeconds - elapsedSeconds));
+  
+  const timeTicker = document.querySelector('.boss-time-ticker');
+  if (timeTicker) {
+    const mins = Math.floor(timeLeft / 60);
+    const secs = timeLeft % 60;
+    const formattedSecs = secs < 10 ? `0${secs}` : secs;
+    timeTicker.textContent = `⏳ ${mins}:${formattedSecs}`;
+  }
+  
+  raidCountdownInterval = setInterval(() => {
+    timeLeft--;
+    if (timeLeft <= 0) {
+      clearInterval(raidCountdownInterval);
+      raidCountdownInterval = null;
+      if (timeTicker) timeTicker.textContent = `⏳ 0:00`;
+      return;
+    }
+    const mins = Math.floor(timeLeft / 60);
+    const secs = timeLeft % 60;
+    const formattedSecs = secs < 10 ? `0${secs}` : secs;
+    if (timeTicker) {
+      timeTicker.textContent = `⏳ ${mins}:${formattedSecs}`;
+    }
+  }, 1000);
   const warningBanner = document.getElementById('raid-warning-banner');
   const raidOverlay = document.getElementById('raid-overlay');
   const sprite = document.getElementById('raid-boss-sprite');
@@ -1551,6 +1624,12 @@ socket.on('raid_hit', (data) => {
 });
 
 socket.on('raid_end', (data) => {
+  // Clear countdown interval immediately on end
+  if (raidCountdownInterval) {
+    clearInterval(raidCountdownInterval);
+    raidCountdownInterval = null;
+  }
+
   const hpFill = document.getElementById('raid-hp-fill');
   const hpText = document.getElementById('raid-hp-text');
   const list = document.getElementById('raid-contrib-list');
