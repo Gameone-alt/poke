@@ -274,7 +274,8 @@ async function runAutoMigrations() {
     client.release();
     console.log('[Database] Auto-migrations check completed successfully.');
   } catch (err) {
-    console.error('[Database] Auto-migrations failed:', err.message);
+    console.error('[Database] Auto-migrations failed, falling back to local JSON database:', err.message);
+    useLocalFallback = true;
   }
 }
 
@@ -308,10 +309,19 @@ function saveLocalConfigs() {
  * Executes a PostgreSQL query (Supabase mode)
  */
 async function query(text, params) {
+  if (useLocalFallback) {
+    throw new Error('Database is currently running in local fallback mode.');
+  }
   if (!pool) {
     throw new Error('Database is not initialized. Check your environment/database credentials.');
   }
-  return pool.query(text, params);
+  try {
+    return await pool.query(text, params);
+  } catch (err) {
+    console.error('[Database] PostgreSQL Query failed, falling back to local JSON database:', err.message);
+    useLocalFallback = true;
+    throw err;
+  }
 }
 
 /**
