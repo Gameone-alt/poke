@@ -938,9 +938,14 @@ socket.on('battle_start', (data) => {
   battleOverlay.classList.add('hidden');
   battleOverlay.style.animation = 'none';
 
-  // Hard-reset fighter classes & inline styles
-  challengerFighter.className = 'fighter left-fighter';
-  opponentFighter.className = 'fighter right-fighter';
+  // Apply layout config positions immediately to ensure center/custom alignment before reveal
+  if (currentOverlayConfig) {
+    applyOverlayConfig(currentOverlayConfig);
+  }
+
+  // Hard-reset fighter classes & inline styles (apply starting animation classes immediately while hidden)
+  challengerFighter.className = 'fighter left-fighter slide-in-left';
+  opponentFighter.className = 'fighter right-fighter slide-in-right';
   challengerFighter.style.opacity = '';
   challengerFighter.style.transform = '';
   opponentFighter.style.opacity = '';
@@ -981,10 +986,6 @@ socket.on('battle_start', (data) => {
     battleOverlay.style.animation = '';
     battleOverlay.classList.remove('hidden');
     playSound(sfxSpawn);
-
-    // Slide in fighters
-    challengerFighter.classList.add('slide-in-left');
-    opponentFighter.classList.add('slide-in-right');
   });
 
   // ── 5. Build the dynamic turn schedule ──
