@@ -438,6 +438,11 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-sizing: border-box;
 }
 
 .hud-left {
@@ -564,30 +569,7 @@ body {
   animation: flashScreen 0.4s ease-out forwards;
 }
 
-/* Battle Move Slide Classes */
-.slide-in-left {
-  animation: challengerSlideIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-}
-
-.slide-in-right {
-  animation: opponentSlideIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-}
-
-.fight-strike-left {
-  animation: strikeLeft 0.5s ease-in-out forwards;
-}
-
-.fight-strike-right {
-  animation: strikeRight 0.5s ease-in-out forwards;
-}
-
-.fight-defeat-left {
-  animation: defeatLeft 0.8s ease-in forwards;
-}
-
-.fight-defeat-right {
-  animation: defeatRight 0.8s ease-in forwards;
-}
+/* CSS Battle animations removed. Handled dynamically by GSAP timelines. */
 
 /* ==========================================================================
    5. Evolution Overlay (Full Screen Alert)
@@ -2047,4 +2029,66 @@ body.raid-mode-active #battle-overlay {
   0% { height: 0; opacity: 1; }
   50% { height: 260px; opacity: 1; }
   100% { height: 260px; opacity: 0; transform: translate(-50%, -50%) rotate(45deg) translate(30px, 30px); }
+}
+
+/* Retro theme overrides for new HUD & Stage elements */
+#overlay-container.theme-retro #battle-overlay {
+  border: 4px solid #fff;
+  border-radius: 0;
+  box-shadow: 10px 10px 0px #000;
+  background: #0f172a;
+}
+
+#overlay-container.theme-retro .battle-hud {
+  background: #1e293b;
+  border-bottom: 4px solid #fff;
+  border-radius: 0;
+}
+
+#overlay-container.theme-retro .hud-player {
+  background: transparent;
+  border: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+#overlay-container.theme-retro .hud-trainer {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: #94a3b8;
+}
+
+#overlay-container.theme-retro .hud-poke-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+  color: #fff;
+}
+
+#overlay-container.theme-retro .hp-bar-outer {
+  border: 2px solid #fff;
+  height: 12px;
+  border-radius: 0;
+  background: #000;
+}
+
+#overlay-container.theme-retro .hp-fill-bar {
+  border-radius: 0;
+}
+
+#overlay-container.theme-retro .hp-text-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: #fff;
+}
+
+#overlay-container.theme-retro .hud-vs-badge {
+  text-shadow: 4px 4px 0px #000;
+  font-size: 20px;
+}
+
+#overlay-container.theme-retro .battle-status {
+  border-top: 4px solid #fff;
+  background: #1e293b;
+  font-size: 10px;
+  font-family: 'Press Start 2P', monospace;
 }
