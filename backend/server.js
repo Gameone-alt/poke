@@ -2016,6 +2016,24 @@ io.on('connection', async (socket) => {
     spawnWildPokemon(channelId);
   });
 
+  // Trigger Raid button from dashboard
+  socket.on('trigger_raid', async (data) => {
+    const { password, bossName } = data || {};
+    if (session.config.adminPassword && password !== session.config.adminPassword) {
+      socket.emit('command_feedback', { text: '❌ Unauthorized: Incorrect admin password!' });
+      return;
+    }
+    
+    try {
+      console.log(`[Server] [${channelId}] Triggering boss raid manually: ${bossName || 'Random'}`);
+      await triggerBossRaid(channelId, bossName);
+      socket.emit('command_feedback', { text: '✅ Boss Raid triggered successfully!' });
+    } catch (err) {
+      console.error(`[Server] [${channelId}] Failed to trigger boss raid:`, err.message);
+      socket.emit('command_feedback', { text: `❌ Failed to trigger boss raid: ${err.message}` });
+    }
+  });
+
   // Reset database button from dashboard
   socket.on('reset_db', async (data) => {
     const { password } = data || {};

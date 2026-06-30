@@ -653,31 +653,11 @@ btnForceSpawn.addEventListener('click', () => {
   socket.emit('force_spawn', { password: adminPassword });
 });
 
-// Trigger Boss Raid API call
-btnTriggerRaid.addEventListener('click', async () => {
+// Trigger Boss Raid via websocket event
+btnTriggerRaid.addEventListener('click', () => {
   const bossName = raidBossTargetInput.value.trim();
-  
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/trigger-raid`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        channelId: channelId,
-        bossName: bossName,
-        password: adminPassword
-      })
-    });
-    
-    if (res.ok) {
-      alert('Boss Raid triggered successfully!');
-      raidBossTargetInput.value = '';
-    } else {
-      const err = await res.json();
-      alert(`Failed to trigger Boss Raid: ${err.error || 'Server error'}`);
-    }
-  } catch (err) {
-    alert(`Connection error: ${err.message}`);
-  }
+  socket.emit('trigger_raid', { password: adminPassword, bossName });
+  raidBossTargetInput.value = '';
 });
 
 btnResetDb.addEventListener('click', () => {
