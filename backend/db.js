@@ -1655,6 +1655,36 @@ async function fusePokemon(streamerId, username, targetName) {
   };
 }
 
+/**
+ * Renames a player in the players and inventories tables.
+ */
+async function renamePlayer(streamerId, oldUsername, newUsername, newDisplayName) {
+  const streamer = streamerId.toLowerCase().trim();
+  const oldUser = oldUsername.toLowerCase().trim();
+  const newUser = newUsername.toLowerCase().trim();
+  const newDisplay = newDisplayName.trim();
+  
+  if (useLocalFallback) {
+    if (localUsers[streamer] && localUsers[streamer][oldUser]) {
+      const userData = localUsers[streamer][oldUser];
+      userData.displayName = newDisplay;
+      localUsers[streamer][newUser] = userData;
+      delete localUsers[streamer][oldUser];
+      saveLocalUsers();
+    }
+    return;
+  }
+  
+  await query(
+    'UPDATE players SET username = $1, display_name = $2 WHERE streamer_id = $3 AND username = $4',
+    [newUser, newDisplay, streamer, oldUser]
+  );
+  await query(
+    'UPDATE inventories SET username = $1 WHERE streamer_id = $2 AND username = $3',
+    [newUser, streamer, oldUser]
+  );
+}
+
 module.exports = {
   getUser,
   saveUser,
@@ -1669,5 +1699,6 @@ module.exports = {
   getAllPlayers,
   swapPokemonOwnership,
   evolvePokemon,
-  fusePokemon
+  fusePokemon,
+  renamePlayer
 };

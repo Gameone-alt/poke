@@ -908,6 +908,59 @@
     </main>
   </div>
 
+  <!-- RENAME USER MODAL -->
+  <div id="rename-player-modal" class="security-overlay hidden" style="background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 10000; position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
+    <div class="security-card" style="width: 380px; padding: 25px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-color); box-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: left;">
+      <h2 style="margin-top: 0; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; font-size: 20px; color: #fff;">✏️ Rename Player</h2>
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.4;">Use this to update a player's profile if they changed their handle on Twitch or YouTube.</p>
+      
+      <input type="hidden" id="rename-old-username">
+      
+      <div class="form-group" style="margin-bottom: 15px;">
+        <label for="rename-new-username" style="font-size: 12px; display: block; margin-bottom: 6px; font-weight: 600; color: #fff;">New Username (Unique handle):</label>
+        <input type="text" id="rename-new-username" placeholder="e.g. twitch_username" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); color: #fff; font-family: inherit; font-size: 13px; box-sizing: border-box;">
+      </div>
+      
+      <div class="form-group" style="margin-bottom: 20px;">
+        <label for="rename-new-display" style="font-size: 12px; display: block; margin-bottom: 6px; font-weight: 600; color: #fff;">New Display Name:</label>
+        <input type="text" id="rename-new-display" placeholder="e.g. UserName" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); color: #fff; font-family: inherit; font-size: 13px; box-sizing: border-box;">
+      </div>
+      
+      <div style="display: flex; gap: 12px; justify-content: flex-end; margin: 0;">
+        <button type="button" class="btn" id="btn-cancel-rename" style="margin: 0; background: #475569; border: none; color: #fff; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">Cancel</button>
+        <button type="button" class="btn" id="btn-submit-rename" style="margin: 0; background: var(--color-primary); border: none; color: #fff; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GIVE POKEMON MODAL -->
+  <div id="give-pokemon-modal" class="security-overlay hidden" style="background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 10000; position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
+    <div class="security-card" style="width: 380px; padding: 25px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-color); box-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: left;">
+      <h2 style="margin-top: 0; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; font-size: 20px; color: #fff;">🎁 Give Pokémon</h2>
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.4;">Instantly add any Pokémon directly to this player's inventory list.</p>
+      
+      <input type="hidden" id="give-target-username">
+      <input type="hidden" id="give-target-display">
+      
+      <div class="form-group" style="margin-bottom: 15px;">
+        <label for="give-pokemon-select" style="font-size: 12px; display: block; margin-bottom: 6px; font-weight: 600; color: #fff;">Select Pokémon:</label>
+        <select id="give-pokemon-select" style="width: 100%; padding: 10px; border-radius: 8px; background: #1e293b; border: 1px solid var(--border-color); color: #fff; font-family: inherit; font-size: 13px; box-sizing: border-box; cursor: pointer;">
+          <!-- Dynamically populated from JS -->
+        </select>
+      </div>
+      
+      <div class="form-group" style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px; margin-top: 5px;">
+        <input type="checkbox" id="give-pokemon-shiny" style="width: auto; cursor: pointer; width: 16px; height: 16px; margin: 0; vertical-align: middle;">
+        <label for="give-pokemon-shiny" style="font-size: 13px; cursor: pointer; user-select: none; color: #fff; vertical-align: middle;">Make it Shiny! ✨</label>
+      </div>
+      
+      <div style="display: flex; gap: 12px; justify-content: flex-end; margin: 0;">
+        <button type="button" class="btn" id="btn-cancel-give" style="margin: 0; background: #475569; border: none; color: #fff; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">Cancel</button>
+        <button type="button" class="btn" id="btn-submit-give" style="margin: 0; background: var(--color-primary); border: none; color: #fff; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;">Grant Pokémon</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Security Lock Overlay -->
   <div id="security-overlay" class="security-overlay hidden">
     <div class="security-card">

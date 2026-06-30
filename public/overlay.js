@@ -1165,15 +1165,29 @@ socket.on('battle_start', (data) => {
         }
         damage = Math.min(damage, oppCurrentHp);
 
-        shootProjectile(challengerSprite, opponentSprite, data.challengerTypes, () => {
+        // 1. Attacker lunges immediately
+        challengerFighter.classList.add('fight-strike-left');
+        const tsStrike = setTimeout(() => {
+          if (battleId === currentBattleId) challengerFighter.classList.remove('fight-strike-left');
+        }, 400);
+        activeBattleSimulationTimers.push(tsStrike);
+
+        // 2. Spawn slash + shake defender on impact (180ms after lunge starts)
+        const tsImpact = setTimeout(() => {
           if (battleId !== currentBattleId) return;
-          challengerFighter.classList.add('fight-strike-left');
-          setTimeout(() => challengerFighter.classList.remove('fight-strike-left'), 400);
 
           playSound(sfxHit);
           opponentFighter.classList.add('hit-shake', 'damage-flash');
-          const ts2 = setTimeout(() => opponentFighter.classList.remove('hit-shake', 'damage-flash'), 400);
-          activeBattleSimulationTimers.push(ts2);
+          const tsReaction = setTimeout(() => {
+            if (battleId === currentBattleId) opponentFighter.classList.remove('hit-shake', 'damage-flash');
+          }, 450);
+          activeBattleSimulationTimers.push(tsReaction);
+
+          // Append Anime Slash Slice overlay to defender card
+          const slash = document.createElement('div');
+          slash.className = 'slash-slice';
+          opponentFighter.appendChild(slash);
+          setTimeout(() => slash.remove(), 400);
 
           oppCurrentHp = Math.max(0, oppCurrentHp - damage);
           const hpPct = Math.max(0, (oppCurrentHp / oppMaxHp) * 100);
@@ -1183,7 +1197,7 @@ socket.on('battle_start', (data) => {
             else if (hpPct < 60) opponentHpFill.style.backgroundColor = '#f59e0b';
           }
           if (opponentHpTrail) {
-            setTimeout(() => { opponentHpTrail.style.width = `${hpPct}%`; }, 400);
+            setTimeout(() => { if (battleId === currentBattleId && opponentHpTrail) opponentHpTrail.style.width = `${hpPct}%`; }, 400);
           }
           if (opponentHpText) opponentHpText.textContent = `HP: ${oppCurrentHp}/${oppMaxHp}`;
 
@@ -1206,7 +1220,8 @@ socket.on('battle_start', (data) => {
             }
             battleStatusText.textContent = `${data.challengerPoke} attacks!`;
           }
-        });
+        }, 180);
+        activeBattleSimulationTimers.push(tsImpact);
 
       } else {
         // ── Opponent attacks Challenger ──
@@ -1223,15 +1238,29 @@ socket.on('battle_start', (data) => {
         }
         damage = Math.min(damage, chalCurrentHp);
 
-        shootProjectile(opponentSprite, challengerSprite, data.opponentTypes, () => {
+        // 1. Attacker lunges immediately
+        opponentFighter.classList.add('fight-strike-right');
+        const tsStrike = setTimeout(() => {
+          if (battleId === currentBattleId) opponentFighter.classList.remove('fight-strike-right');
+        }, 400);
+        activeBattleSimulationTimers.push(tsStrike);
+
+        // 2. Spawn slash + shake defender on impact (180ms after lunge starts)
+        const tsImpact = setTimeout(() => {
           if (battleId !== currentBattleId) return;
-          opponentFighter.classList.add('fight-strike-right');
-          setTimeout(() => opponentFighter.classList.remove('fight-strike-right'), 400);
 
           playSound(sfxHit);
           challengerFighter.classList.add('hit-shake', 'damage-flash');
-          const ts3 = setTimeout(() => challengerFighter.classList.remove('hit-shake', 'damage-flash'), 400);
-          activeBattleSimulationTimers.push(ts3);
+          const tsReaction = setTimeout(() => {
+            if (battleId === currentBattleId) challengerFighter.classList.remove('hit-shake', 'damage-flash');
+          }, 450);
+          activeBattleSimulationTimers.push(tsReaction);
+
+          // Append Anime Slash Slice overlay to defender card
+          const slash = document.createElement('div');
+          slash.className = 'slash-slice';
+          challengerFighter.appendChild(slash);
+          setTimeout(() => slash.remove(), 400);
 
           chalCurrentHp = Math.max(0, chalCurrentHp - damage);
           const hpPct = Math.max(0, (chalCurrentHp / chalMaxHp) * 100);
@@ -1241,7 +1270,7 @@ socket.on('battle_start', (data) => {
             else if (hpPct < 60) challengerHpFill.style.backgroundColor = '#f59e0b';
           }
           if (challengerHpTrail) {
-            setTimeout(() => { challengerHpTrail.style.width = `${hpPct}%`; }, 400);
+            setTimeout(() => { if (battleId === currentBattleId && challengerHpTrail) challengerHpTrail.style.width = `${hpPct}%`; }, 400);
           }
           if (challengerHpText) challengerHpText.textContent = `HP: ${chalCurrentHp}/${chalMaxHp}`;
 
@@ -1265,7 +1294,8 @@ socket.on('battle_start', (data) => {
             }
             battleStatusText.textContent = `${data.opponentPoke} attacks!`;
           }
-        });
+        }, 180);
+        activeBattleSimulationTimers.push(tsImpact);
       }
     }, turnDelay);
     activeBattleSimulationTimers.push(tt);

@@ -166,6 +166,18 @@ app.get('/api/evolution/:pokemonId', (req, res) => {
   res.status(200).json(tree);
 });
 
+// HTTP GET endpoint to retrieve list of all Pokémon names and IDs for UI search menus
+app.get('/api/pokemon-list', (req, res) => {
+  try {
+    const list = Object.values(pokemonDb)
+      .map(p => ({ id: p.id, name: p.name }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    res.status(200).json(list);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/api/trigger-raid', async (req, res) => {
   const { channelId, bossName, password } = req.body;
   if (!channelId) {
@@ -479,11 +491,7 @@ async function triggerBossRaid(channelId, customBossName = null) {
 async function spawnWildPokemon(channelId) {
   const session = getOrCreateSession(channelId);
   
-  const raidChance = session.config.raidChance !== undefined ? Number(session.config.raidChance) : 0.05;
-  if (!session.activeRaidBoss && Math.random() < raidChance && !session.config.spawnTarget) {
-    await triggerBossRaid(channelId);
-    return;
-  }
+  // Raids only appear when manually triggered by the streamer. Automatic random spawning disabled.
   const pokemonIds = Object.keys(pokemonDb);
   if (pokemonIds.length === 0) {
     console.warn(`[Game Loop] [${channelId}] Cannot spawn: Pokemon database is empty.`);
@@ -1746,9 +1754,8 @@ async function processCommand(channelId, username, displayName, messageText, bas
   // 8.8. Boss Raids: !attack / !raid
   if (cleanMsg === '!attack' || cleanMsg === 'attack') {
     if (!session.activeRaidBoss) {
-      const msg = `❌ @${displayName}, there is no active Boss Raid to attack right now.`;
-      io.to(channelId).emit('command_feedback', { username, text: msg });
-      return msg;
+      // Ignore completely when there is no active raid boss (no response/no feedback)
+      return null;
     }
     
     const user = await db.getUser(channelId, username, displayName);
@@ -2060,6 +2067,69 @@ io.on('connection', async (socket) => {
     } catch (err) {
       console.error(`[Server] [${channelId}] Failed to reset database:`, err.message);
       socket.emit('command_feedback', { text: '❌ Server error resetting database. Please try again.' });
+    }
+  });
+
+  // Rename a player in the viewer management database
+  socket.on('rename_player', async (data) => {
+    const { password, oldUsername, newUsername, newDisplayName } = data || {};
+    if (session.config.adminPassword && password !== session.config.adminPassword) {
+      socket.emit('command_feedback', { text: '❌ Unauthorized: Incorrect admin password!' });
+      return;
+    }
+    if (!oldUsername || !newUsername || !newDisplayName) {
+      socket.emit('command_feedback', { text: '❌ Error: Missing required rename values.' });
+      return;
+    }
+    try {
+      console.log(`[Server] [${channelId}] Renaming player ${oldUsername} to ${newUsername} (${newDisplayName})`);
+      await db.renamePlayer(channelId, oldUsername, newUsername, newDisplayName);
+      
+      // Notify client of success and refresh data
+      socket.emit('command_feedback', { text: '✅ Player renamed successfully!' });
+      const players = await db.getAllPlayers(channelId);
+      socket.emit('all_players_data', players);
+      
+      // Update leaderboard & logs
+      io.to(channelId).emit('leaderboard_update', await db.getLeaderboard(channelId));
+      sendGameLog(channelId, 'system', `✏️ Player @${oldUsername.replace(/^(twitch_|youtube_)/, '')} renamed to @${newDisplayName}!`);
+    } catch (err) {
+      console.error(`[Server] [${channelId}] Failed to rename player:`, err.message);
+      socket.emit('command_feedback', { text: `❌ Failed to rename player: ${err.message}` });
+    }
+  });
+
+  // Give a pokemon to a player from the viewer management database
+  socket.on('give_pokemon', async (data) => {
+    const { password, targetUsername, targetDisplayName, pokemonId, isShiny } = data || {};
+    if (session.config.adminPassword && password !== session.config.adminPassword) {
+      socket.emit('command_feedback', { text: '❌ Unauthorized: Incorrect admin password!' });
+      return;
+    }
+    if (!targetUsername || !pokemonId) {
+      socket.emit('command_feedback', { text: '❌ Error: Missing required give pokemon values.' });
+      return;
+    }
+    try {
+      const pokeData = pokemonDb[pokemonId.toString()];
+      if (!pokeData) {
+        socket.emit('command_feedback', { text: '❌ Error: Pokémon not found in DB.' });
+        return;
+      }
+      
+      console.log(`[Server] [${channelId}] Admin giving ${isShiny ? 'Shiny ' : ''}${pokeData.name} to ${targetUsername}`);
+      await db.addPokemon(channelId, targetUsername, targetDisplayName || targetUsername.replace(/^(twitch_|youtube_)/, ''), pokeData, isShiny);
+      
+      // Notify client of success and refresh data
+      socket.emit('command_feedback', { text: `✅ Granted ${isShiny ? '✨ Shiny ' : ''}${pokeData.name} successfully!` });
+      const players = await db.getAllPlayers(channelId);
+      socket.emit('all_players_data', players);
+      
+      // Update logs
+      sendGameLog(channelId, 'system', `🎁 Admin gave @${targetDisplayName || targetUsername.replace(/^(twitch_|youtube_)/, '')} a ${isShiny ? '✨ Shiny ' : ''}${pokeData.name}!`);
+    } catch (err) {
+      console.error(`[Server] [${channelId}] Failed to grant pokemon:`, err.message);
+      socket.emit('command_feedback', { text: `❌ Failed to grant Pokémon: ${err.message}` });
     }
   });
 

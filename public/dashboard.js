@@ -14,6 +14,7 @@ const socket = io(BACKEND_URL, {
 });
 
 let adminPassword = '';
+let currentConfigRef = null;
 
 // Security Lock DOM Elements
 const securityOverlay = document.getElementById('security-overlay');
@@ -255,6 +256,7 @@ if (primaryColorInput && primaryColorTextInput) {
 }
 
 function populateConfig(config) {
+  currentConfigRef = config;
   channelIdInput.value = config.youtubeChannelId || '';
   twitchChannelInput.value = config.twitchChannel || '';
   videoIdInput.value = config.videoId || '';
@@ -429,6 +431,7 @@ socket.on('config_updated', (config) => {
 
 // Initial state sync
 socket.on('init_state', (state) => {
+  currentConfigRef = state.config;
   updateWildPokemonUI(state.activeWildPokemon);
   updateBattleUI(state.activeBattle);
   updateLeaderboardUI(state.leaderboard);
@@ -693,14 +696,41 @@ document.querySelectorAll('.btn-preset').forEach(btn => {
 });
 
 // Append messages to simulator log
-function appendSimChat(author, text, isSystem = false) {
+function appendSimChat(author, text, isSystem = false, username = null) {
   const bubble = document.createElement('div');
   bubble.className = 'chat-bubble';
   
+  // Helper to wrap @mentions in clickable profile links
+  const formatTextWithMentions = (msg) => {
+    return msg.replace(/@([a-zA-Z0-9_-]+)/g, (match, mentionName) => {
+      let dbUsername = mentionName.toLowerCase();
+      if (!dbUsername.startsWith('twitch_') && !dbUsername.startsWith('youtube_')) {
+        dbUsername = 'twitch_' + dbUsername;
+      }
+      const baseLink = currentConfigRef?.inventoryBaseUrl 
+        ? `${currentConfigRef.inventoryBaseUrl.replace(/\/$/, '')}/trainer/${channelId}/${dbUsername}` 
+        : `/trainer/${channelId}/${dbUsername}`;
+      return `<a href="${baseLink}" target="_blank" style="color: #3b82f6; text-decoration: underline; font-weight: 600;">@${mentionName}</a>`;
+    });
+  };
+
+  const formattedText = formatTextWithMentions(text);
+  
   if (isSystem) {
-    bubble.innerHTML = `<span class="system-reply">🤖 Bot: ${text}</span>`;
+    bubble.innerHTML = `<span class="system-reply">🤖 Bot: ${formattedText}</span>`;
   } else {
-    bubble.innerHTML = `<span class="author">${author}:</span> ${text}`;
+    let dbUsername = username;
+    if (!dbUsername) {
+      dbUsername = author.toLowerCase();
+      if (!dbUsername.startsWith('twitch_') && !dbUsername.startsWith('youtube_')) {
+        dbUsername = 'twitch_' + dbUsername;
+      }
+    }
+    const baseLink = currentConfigRef?.inventoryBaseUrl 
+      ? `${currentConfigRef.inventoryBaseUrl.replace(/\/$/, '')}/trainer/${channelId}/${dbUsername}` 
+      : `/trainer/${channelId}/${dbUsername}`;
+      
+    bubble.innerHTML = `<a href="${baseLink}" target="_blank" class="author" style="color: var(--color-primary); text-decoration: underline; font-weight: bold; cursor: pointer;">${author}:</a> ${formattedText}`;
   }
   
   simChatFeed.appendChild(bubble);
@@ -979,6 +1009,8 @@ function renderViewersTable(players) {
       <td style="vertical-align: middle;"><span class="muted">${buddyName}</span></td>
       <td style="vertical-align: middle; text-align: center; white-space: nowrap;">
         <button type="button" class="btn btn-preset btn-save-player" data-user="${p.username}" style="margin: 0; background:var(--color-primary); font-size:11px; padding:6px 12px; border:none; color:#fff; border-radius: 4px; cursor: pointer;">Save</button>
+        <button type="button" class="btn btn-preset btn-rename-player" data-user="${p.username}" data-display="${p.displayName}" style="margin-left: 6px; background:#eab308; font-size:11px; padding:6px 12px; border:none; color:#000; border-radius: 4px; cursor: pointer; font-weight:600;">✏️ Rename</button>
+        <button type="button" class="btn btn-preset btn-give-player" data-user="${p.username}" data-display="${p.displayName}" style="margin-left: 6px; background:#3b82f6; font-size:11px; padding:6px 12px; border:none; color:#fff; border-radius: 4px; cursor: pointer; font-weight:600;">🎁 Give Poke</button>
         <a href="/trainer/${channelId}/${p.username}${urlParams.get('backend') ? '?backend=' + encodeURIComponent(urlParams.get('backend')) : ''}" target="_blank" class="btn btn-preset" style="margin-left: 6px; background:#475569; font-size:11px; padding:6px 12px; border:none; color:#fff; text-decoration:none; display:inline-block; border-radius:4px; font-weight:600;">🔍 Profile</a>
       </td>
     `;
@@ -1006,6 +1038,38 @@ function renderViewersTable(players) {
         playerUsername: username,
         updatedFields
       });
+    });
+  });
+
+  // Bind Rename Buttons
+  viewerDbBody.querySelectorAll('.btn-rename-player').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const username = btn.getAttribute('data-user');
+      const display = btn.getAttribute('data-display');
+      
+      document.getElementById('rename-old-username').value = username;
+      document.getElementById('rename-new-username').value = username;
+      document.getElementById('rename-new-display').value = display;
+      
+      const renameModal = document.getElementById('rename-player-modal');
+      renameModal.style.display = 'flex';
+      renameModal.classList.remove('hidden');
+    });
+  });
+
+  // Bind Give Pokémon Buttons
+  viewerDbBody.querySelectorAll('.btn-give-player').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const username = btn.getAttribute('data-user');
+      const display = btn.getAttribute('data-display');
+      
+      document.getElementById('give-target-username').value = username;
+      document.getElementById('give-target-display').value = display;
+      document.getElementById('give-pokemon-shiny').checked = false;
+      
+      const giveModal = document.getElementById('give-pokemon-modal');
+      giveModal.style.display = 'flex';
+      giveModal.classList.remove('hidden');
     });
   });
 
@@ -1330,3 +1394,99 @@ if (layoutResetBtn) {
     }
   });
 }
+
+// ──────────────────────────────────────────────────────────────────────────
+// MODALS CONTROLLERS (RENAME & GIVE POKEMON)
+// ──────────────────────────────────────────────────────────────────────────
+const renameModal = document.getElementById('rename-player-modal');
+const btnCancelRename = document.getElementById('btn-cancel-rename');
+const btnSubmitRename = document.getElementById('btn-submit-rename');
+
+const giveModal = document.getElementById('give-pokemon-modal');
+const btnCancelGive = document.getElementById('btn-cancel-give');
+const btnSubmitGive = document.getElementById('btn-submit-give');
+
+// Cancel buttons
+if (btnCancelRename) {
+  btnCancelRename.addEventListener('click', () => {
+    renameModal.style.display = 'none';
+    renameModal.classList.add('hidden');
+  });
+}
+if (btnCancelGive) {
+  btnCancelGive.addEventListener('click', () => {
+    giveModal.style.display = 'none';
+    giveModal.classList.add('hidden');
+  });
+}
+
+// Submit Rename
+if (btnSubmitRename) {
+  btnSubmitRename.addEventListener('click', () => {
+    const oldUsername = document.getElementById('rename-old-username').value;
+    const newUsername = document.getElementById('rename-new-username').value.trim();
+    const newDisplayName = document.getElementById('rename-new-display').value.trim();
+    
+    if (!newUsername || !newDisplayName) {
+      alert('Please fill out all fields.');
+      return;
+    }
+    
+    socket.emit('rename_player', {
+      password: adminPassword,
+      oldUsername,
+      newUsername,
+      newDisplayName
+    });
+    
+    renameModal.style.display = 'none';
+    renameModal.classList.add('hidden');
+  });
+}
+
+// Submit Give Pokémon
+if (btnSubmitGive) {
+  btnSubmitGive.addEventListener('click', () => {
+    const targetUsername = document.getElementById('give-target-username').value;
+    const targetDisplayName = document.getElementById('give-target-display').value;
+    const pokemonId = parseInt(document.getElementById('give-pokemon-select').value, 10);
+    const isShiny = document.getElementById('give-pokemon-shiny').checked;
+    
+    if (!targetUsername || isNaN(pokemonId)) {
+      alert('Invalid selection.');
+      return;
+    }
+    
+    socket.emit('give_pokemon', {
+      password: adminPassword,
+      targetUsername,
+      targetDisplayName,
+      pokemonId,
+      isShiny
+    });
+    
+    giveModal.style.display = 'none';
+    giveModal.classList.add('hidden');
+  });
+}
+
+// Fetch Pokémon List on load
+let allPokemonList = [];
+const givePokemonSelect = document.getElementById('give-pokemon-select');
+
+async function loadPokemonList() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/pokemon-list`);
+    if (res.ok) {
+      allPokemonList = await res.json();
+      if (givePokemonSelect) {
+        givePokemonSelect.innerHTML = allPokemonList.map(p => 
+          `<option value="${p.id}">${p.name} (#${p.id})</option>`
+        ).join('');
+      }
+    }
+  } catch (err) {
+    console.error('Failed loading Pokémon list:', err.message);
+  }
+}
+loadPokemonList();

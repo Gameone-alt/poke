@@ -2027,3 +2027,27 @@ body.raid-mode-active #battle-overlay {
   90% { opacity: 0.8; }
   100% { transform: translateY(110%) translateX(var(--drift)) rotate(360deg); opacity: 0; }
 }
+
+/* Diagonal Anime Slash Slice Overlay */
+.slash-slice {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 0;
+  background: #fff;
+  box-shadow: 0 0 20px #ef4444, 0 0 40px #f59e0b, 0 0 60px #fff;
+  transform: translate(-50%, -50%) rotate(45deg);
+  transform-origin: center center;
+  z-index: 1000;
+  opacity: 1;
+  pointer-events: none;
+  border-radius: 4px;
+  animation: drawSlash 0.25s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+
+@keyframes drawSlash {
+  0% { height: 0; opacity: 1; }
+  50% { height: 260px; opacity: 1; }
+  100% { height: 260px; opacity: 0; transform: translate(-50%, -50%) rotate(45deg) translate(30px, 30px); }
+}
