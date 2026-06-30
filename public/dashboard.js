@@ -1053,8 +1053,9 @@ function renderViewersTable(players) {
         </div>
       </td>
       <td style="vertical-align: middle;"><span class="muted">${buddyName}</span></td>
-      <td style="vertical-align: middle; text-align: center;">
-        <button type="button" class="btn btn-preset btn-save-player" data-user="${p.username}" style="margin: 0; background:var(--color-primary); font-size:11px; padding:6px 12px; border:none; color:#fff;">Save</button>
+      <td style="vertical-align: middle; text-align: center; white-space: nowrap;">
+        <button type="button" class="btn btn-preset btn-save-player" data-user="${p.username}" style="margin: 0; background:var(--color-primary); font-size:11px; padding:6px 12px; border:none; color:#fff; border-radius: 4px; cursor: pointer;">Save</button>
+        <a href="/trainer/${channelId}/${p.username}${urlParams.get('backend') ? '?backend=' + encodeURIComponent(urlParams.get('backend')) : ''}" target="_blank" class="btn btn-preset" style="margin-left: 6px; background:#475569; font-size:11px; padding:6px 12px; border:none; color:#fff; text-decoration:none; display:inline-block; border-radius:4px; font-weight:600;">🔍 Profile</a>
       </td>
     `;
     viewerDbBody.appendChild(tr);

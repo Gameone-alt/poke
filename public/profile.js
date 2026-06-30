@@ -60,6 +60,15 @@ function renderTrainerProfile(user) {
     document.getElementById('balls-master').textContent = user.balls.masterball || 0;
   }
 
+  // Stones Stock
+  if (user.items) {
+    document.getElementById('stone-fire').textContent = user.items.fire_stone || 0;
+    document.getElementById('stone-water').textContent = user.items.water_stone || 0;
+    document.getElementById('stone-thunder').textContent = user.items.thunder_stone || 0;
+    document.getElementById('stone-leaf').textContent = user.items.leaf_stone || 0;
+    document.getElementById('stone-moon').textContent = user.items.moon_stone || 0;
+  }
+
   // Render Pokemon cards
   const grid = document.getElementById('pokemon-grid');
   grid.innerHTML = '';
