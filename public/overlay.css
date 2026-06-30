@@ -406,14 +406,14 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 640px;
-  height: 320px;
-  background: rgba(15, 23, 42, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 2px solid rgba(239, 68, 68, 0.4);
-  box-shadow: 0 15px 40px rgba(0,0,0,0.7), 0 0 60px rgba(239, 68, 68, 0.15);
-  border-radius: 20px;
+  width: 760px;
+  height: 380px;
+  background: radial-gradient(circle at center, rgba(15, 23, 42, 0.96) 0%, rgba(8, 12, 24, 0.99) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 2px solid rgba(239, 68, 68, 0.5);
+  box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 80px rgba(239, 68, 68, 0.15);
+  border-radius: 24px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -423,55 +423,111 @@ body {
   animation: battlePopIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-.battle-header-bar {
-  padding: 8px;
-  background: rgba(239, 68, 68, 0.15);
-  border-bottom: 2px solid rgba(239, 68, 68, 0.3);
-  text-align: center;
-}
-
-.arena-tag {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 11px;
-  color: #fca5a5;
-  letter-spacing: 2px;
-}
-
-.battle-field {
-  flex-grow: 1;
+/* Sleek Fighting Game Top HUD */
+.battle-hud {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 30px;
-  position: relative;
+  padding: 18px 30px 14px 30px;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.fighter {
+.hud-player {
+  width: 42%;
   display: flex;
-  align-items: center;
-  gap: 20px;
-  width: 40%;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.left-fighter {
-  flex-direction: row;
+.hud-left {
+  align-items: flex-start;
 }
 
-.right-fighter {
-  flex-direction: row-reverse;
+.hud-right {
+  align-items: flex-end;
   text-align: right;
 }
 
-.fighter-sprite-wrap {
-  width: 120px;
-  height: 120px;
+.hud-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hud-trainer {
+  font-size: 11px;
+  color: rgba(148, 163, 184, 0.8);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.hud-poke-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.hud-hp-container {
+  width: 100%;
+}
+
+.hp-bar-outer {
+  width: 100%;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hp-fill-bar {
+  height: 100%;
+  width: 100%;
+  background: #10b981; /* Green */
+  border-radius: 5px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.hp-text-label {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* VS Badge in HUD */
+.hud-vs-badge {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 20px;
+  color: #ef4444;
+  text-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
+  z-index: 2;
+  animation: pulse 0.5s infinite alternate;
+}
+
+/* Battle Stage (Sprites Facing Off) */
+.battle-stage {
+  flex-grow: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 80px 40px 80px; /* spacious padding */
+  position: relative;
+}
+
+.stage-fighter {
+  width: 160px;
+  height: 160px;
   display: flex;
   align-items: center;
   justify-content: center;
-  filter: drop-shadow(0 8px 15px rgba(0,0,0,0.5));
+  filter: drop-shadow(0 12px 20px rgba(0,0,0,0.6));
+  position: relative;
 }
 
-.fighter-sprite-wrap img {
+.stage-fighter img {
   max-width: 100%;
   max-height: 100%;
   image-rendering: pixelated;
@@ -481,74 +537,15 @@ body {
   transform: scaleX(-1); /* Face right */
 }
 
-.fighter-details {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.trainer-name {
-  font-size: 11px;
-  color: rgba(148, 163, 184, 0.8);
-  font-weight: 600;
-  letter-spacing: 0.3px;
-}
-
-.fighter-poke-name {
-  font-size: 18px;
-  font-weight: 800;
-  text-shadow: 0 2px 6px rgba(0,0,0,0.3);
-}
-
-.fighter-hp-container {
-  width: 120px;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  margin-top: 4px;
-}
-
-.hp-bar-outer {
-  width: 100%;
-  height: 8px;
-  background: rgba(0, 0, 0, 0.4);
-  border-radius: 4px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.hp-fill-bar {
-  height: 100%;
-  width: 100%;
-  background: #10b981; /* Green */
-  border-radius: 4px;
-  transition: width 0.3s ease, background-color 0.3s ease;
-}
-
-.hp-text-label {
-  font-size: 9px;
-  color: rgba(255, 255, 255, 0.7);
-  font-weight: 600;
-}
-
-.battle-vs-badge {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 22px;
-  color: #ef4444;
-  text-shadow: 0 0 20px rgba(239, 68, 68, 0.5), 0 4px 10px rgba(239, 68, 68, 0.3);
-  z-index: 2;
-  animation: pulse 0.5s infinite alternate;
-}
-
 .battle-status {
-  padding: 10px;
-  background: rgba(0,0,0,0.4);
+  padding: 12px;
+  background: rgba(0,0,0,0.5);
   text-align: center;
   font-family: 'Press Start 2P', monospace;
   font-size: 10px;
   color: #fbbf24;
   border-top: 1px solid rgba(255,255,255,0.05);
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
 }
 
 .impact-flash {

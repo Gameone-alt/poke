@@ -79,47 +79,51 @@
       <!-- Dynamic weather container background -->
       <div id="weather-arena" class="weather-backdrop"></div>
       
-      <div class="battle-header-bar">
-        <span class="arena-tag">BATTLE ARENA</span>
-      </div>
-      
-      <div class="battle-field">
-        <!-- Challenger Left -->
-        <div id="fighter-challenger" class="fighter left-fighter">
-          <div class="fighter-details">
-            <div class="trainer-name" id="challenger-trainer">Challenger</div>
-            <div class="fighter-poke-name" id="challenger-poke">Bulbasaur</div>
-            <div class="fighter-hp-container">
-              <div class="hp-bar-outer" style="position: relative;">
-                <div class="hp-fill-trail" id="challenger-hp-trail" style="width: 100%;"></div>
-                <div class="hp-fill-bar" id="challenger-hp-fill" style="width: 100%; position: absolute; top: 0; left: 0; height: 100%;"></div>
-              </div>
-              <div class="hp-text-label" id="challenger-hp-text">HP: 100/100</div>
-            </div>
+      <!-- Sleek Fighting Game Top HUD -->
+      <div class="battle-hud">
+        <!-- Left Challenger HUD -->
+        <div class="hud-player hud-left">
+          <div class="hud-info">
+            <span class="hud-trainer" id="challenger-trainer">Challenger</span>
+            <span class="hud-poke-name" id="challenger-poke">Bulbasaur</span>
           </div>
-          <div class="fighter-sprite-wrap">
-            <img id="challenger-sprite" src="" alt="Challenger Pokemon" onerror="handleImageError(this)">
+          <div class="hud-hp-container">
+            <div class="hp-bar-outer" style="position: relative;">
+              <div class="hp-fill-trail" id="challenger-hp-trail" style="width: 100%;"></div>
+              <div class="hp-fill-bar" id="challenger-hp-fill" style="width: 100%; position: absolute; top: 0; left: 0; height: 100%;"></div>
+            </div>
+            <div class="hp-text-label" id="challenger-hp-text">HP: 100/100</div>
           </div>
         </div>
 
-        <div class="battle-vs-badge">VS</div>
+        <div class="hud-vs-badge">VS</div>
 
-        <!-- Opponent Right -->
-        <div id="fighter-opponent" class="fighter right-fighter">
-          <div class="fighter-sprite-wrap">
-            <img id="opponent-sprite" src="" alt="Opponent Pokemon" onerror="handleImageError(this)">
+        <!-- Right Opponent HUD -->
+        <div class="hud-player hud-right">
+          <div class="hud-info">
+            <span class="hud-trainer" id="opponent-trainer">Opponent</span>
+            <span class="hud-poke-name" id="opponent-poke">Charmander</span>
           </div>
-          <div class="fighter-details">
-            <div class="trainer-name" id="opponent-trainer">Opponent</div>
-            <div class="fighter-poke-name" id="opponent-poke">Charmander</div>
-            <div class="fighter-hp-container">
-              <div class="hp-bar-outer" style="position: relative;">
-                <div class="hp-fill-trail" id="opponent-hp-trail" style="width: 100%;"></div>
-                <div class="hp-fill-bar" id="opponent-hp-fill" style="width: 100%; position: absolute; top: 0; left: 0; height: 100%;"></div>
-              </div>
-              <div class="hp-text-label" id="opponent-hp-text">HP: 100/100</div>
+          <div class="hud-hp-container">
+            <div class="hp-bar-outer" style="position: relative;">
+              <div class="hp-fill-trail" id="opponent-hp-trail" style="width: 100%;"></div>
+              <div class="hp-fill-bar" id="opponent-hp-fill" style="width: 100%; position: absolute; top: 0; left: 0; height: 100%;"></div>
             </div>
+            <div class="hp-text-label" id="opponent-hp-text">HP: 100/100</div>
           </div>
+        </div>
+      </div>
+      
+      <!-- Battle Center Stage (Sprites facing off) -->
+      <div class="battle-stage">
+        <!-- Challenger Sprite Left -->
+        <div id="fighter-challenger" class="stage-fighter left-fighter">
+          <img id="challenger-sprite" src="" alt="Challenger Pokemon" onerror="handleImageError(this)">
+        </div>
+
+        <!-- Opponent Sprite Right -->
+        <div id="fighter-opponent" class="stage-fighter right-fighter">
+          <img id="opponent-sprite" src="" alt="Opponent Pokemon" onerror="handleImageError(this)">
         </div>
       </div>
       

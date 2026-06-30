@@ -1046,8 +1046,8 @@ socket.on('battle_start', (data) => {
   }
 
   // Hard-reset fighter classes & inline styles (apply starting animation classes immediately while hidden)
-  challengerFighter.className = 'fighter left-fighter slide-in-left';
-  opponentFighter.className = 'fighter right-fighter slide-in-right';
+  challengerFighter.className = 'stage-fighter left-fighter slide-in-left';
+  opponentFighter.className = 'stage-fighter right-fighter slide-in-right';
   challengerFighter.style.opacity = '';
   challengerFighter.style.transform = '';
   opponentFighter.style.opacity = '';
@@ -1309,8 +1309,8 @@ socket.on('battle_start', (data) => {
     battleOverlay.style.animation = 'none';
     clearWeather();
     if (battleField) battleField.className = 'battle-field';
-    challengerFighter.className = 'fighter left-fighter';
-    opponentFighter.className = 'fighter right-fighter';
+    challengerFighter.className = 'stage-fighter left-fighter';
+    opponentFighter.className = 'stage-fighter right-fighter';
   }, cleanupDelay);
   activeBattleSimulationTimers.push(tCleanup);
 });
@@ -1327,8 +1327,8 @@ socket.on('battle_end', (data) => {
       clearWeather();
       const battleField = document.querySelector('.battle-field');
       if (battleField) battleField.className = 'battle-field';
-      challengerFighter.className = 'fighter left-fighter';
-      opponentFighter.className = 'fighter right-fighter';
+      challengerFighter.className = 'stage-fighter left-fighter';
+      opponentFighter.className = 'stage-fighter right-fighter';
     }
   }, 500);
   activeBattleSimulationTimers.push(safetyTimer);
