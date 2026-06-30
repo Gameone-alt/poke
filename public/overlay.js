@@ -304,9 +304,9 @@ function applyConfig(config) {
     const raidScale = config.raidScale !== undefined ? config.raidScale : 1.0;
     
     if (raidPos === 'custom') {
-      raidOverlay.style.top = config.raidTop || 'auto';
+      raidOverlay.style.top = config.raidTop || '35%';
       raidOverlay.style.bottom = config.raidBottom || 'auto';
-      raidOverlay.style.left = config.raidLeft || 'auto';
+      raidOverlay.style.left = config.raidLeft || '35%';
       raidOverlay.style.right = config.raidRight || 'auto';
       
       if (config.raidLeft && config.raidLeft !== 'auto' && config.raidTop && config.raidTop !== 'auto') {

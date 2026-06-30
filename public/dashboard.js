@@ -435,9 +435,7 @@ socket.on('init_state', (state) => {
 });
 
 // Update Config Form Submission
-configForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  
+function compileConfigObject() {
   const videoIdRaw = videoIdInput.value.trim();
   let videoId = videoIdRaw;
   // Parse video ID from URL if user pastes link
@@ -454,7 +452,7 @@ configForm.addEventListener('submit', (e) => {
     }
   });
 
-  const updatedConfig = {
+  return {
     allowedGenerations,
     youtubeChannelId: channelIdInput.value.trim(),
     twitchChannel: twitchChannelInput.value.trim(),
@@ -562,10 +560,13 @@ configForm.addEventListener('submit', (e) => {
     feedScale: parseFloat(document.getElementById('lbl-scale-feed').textContent) || 1.0,
     raidScale: parseFloat(document.getElementById('lbl-scale-raid').textContent) || 1.0,
 
-    // Retain spawn target if set
     spawnTarget: spawnTargetInput.value.trim()
   };
-  
+}
+
+configForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const updatedConfig = compileConfigObject();
   socket.emit('update_config', { newConfig: updatedConfig, password: adminPassword });
   alert('Configuration updated successfully!');
 });
@@ -579,97 +580,8 @@ btnSaveTarget.addEventListener('click', () => {
   }
   
   // Submit config setting update with only spawnTarget modified
-  const updatedConfig = {
-    youtubeChannelId: channelIdInput.value.trim(),
-    twitchChannel: twitchChannelInput.value.trim(),
-    videoId: videoIdInput.value.trim(),
-    obsWebsocketUrl: obsWebsocketUrlInput.value.trim(),
-    youtubeApiKey: youtubeApiKeyInput.value.trim(),
-    spawnIntervalMs: parseInt(spawnIntervalInput.value) * 1000,
-    wildDespawnTimeoutMs: parseInt(despawnTimeoutInput.value) * 1000,
-    catchCooldownMs: parseInt(catchCooldownInput.value) * 1000,
-    shinyChance: parseFloat(shinyChanceInput.value) / 100,
-    theme: themeSelect.value,
-    spriteFormat: spriteFormatSelect.value,
-    spawnCatchGuideMode: spawnCatchGuideModeSelect.value,
-    primaryColor: primaryColorInput.value,
-    sfxVolume: parseInt(sfxVolumeInput.value),
-    showBattleArena: showBattleArenaInput.checked,
-    showLeaderboard: showLeaderboardInput.checked,
-    
-    // Custom Economy & Game Rewards
-    coinsCaptureNormal: parseInt(coinsCaptureNormalInput.value),
-    coinsCaptureShiny: parseInt(coinsCaptureShinyInput.value),
-    xpCaptureNormal: parseInt(xpCaptureNormalInput.value),
-    xpCaptureShiny: parseInt(xpCaptureShinyInput.value),
-    levelUpCoins: parseInt(levelUpCoinsInput.value),
-    levelUpGreatballs: parseInt(levelUpGreatballsInput.value),
-    levelUpUltraballs: parseInt(levelUpUltraballsInput.value),
-    catchMultiplierPokeball: parseFloat(catchMultiplierPokeballInput.value),
-    catchMultiplierGreatball: parseFloat(catchMultiplierGreatballInput.value),
-    catchMultiplierUltraball: parseFloat(catchMultiplierUltraballInput.value),
-    pricePokeball: parseInt(pricePokeballInput.value),
-    priceGreatball: parseInt(priceGreatballInput.value),
-    priceUltraball: parseInt(priceUltraballInput.value),
-    priceMasterball: parseInt(priceMasterballInput.value),
-    catchMultiplierNormal: parseFloat(catchMultiplierNormalInput.value),
-    catchMultiplierRare: parseFloat(catchMultiplierRareInput.value),
-    catchMultiplierLegendary: parseFloat(catchMultiplierLegendaryInput.value),
-    pricePackKanto: parseInt(pricePackKantoInput.value, 10),
-    pricePackJohto: parseInt(pricePackJohtoInput.value, 10),
-    pricePackHoenn: parseInt(pricePackHoennInput.value, 10),
-    pricePackSinnoh: parseInt(pricePackSinnohInput.value, 10),
-    pricePackUnova: parseInt(pricePackUnovaInput.value, 10),
-    pricePackKalos: parseInt(pricePackKalosInput.value, 10),
-    pricePackAlola: parseInt(pricePackAlolaInput.value, 10),
-    pricePackLegendary: parseInt(pricePackLegendaryInput.value, 10),
-    priceFireStone: parseInt(priceFireStoneInput.value, 10),
-    priceWaterStone: parseInt(priceWaterStoneInput.value, 10),
-    priceThunderStone: parseInt(priceThunderStoneInput.value, 10),
-    priceLeafStone: parseInt(priceLeafStoneInput.value, 10),
-    priceMoonStone: parseInt(priceMoonStoneInput.value, 10),
-    showLiveFeed: showLiveFeedInput.checked,
-    liveFeedTitle: liveFeedTitleInput.value.trim(),
-    showSpawnAlert: showSpawnAlertInput.checked,
-    spawnAlertTitle: spawnAlertTitleInput.value.trim(),
-    spawnCatchGuide: spawnCatchGuideInput.value.trim(),
-    inventoryBaseUrl: inventoryBaseUrlInput.value.trim(),
-    customCss: customCssInput.value,
-    spawnCardScale: parseFloat(spawnCardScaleInput.value),
-    spawnCardPosition: spawnCardPositionSelect.value,
-    showCardSprite: showCardSpriteCheckbox.checked,
-    showCardTypes: showCardTypesCheckbox.checked,
-    showCardInstructions: showCardInstructionsCheckbox.checked,
-    hideSpawnDetails: hideSpawnDetailsCheckbox.checked,
-    
-    spawnCardLeft: spawnCardLeftInput.value.trim(),
-    spawnCardRight: spawnCardRightInput.value.trim(),
-    spawnCardTop: spawnCardTopInput.value.trim(),
-    spawnCardBottom: spawnCardBottomInput.value.trim(),
-    tickerPosition: tickerPositionSelect.value,
-    tickerLeft: tickerLeftInput.value.trim(),
-    tickerRight: tickerRightInput.value.trim(),
-    tickerTop: tickerTopInput.value.trim(),
-    tickerBottom: tickerBottomInput.value.trim(),
-    feedPosition: feedPositionSelect.value,
-    feedLeft: feedLeftInput.value.trim(),
-    feedRight: feedRightInput.value.trim(),
-    feedTop: feedTopInput.value.trim(),
-    feedBottom: feedBottomInput.value.trim(),
-    battlePosition: battlePositionSelect.value,
-    battleLeft: battleLeftInput.value.trim(),
-    battleRight: battleRightInput.value.trim(),
-    battleTop: battleTopInput.value.trim(),
-    battleBottom: battleBottomInput.value.trim(),
-
-    raidPosition: raidPositionSelect.value,
-    raidLeft: raidLeftInput.value.trim(),
-    raidRight: raidRightInput.value.trim(),
-    raidTop: raidTopInput.value.trim(),
-    raidBottom: raidBottomInput.value.trim(),
-    
-    spawnTarget: target
-  };
+  const updatedConfig = compileConfigObject();
+  updatedConfig.spawnTarget = target;
   
   socket.emit('update_config', { newConfig: updatedConfig, password: adminPassword });
   alert(`Next spawn target locked to: "${target}". Check overlay or click Force Spawn!`);
