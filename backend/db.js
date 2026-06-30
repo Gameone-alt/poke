@@ -11,6 +11,15 @@ let useLocalFallback = false;
 const DB_DIR = path.join(__dirname, 'data');
 const LOCAL_USERS_FILE = path.join(DB_DIR, 'users.json');
 const LOCAL_CONFIGS_FILE = path.join(DB_DIR, 'configs.json');
+const staticPokemonDbPath = path.join(DB_DIR, 'pokemon.json');
+let staticPokemonDb = {};
+if (fs.existsSync(staticPokemonDbPath)) {
+  try {
+    staticPokemonDb = JSON.parse(fs.readFileSync(staticPokemonDbPath, 'utf-8'));
+  } catch (err) {
+    console.error('[Database] Failed loading pokemon.json:', err.message);
+  }
+}
 
 let localUsers = {};
 let localConfigs = {};
@@ -391,24 +400,37 @@ async function getUser(streamerId, username, displayName = null) {
     xp: dbUser.xp || 0,
     level: dbUser.level || 1,
     buddyInstanceId: dbUser.buddy_instance_id || null,
-    inventory: invRes.rows.map(p => ({
-      instanceId: p.instance_id,
-      pokemonId: p.pokemon_id,
-      name: p.pokemon_name,
-      originalName: p.pokemon_name.replace('✨ Shiny ', ''),
-      types: p.types,
-      baseStats: {
-        hp: p.base_hp,
-        attack: p.base_atk,
-        defense: p.base_def,
-        speed: p.base_spd
-      },
-      shiny: p.shiny,
-      wins: p.wins,
-      currentStage: p.current_stage,
-      caughtAt: Number(p.caught_at),
-      fusionCount: p.fusion_count || 0
-    })),
+    inventory: invRes.rows.map(p => {
+      const staticPoke = staticPokemonDb[p.pokemon_id.toString()] || {};
+      const baseName = staticPoke.name || p.pokemon_name || 'Unknown';
+      const name = p.shiny ? `✨ Shiny ${baseName}` : baseName;
+      const types = staticPoke.types || p.types || [];
+      const baseStats = staticPoke.stats || {
+        hp: p.base_hp || 50,
+        attack: p.base_atk || 50,
+        defense: p.base_def || 50,
+        speed: p.base_spd || 50
+      };
+      
+      return {
+        instanceId: p.instance_id,
+        pokemonId: p.pokemon_id,
+        name: name,
+        originalName: baseName,
+        types: types,
+        baseStats: {
+          hp: baseStats.hp,
+          attack: baseStats.attack,
+          defense: baseStats.defense,
+          speed: baseStats.speed
+        },
+        shiny: p.shiny,
+        wins: p.wins,
+        currentStage: p.current_stage,
+        caughtAt: Number(p.caught_at),
+        fusionCount: p.fusion_count || 0
+      };
+    }),
     activePokemonId: dbUser.active_pokemon_id,
     items: dbUser.items || {},
     gymBadges: dbUser.gym_badges || [],
@@ -524,8 +546,8 @@ async function addPokemon(streamerId, username, displayName, pokemonData, isShin
   
   await query(
     `INSERT INTO inventories (instance_id, streamer_id, username, pokemon_id, pokemon_name, types, base_hp, base_atk, base_def, base_spd, shiny, wins, current_stage, caught_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 0, 1, $12)`,
-    [instanceId, streamer, key, pokemonData.id, name, types, hp, attack, defense, speed, isShiny, BigInt(Date.now())]
+     VALUES ($1, $2, $3, $4, '', null, $5, $6, $7, $8, $9, 0, 1, $10)`,
+    [instanceId, streamer, key, pokemonData.id, hp, attack, defense, speed, isShiny, BigInt(Date.now())]
   );
 
   if (!user.activePokemonId || !user.inventory.some(p => p.instanceId === user.activePokemonId)) {
@@ -840,17 +862,28 @@ async function getLeaderboard(streamerId) {
       );
       if (activeRes.rows.length > 0) {
         const p = activeRes.rows[0];
+        const staticPoke = staticPokemonDb[p.pokemon_id.toString()] || {};
+        const baseName = staticPoke.name || p.pokemon_name || 'Unknown';
+        const name = p.shiny ? `✨ Shiny ${baseName}` : baseName;
+        const types = staticPoke.types || p.types || [];
+        const baseStats = staticPoke.stats || {
+          hp: p.base_hp || 50,
+          attack: p.base_atk || 50,
+          defense: p.base_def || 50,
+          speed: p.base_spd || 50
+        };
+
         activePokemon = {
           instanceId: p.instance_id,
           pokemonId: p.pokemon_id,
-          name: p.pokemon_name,
-          originalName: p.pokemon_name.replace('✨ Shiny ', ''),
-          types: p.types,
+          name: name,
+          originalName: baseName,
+          types: types,
           baseStats: {
-            hp: p.base_hp,
-            attack: p.base_atk,
-            defense: p.base_def,
-            speed: p.base_spd
+            hp: baseStats.hp,
+            attack: baseStats.attack,
+            defense: baseStats.defense,
+            speed: baseStats.speed
           },
           shiny: p.shiny,
           wins: p.wins,
@@ -1467,11 +1500,11 @@ async function evolvePokemon(streamerId, username, instanceId, newPokemonData) {
   // PostgreSQL version
   await query(
     `UPDATE inventories 
-     SET pokemon_id = $1, pokemon_name = $2, types = $3, 
-         base_hp = $4, base_atk = $5, base_def = $6, base_spd = $7,
+     SET pokemon_id = $1, pokemon_name = '', types = null, 
+         base_hp = $2, base_atk = $3, base_def = $4, base_spd = $5,
          current_stage = current_stage + 1
-     WHERE streamer_id = $8 AND username = $9 AND instance_id = $10`,
-    [newPokemonData.id, name, types, hp, attack, defense, speed, streamer, key, instanceId]
+     WHERE streamer_id = $6 AND username = $7 AND instance_id = $8`,
+    [newPokemonData.id, hp, attack, defense, speed, streamer, key, instanceId]
   );
   
   return {
