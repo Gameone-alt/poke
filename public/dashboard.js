@@ -716,6 +716,11 @@ socket.on('command_feedback', (data) => {
   }
 });
 
+// Listen to global game announcements (daily claims, battle start/end results, evolutions)
+socket.on('game_log', (log) => {
+  appendSimChat('System', log.text, true);
+});
+
 // Listen to wild Pokémon spawns
 socket.on('pokemon_spawned', (poke) => {
   updateWildPokemonUI(poke);
