@@ -134,6 +134,11 @@ function renderTrainerProfile(user) {
       <div class="pokemon-wins">🏆 Wins: ${poke.wins || 0}</div>
     `;
 
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', () => {
+      showEvolutionTree(poke.pokemonId);
+    });
+
     grid.appendChild(card);
   });
 }
@@ -166,4 +171,74 @@ function calculateCP(baseStats, wins, isLegendary) {
   }
   let finalCP = baseCP * (1 + (wins || 0) * 0.02);
   return Math.max(10, Math.floor(finalCP));
+}
+
+// Evolution Modal controllers
+const modalEl = document.getElementById('evolution-modal');
+const treeContentEl = document.getElementById('evolution-tree-content');
+
+function closeEvolutionModal() {
+  if (modalEl) modalEl.classList.add('hidden');
+}
+
+async function showEvolutionTree(pokemonId) {
+  if (!modalEl || !treeContentEl) return;
+  
+  // Show modal with loading state
+  treeContentEl.innerHTML = '<div class="loading-spinner">Loading evolution family tree...</div>';
+  modalEl.classList.remove('hidden');
+  
+  try {
+    const response = await fetch(`/api/evolution/${pokemonId}`);
+    if (!response.ok) throw new Error('Evolution data not available');
+    const treeData = await response.json();
+    
+    // Generate and render the tree
+    treeContentEl.innerHTML = `
+      <div class="evolution-tree-container">
+        ${generateTreeHTML(treeData, pokemonId)}
+      </div>
+    `;
+  } catch (err) {
+    treeContentEl.innerHTML = `<div style="color: #ef4444; padding: 20px;">❌ Error: ${err.message}</div>`;
+  }
+}
+
+function generateTreeHTML(node, activePokemonId) {
+  const isActive = node.id === activePokemonId;
+  const activeClass = isActive ? 'active-node' : '';
+  const spriteUrl = getSafeSprite(node.spriteUrl, null, node.id, false);
+  const typeBadges = node.types.map(t => `<span class="type-badge type-${t.toLowerCase()}">${t}</span>`).join(' ');
+
+  let html = `
+    <div style="display: flex; align-items: center; justify-content: center; gap: 15px; flex-wrap: wrap;">
+      <div class="evo-node ${activeClass}">
+        <img src="${spriteUrl}" alt="${node.name}">
+        <div class="evo-node-name">${node.name}</div>
+        <div class="evo-node-types">${typeBadges}</div>
+      </div>
+  `;
+
+  if (node.evolutions && node.evolutions.length > 0) {
+    const childrenHTML = node.evolutions.map(child => {
+      return `
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div class="evo-connector">
+            <div class="evo-method-badge">${child.method}</div>
+            <div class="evo-arrow">➔</div>
+          </div>
+          ${generateTreeHTML(child, activePokemonId)}
+        </div>
+      `;
+    }).join('');
+
+    html += `
+      <div style="display: flex; flex-direction: column; gap: 15px; align-items: flex-start; border-left: 1px dashed rgba(255,255,255,0.15); padding-left: 15px; margin-left: 5px;">
+        ${childrenHTML}
+      </div>
+    `;
+  }
+
+  html += `</div>`;
+  return html;
 }

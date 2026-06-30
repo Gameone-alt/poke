@@ -79,6 +79,93 @@ app.get('/api/trainer/:channel/:username', async (req, res) => {
   }
 });
 
+// HTTP GET endpoint to trace and build the evolution tree for a Pokémon
+app.get('/api/evolution/:pokemonId', (req, res) => {
+  const pokemonId = parseInt(req.params.pokemonId, 10);
+  if (isNaN(pokemonId)) return res.status(400).json({ error: 'Invalid Pokémon ID' });
+
+  const targetPoke = pokemonDb[pokemonId.toString()];
+  if (!targetPoke) return res.status(404).json({ error: 'Pokémon not found' });
+
+  // Recursive function to build evolution tree nodes
+  function buildEvolutionNode(poke) {
+    const node = {
+      id: poke.id,
+      name: poke.name,
+      types: poke.types,
+      spriteUrl: poke.spriteUrl,
+      shinySpriteUrl: poke.shinySpriteUrl,
+      evolutions: []
+    };
+
+    // 1. Natural win-based evolutions
+    if (poke.evolution) {
+      const nextIds = Array.isArray(poke.evolution) ? poke.evolution : [poke.evolution];
+      for (const nextId of nextIds) {
+        const nextPoke = pokemonDb[nextId.toString()];
+        if (nextPoke) {
+          const nextNode = buildEvolutionNode(nextPoke);
+          nextNode.method = '🏆 10 Wins';
+          node.evolutions.push(nextNode);
+        }
+      }
+    }
+
+    // 2. Stone-based evolutions
+    const origLower = poke.name.toLowerCase();
+    const stoneRules = STONE_EVOLUTIONS[origLower];
+    if (stoneRules) {
+      if (origLower === 'eevee') {
+        const stones = ['fire_stone', 'water_stone', 'thunder_stone'];
+        for (const st of stones) {
+          const resultName = stoneRules[st];
+          const resultPoke = findPokemonByName(resultName);
+          if (resultPoke) {
+            const nextNode = buildEvolutionNode(resultPoke);
+            nextNode.method = `💎 ${st.toUpperCase().replace('_', ' ')}`;
+            node.evolutions.push(nextNode);
+          }
+        }
+      } else {
+        const stoneName = stoneRules.stone;
+        const resultName = stoneRules.result;
+        const resultPoke = findPokemonByName(resultName);
+        if (resultPoke) {
+          const nextNode = buildEvolutionNode(resultPoke);
+          nextNode.method = `💎 ${stoneName.toUpperCase().replace('_', ' ')}`;
+          node.evolutions.push(nextNode);
+        }
+      }
+    }
+
+    return node;
+  }
+
+  // Trace backwards to find the stage 1 base Pokémon
+  let basePoke = targetPoke;
+  let foundPrev = true;
+  let depth = 0;
+  
+  while (foundPrev && depth < 5) {
+    foundPrev = false;
+    depth++;
+    const allPokes = Object.values(pokemonDb);
+    for (const p of allPokes) {
+      if (p.evolution) {
+        const evos = Array.isArray(p.evolution) ? p.evolution : [p.evolution];
+        if (evos.map(Number).includes(basePoke.id)) {
+          basePoke = p;
+          foundPrev = true;
+          break;
+        }
+      }
+    }
+  }
+
+  const tree = buildEvolutionNode(basePoke);
+  res.status(200).json(tree);
+});
+
 app.post('/api/trigger-raid', async (req, res) => {
   const { channelId, bossName, password } = req.body;
   if (!channelId) {
