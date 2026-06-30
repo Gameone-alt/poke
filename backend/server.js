@@ -414,7 +414,13 @@ function sendGameLog(channelId, type, text) {
 // Trigger a Gigantamax Boss Raid
 async function triggerBossRaid(channelId, customBossName = null) {
   const session = getOrCreateSession(channelId);
-  if (session.activeRaidBoss) return; // Raid already active
+  
+  // Clear any existing active raid timers and state to allow instant override triggers!
+  if (session.wildDespawnTimer) {
+    clearTimeout(session.wildDespawnTimer);
+    session.wildDespawnTimer = null;
+  }
+  session.activeRaidBoss = null;
   
   const candidates = Object.values(pokemonDb).filter(p => p.stats && p.stats.hp >= 60);
   if (candidates.length === 0) return;

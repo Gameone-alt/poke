@@ -155,22 +155,42 @@
       </div>
     </div>
     
-    <!-- Gigantamax Raid Overlay -->
+    <!-- Cinematic Boss Raid Warning Alert -->
+    <div id="raid-warning-banner" class="hidden">
+      <div class="warning-strip">
+        <span class="warning-text">⚠️ WARNING: GIGANTAMAX RAID BOSS DETECTED ⚠️</span>
+      </div>
+    </div>
+
+    <!-- Gigantamax Raid Overlay (Cinematic Takeover) -->
     <div id="raid-overlay" class="hidden">
       <div class="raid-card">
+        <!-- Pulse Glow Backdrop -->
         <div class="raid-glow"></div>
-        <div class="raid-boss-header">💥 BOSS RAID ACTIVE</div>
+        
+        <!-- Header Banner -->
+        <div class="raid-boss-header">💥 GIGANTAMAX BOSS RAID ACTIVE</div>
+        
+        <!-- Large Boss Sprite Wrapper -->
         <div class="raid-sprite-wrapper">
+          <div class="raid-portal-glow"></div>
           <img id="raid-boss-sprite" src="" alt="Raid Boss">
         </div>
+        
+        <!-- Main Stats and Leaderboard Panel -->
         <div class="raid-boss-info">
-          <div id="raid-boss-name">Gigantamax Pokemon</div>
+          <div class="boss-details-header">
+            <span id="raid-boss-name">Gigantamax Pokemon</span>
+            <span class="boss-time-ticker">⏳ 5:00</span>
+          </div>
+          
           <div class="raid-hp-container">
             <div class="raid-hp-bar" id="raid-hp-fill" style="width: 100%;"></div>
             <span class="raid-hp-text" id="raid-hp-text">5000 / 5000 HP</span>
           </div>
+          
           <div class="raid-contributors">
-            <div class="contrib-title">Top Attackers</div>
+            <div class="contrib-title">🏆 Top Attacker Rankings</div>
             <div class="contrib-list" id="raid-contrib-list">
               <!-- Attacker rankings -->
             </div>

@@ -479,6 +479,32 @@ socket.on('init_state', (state) => {
     }
   }
 
+  if (state.activeRaidBoss) {
+    const boss = state.activeRaidBoss;
+    const raidOverlay = document.getElementById('raid-overlay');
+    const sprite = document.getElementById('raid-boss-sprite');
+    const name = document.getElementById('raid-boss-name');
+    const hpFill = document.getElementById('raid-hp-fill');
+    const hpText = document.getElementById('raid-hp-text');
+    const list = document.getElementById('raid-contrib-list');
+    const card = document.querySelector('.raid-card');
+    
+    if (raidOverlay && sprite && name && hpFill && hpText && list) {
+      document.body.classList.add('raid-mode-active');
+      sprite.src = getSafeSprite(boss.spriteUrl, boss.fallbackSpriteUrl);
+      name.textContent = boss.name;
+      const percent = (boss.currentHp / boss.maxHp) * 100;
+      hpFill.style.width = `${percent}%`;
+      hpText.textContent = `${boss.currentHp} / ${boss.maxHp} HP`;
+      
+      if (card) {
+        card.classList.add('gigantamax-active');
+      }
+      
+      raidOverlay.classList.remove('hidden');
+    }
+  }
+
   if (state.leaderboard) {
     updateMarqueeTicker(state.leaderboard);
   }
@@ -1365,6 +1391,7 @@ socket.on('gacha_pack_opened', (data) => {
 // Boss Raid Events
 socket.on('raid_start', (data) => {
   playSound(sfxSpawn);
+  const warningBanner = document.getElementById('raid-warning-banner');
   const raidOverlay = document.getElementById('raid-overlay');
   const sprite = document.getElementById('raid-boss-sprite');
   const name = document.getElementById('raid-boss-name');
@@ -1375,6 +1402,22 @@ socket.on('raid_start', (data) => {
   
   if (!raidOverlay || !sprite || !name || !hpFill || !hpText || !list) return;
   
+  // Force-reset visibility & class tags for a clean animation start
+  raidOverlay.classList.add('hidden');
+  if (card) card.className = 'raid-card';
+  
+  // 1. Activate full-screen takeover mode
+  document.body.classList.add('raid-mode-active');
+  
+  // 2. Play warning alert banner animation
+  if (warningBanner) {
+    warningBanner.classList.remove('hidden');
+    setTimeout(() => {
+      warningBanner.classList.add('hidden');
+    }, 2600);
+  }
+
+  // 3. Load boss data
   sprite.src = getSafeSprite(data.spriteUrl, data.fallbackSpriteUrl);
   name.textContent = data.name;
   hpFill.style.width = '100%';
@@ -1385,7 +1428,10 @@ socket.on('raid_start', (data) => {
     card.classList.add('gigantamax-active');
   }
   
-  raidOverlay.classList.remove('hidden');
+  // Delay card pop-in slightly to follow warning slide animation
+  setTimeout(() => {
+    raidOverlay.classList.remove('hidden');
+  }, 1000);
 });
 
 socket.on('raid_hit', (data) => {
@@ -1490,6 +1536,7 @@ socket.on('raid_end', (data) => {
     if (raidOverlay) {
       raidOverlay.classList.add('hidden');
     }
+    document.body.classList.remove('raid-mode-active');
   }, 5000);
 });
 
