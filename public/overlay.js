@@ -291,6 +291,46 @@ function applyConfig(config) {
     }
   }
 
+  // 3.9. Raid Boss Positioning Setup
+  const raidOverlay = document.getElementById('raid-overlay');
+  if (raidOverlay) {
+    const raidPos = config.raidPosition || 'center';
+    raidOverlay.style.top = '';
+    raidOverlay.style.bottom = '';
+    raidOverlay.style.left = '';
+    raidOverlay.style.right = '';
+    raidOverlay.style.transform = '';
+    
+    const raidScale = config.raidScale !== undefined ? config.raidScale : 1.0;
+    
+    if (raidPos === 'custom') {
+      raidOverlay.style.top = config.raidTop || 'auto';
+      raidOverlay.style.bottom = config.raidBottom || 'auto';
+      raidOverlay.style.left = config.raidLeft || 'auto';
+      raidOverlay.style.right = config.raidRight || 'auto';
+      
+      if (config.raidLeft && config.raidLeft !== 'auto' && config.raidTop && config.raidTop !== 'auto') {
+        raidOverlay.style.transform = `translate(-50%, -50%) scale(${raidScale})`;
+      } else {
+        raidOverlay.style.transform = `scale(${raidScale})`;
+      }
+    } else {
+      if (raidPos === 'center') {
+        raidOverlay.style.top = '50%';
+        raidOverlay.style.left = '50%';
+        raidOverlay.style.transform = `translate(-50%, -50%) scale(${raidScale})`;
+      } else if (raidPos === 'top') {
+        raidOverlay.style.top = '15px';
+        raidOverlay.style.left = '50%';
+        raidOverlay.style.transform = `translateX(-50%) scale(${raidScale})`;
+      } else if (raidPos === 'bottom') {
+        raidOverlay.style.bottom = '15px';
+        raidOverlay.style.left = '50%';
+        raidOverlay.style.transform = `translateX(-50%) scale(${raidScale})`;
+      }
+    }
+  }
+
   // 4. Wild Spawn Visibility, Title & Catch Instruction Guide
   if (wildSpawnContainer) {
     if (config.showSpawnAlert === false) {
@@ -1405,6 +1445,11 @@ socket.on('raid_start', (data) => {
   // Force-reset visibility & class tags for a clean animation start
   raidOverlay.classList.add('hidden');
   if (card) card.className = 'raid-card';
+
+  // Apply layout config positions immediately to ensure custom alignment before reveal
+  if (currentOverlayConfig) {
+    applyOverlayConfig(currentOverlayConfig);
+  }
   
   // 1. Activate full-screen takeover mode
   document.body.classList.add('raid-mode-active');

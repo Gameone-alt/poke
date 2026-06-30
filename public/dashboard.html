@@ -689,6 +689,40 @@
                 </div>
               </div>
 
+              <!-- Raid Boss Position -->
+              <h4 style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 10px;">🦖 Raid Boss Card Position</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="raid-position">Raid Position Preset</label>
+                  <select id="raid-position" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
+                    <option value="center">Center Screen Preset</option>
+                    <option value="top">Top Preset</option>
+                    <option value="bottom">Bottom Preset</option>
+                    <option value="custom">Custom Position</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Raid custom coords -->
+              <div class="form-row custom-position-row" id="raid-custom-pos-row" style="display: none; gap: 10px; margin-bottom: 15px;">
+                <div class="form-group" style="flex: 1;">
+                  <label for="raid-left" style="font-size: 11px;">Left</label>
+                  <input type="text" id="raid-left" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                  <label for="raid-right" style="font-size: 11px;">Right</label>
+                  <input type="text" id="raid-right" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                  <label for="raid-top" style="font-size: 11px;">Top</label>
+                  <input type="text" id="raid-top" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                  <label for="raid-bottom" style="font-size: 11px;">Bottom</label>
+                  <input type="text" id="raid-bottom" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                </div>
+              </div>
+
               <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px; margin-bottom: 15px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
                 <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; color: var(--text-muted);">
                   <input type="checkbox" id="show-card-sprite" checked style="width: auto;">
@@ -780,6 +814,12 @@
                 <div id="drag-battle" class="draggable-widget" style="position: absolute; width: 220px; height: 110px; background: rgba(239, 68, 68, 0.25); border: 2px dashed #ef4444; color: #fff; cursor: move; border-radius: 8px; font-weight: bold; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; z-index: 10;">
                   <span>⚔️ Battle Arena</span>
                   <div style="font-size: 9px; opacity: 0.8; margin-top: 4px;">Scale: <span class="widget-scale-val" id="lbl-scale-battle">1.0</span>x</div>
+                </div>
+
+                <!-- 5. Raid Boss -->
+                <div id="drag-raid" class="draggable-widget" style="position: absolute; width: 200px; height: 100px; background: rgba(244, 63, 94, 0.25); border: 2px dashed #f43f5e; color: #fff; cursor: move; border-radius: 8px; font-weight: bold; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; z-index: 10;">
+                  <span>🦖 Raid Boss</span>
+                  <div style="font-size: 9px; opacity: 0.8; margin-top: 4px;">Scale: <span class="widget-scale-val" id="lbl-scale-raid">1.0</span>x</div>
                 </div>
               </div>
 

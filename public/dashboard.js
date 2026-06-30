@@ -211,6 +211,13 @@ const battleRightInput = document.getElementById('battle-right');
 const battleTopInput = document.getElementById('battle-top');
 const battleBottomInput = document.getElementById('battle-bottom');
 
+const raidPositionSelect = document.getElementById('raid-position');
+const raidCustomPosRow = document.getElementById('raid-custom-pos-row');
+const raidLeftInput = document.getElementById('raid-left');
+const raidRightInput = document.getElementById('raid-right');
+const raidTopInput = document.getElementById('raid-top');
+const raidBottomInput = document.getElementById('raid-bottom');
+
 function setupCustomPosToggle(selectEl, rowEl) {
   if (!selectEl || !rowEl) return;
   const updateToggle = () => {
@@ -228,6 +235,7 @@ setupCustomPosToggle(spawnCardPositionSelect, spawnCustomPosRow);
 setupCustomPosToggle(tickerPositionSelect, tickerCustomPosRow);
 setupCustomPosToggle(feedPositionSelect, feedCustomPosRow);
 setupCustomPosToggle(battlePositionSelect, battleCustomPosRow);
+setupCustomPosToggle(raidPositionSelect, raidCustomPosRow);
 
 // Specific Spawn Target
 const spawnTargetInput = document.getElementById('spawn-target');
@@ -313,9 +321,15 @@ function populateConfig(config) {
   battleRightInput.value = config.battleRight || '';
   battleTopInput.value = config.battleTop || '';
   battleBottomInput.value = config.battleBottom || '';
+
+  raidPositionSelect.value = config.raidPosition || 'center';
+  raidLeftInput.value = config.raidLeft || '';
+  raidRightInput.value = config.raidRight || '';
+  raidTopInput.value = config.raidTop || '';
+  raidBottomInput.value = config.raidBottom || '';
   
   // Trigger toggles
-  [spawnCardPositionSelect, tickerPositionSelect, feedPositionSelect, battlePositionSelect].forEach(select => {
+  [spawnCardPositionSelect, tickerPositionSelect, feedPositionSelect, battlePositionSelect, raidPositionSelect].forEach(select => {
     if (select) select.dispatchEvent(new Event('change'));
   });
   
@@ -535,11 +549,18 @@ configForm.addEventListener('submit', (e) => {
     battleRight: battleRightInput.value.trim(),
     battleTop: battleTopInput.value.trim(),
     battleBottom: battleBottomInput.value.trim(),
+
+    raidPosition: raidPositionSelect.value,
+    raidLeft: raidLeftInput.value.trim(),
+    raidRight: raidRightInput.value.trim(),
+    raidTop: raidTopInput.value.trim(),
+    raidBottom: raidBottomInput.value.trim(),
     
     // Custom scales saved from layout editor
     battleScale: parseFloat(document.getElementById('lbl-scale-battle').textContent) || 1.0,
     tickerScale: parseFloat(document.getElementById('lbl-scale-ticker').textContent) || 1.0,
     feedScale: parseFloat(document.getElementById('lbl-scale-feed').textContent) || 1.0,
+    raidScale: parseFloat(document.getElementById('lbl-scale-raid').textContent) || 1.0,
 
     // Retain spawn target if set
     spawnTarget: spawnTargetInput.value.trim()
@@ -640,6 +661,12 @@ btnSaveTarget.addEventListener('click', () => {
     battleRight: battleRightInput.value.trim(),
     battleTop: battleTopInput.value.trim(),
     battleBottom: battleBottomInput.value.trim(),
+
+    raidPosition: raidPositionSelect.value,
+    raidLeft: raidLeftInput.value.trim(),
+    raidRight: raidRightInput.value.trim(),
+    raidTop: raidTopInput.value.trim(),
+    raidBottom: raidBottomInput.value.trim(),
     
     spawnTarget: target
   };
@@ -1205,7 +1232,8 @@ function setupLayoutEditor(config) {
     { id: 'drag-spawn-card', type: 'spawn', scaleKey: 'spawnCardScale', posKey: 'spawnCardPosition', topKey: 'spawnCardTop', leftKey: 'spawnCardLeft', defaultTop: '75%', defaultLeft: '5%' },
     { id: 'drag-ticker', type: 'ticker', scaleKey: 'tickerScale', posKey: 'tickerPosition', topKey: 'tickerTop', leftKey: 'tickerLeft', defaultTop: '5%', defaultLeft: '5%' },
     { id: 'drag-feed', type: 'feed', scaleKey: 'feedScale', posKey: 'feedPosition', topKey: 'feedTop', leftKey: 'feedLeft', defaultTop: '5%', defaultLeft: '70%' },
-    { id: 'drag-battle', type: 'battle', scaleKey: 'battleScale', posKey: 'battlePosition', topKey: 'battleTop', leftKey: 'battleLeft', defaultTop: '40%', defaultLeft: '40%' }
+    { id: 'drag-battle', type: 'battle', scaleKey: 'battleScale', posKey: 'battlePosition', topKey: 'battleTop', leftKey: 'battleLeft', defaultTop: '40%', defaultLeft: '40%' },
+    { id: 'drag-raid', type: 'raid', scaleKey: 'raidScale', posKey: 'raidPosition', topKey: 'raidTop', leftKey: 'raidLeft', defaultTop: '35%', defaultLeft: '35%' }
   ];
   
   const scaleSlider = document.getElementById('layout-scale-slider');
@@ -1315,6 +1343,12 @@ function setupLayoutEditor(config) {
         battleTopInput.value = pctTop;
         battleRightInput.value = 'auto';
         battleBottomInput.value = 'auto';
+      } else if (w.type === 'raid') {
+        raidPositionSelect.value = 'custom';
+        raidLeftInput.value = pctLeft;
+        raidTopInput.value = pctTop;
+        raidRightInput.value = 'auto';
+        raidBottomInput.value = 'auto';
       }
     });
     
@@ -1360,15 +1394,17 @@ if (layoutResetBtn) {
     tickerPositionSelect.value = 'top-left';
     feedPositionSelect.value = 'top-right';
     battlePositionSelect.value = 'center';
+    raidPositionSelect.value = 'center';
     
     [spawnCardLeftInput, spawnCardTopInput, spawnCardRightInput, spawnCardBottomInput,
      tickerLeftInput, tickerTopInput, tickerRightInput, tickerBottomInput,
      feedLeftInput, feedTopInput, feedRightInput, feedBottomInput,
-     battleLeftInput, battleTopInput, battleRightInput, battleBottomInput].forEach(inp => {
+     battleLeftInput, battleTopInput, battleRightInput, battleBottomInput,
+     raidLeftInput, raidTopInput, raidRightInput, raidBottomInput].forEach(inp => {
        if (inp) inp.value = '';
      });
      
-    [spawnCardPositionSelect, tickerPositionSelect, feedPositionSelect, battlePositionSelect].forEach(select => {
+    [spawnCardPositionSelect, tickerPositionSelect, feedPositionSelect, battlePositionSelect, raidPositionSelect].forEach(select => {
       if (select) select.dispatchEvent(new Event('change'));
     });
     

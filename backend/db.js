@@ -256,7 +256,13 @@ async function runAutoMigrations() {
       ADD COLUMN IF NOT EXISTS feed_scale NUMERIC DEFAULT 1.0,
       ADD COLUMN IF NOT EXISTS battle_accept_timeout_seconds INTEGER DEFAULT 30,
       ADD COLUMN IF NOT EXISTS stream_delay_seconds INTEGER DEFAULT 0,
-      ADD COLUMN IF NOT EXISTS hide_spawn_details BOOLEAN DEFAULT FALSE;
+      ADD COLUMN IF NOT EXISTS hide_spawn_details BOOLEAN DEFAULT FALSE,
+      ADD COLUMN IF NOT EXISTS raid_scale NUMERIC DEFAULT 1.0,
+      ADD COLUMN IF NOT EXISTS raid_position VARCHAR(20) DEFAULT 'center',
+      ADD COLUMN IF NOT EXISTS raid_left VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS raid_right VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS raid_top VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS raid_bottom VARCHAR(20) DEFAULT '';
     `);
 
     // Add columns to inventories table
@@ -1056,7 +1062,13 @@ async function getStreamerConfig(streamerId) {
       feedScale: 1.0,
       battleAcceptTimeoutSeconds: 30,
       streamDelaySeconds: 0,
-      hideSpawnDetails: false
+      hideSpawnDetails: false,
+      raidScale: 1.0,
+      raidPosition: 'center',
+      raidLeft: '',
+      raidRight: '',
+      raidTop: '',
+      raidBottom: ''
     };
     
     await query(
@@ -1179,7 +1191,13 @@ async function getStreamerConfig(streamerId) {
     feedScale: row.feed_scale !== null && row.feed_scale !== undefined ? Number(row.feed_scale) : 1.0,
     battleAcceptTimeoutSeconds: row.battle_accept_timeout_seconds !== null && row.battle_accept_timeout_seconds !== undefined ? Number(row.battle_accept_timeout_seconds) : 30,
     streamDelaySeconds: row.stream_delay_seconds !== null && row.stream_delay_seconds !== undefined ? Number(row.stream_delay_seconds) : 0,
-    hideSpawnDetails: row.hide_spawn_details !== null && row.hide_spawn_details !== undefined ? Boolean(row.hide_spawn_details) : false
+    hideSpawnDetails: row.hide_spawn_details !== null && row.hide_spawn_details !== undefined ? Boolean(row.hide_spawn_details) : false,
+    raidScale: row.raid_scale !== null && row.raid_scale !== undefined ? Number(row.raid_scale) : 1.0,
+    raidPosition: row.raid_position || 'center',
+    raidLeft: row.raid_left || '',
+    raidRight: row.raid_right || '',
+    raidTop: row.raid_top || '',
+    raidBottom: row.raid_bottom || ''
   };
 }
 
@@ -1225,8 +1243,11 @@ async function saveStreamerConfig(streamerId, config) {
          battle_scale = $86, ticker_scale = $87, feed_scale = $88,
          battle_accept_timeout_seconds = $89,
          stream_delay_seconds = $90,
-         hide_spawn_details = $91
-     WHERE channel_id = $92`,
+         hide_spawn_details = $91,
+         raid_scale = $92, raid_position = $93,
+         raid_left = $94, raid_right = $95,
+         raid_top = $96, raid_bottom = $97
+     WHERE channel_id = $98`,
     [
       config.videoId || '',
       config.spawnIntervalMs,
@@ -1319,6 +1340,12 @@ async function saveStreamerConfig(streamerId, config) {
       config.battleAcceptTimeoutSeconds !== undefined ? config.battleAcceptTimeoutSeconds : 30,
       config.streamDelaySeconds !== undefined ? config.streamDelaySeconds : 0,
       config.hideSpawnDetails !== undefined ? config.hideSpawnDetails : false,
+      config.raidScale !== undefined ? config.raidScale : 1.0,
+      config.raidPosition || 'center',
+      config.raidLeft || '',
+      config.raidRight || '',
+      config.raidTop || '',
+      config.raidBottom || '',
       streamer
     ]
   );
