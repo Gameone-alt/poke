@@ -1042,7 +1042,7 @@ socket.on('battle_start', (data) => {
 
   // Apply layout config positions immediately to ensure center/custom alignment before reveal
   if (currentOverlayConfig) {
-    applyOverlayConfig(currentOverlayConfig);
+    applyConfig(currentOverlayConfig);
   }
 
   // Hard-reset fighter classes & inline styles (apply starting animation classes immediately while hidden)
@@ -1521,7 +1521,7 @@ socket.on('raid_start', (data) => {
 
   // Apply layout config positions immediately to ensure custom alignment before reveal
   if (currentOverlayConfig) {
-    applyOverlayConfig(currentOverlayConfig);
+    applyConfig(currentOverlayConfig);
   }
   
   // 1. Activate full-screen takeover mode
