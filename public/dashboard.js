@@ -1202,7 +1202,6 @@ if (viewerSearch) {
 
 // Visual Layout Editor controller
 let selectedWidget = null;
-let currentConfigRef = null;
 
 function setupLayoutEditor(config) {
   currentConfigRef = config;
