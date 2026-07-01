@@ -199,17 +199,24 @@
       display: flex;
       gap: 12px;
       overflow-x: auto;
-      padding: 10px 5px;
+      padding: 10px 5px 15px 5px;
       margin-bottom: 20px;
       scroll-behavior: smooth;
       -webkit-overflow-scrolling: touch;
     }
     .pokedex-regions-bar::-webkit-scrollbar {
-      display: none;
+      height: 6px;
     }
-    .pokedex-regions-bar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
+    .pokedex-regions-bar::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 10px;
+    }
+    .pokedex-regions-bar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+    .pokedex-regions-bar::-webkit-scrollbar-thumb:hover {
+      background: rgba(59, 130, 246, 0.4);
     }
     .region-pill {
       background: rgba(255, 255, 255, 0.03);
@@ -222,6 +229,7 @@
       gap: 4px;
       cursor: pointer;
       min-width: 110px;
+      flex-shrink: 0; /* Prevent pills from shrinking and getting cut off */
       transition: all 0.2s ease;
       user-select: none;
       backdrop-filter: blur(10px);
