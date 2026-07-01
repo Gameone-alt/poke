@@ -1005,10 +1005,6 @@ async function processCommand(channelId, username, displayName, messageText, bas
 
   // 4. !catch command
   if (cleanMsg === '!catch' || cleanMsg.startsWith('!catch ')) {
-    if (!session.activeWildPokemon) {
-      return `❌ @${displayName}, no wild Pokémon is active to catch right now!`;
-    }
-
     const user = await db.getUser(channelId, username, displayName);
     const now = Date.now();
 
@@ -1039,10 +1035,19 @@ async function processCommand(channelId, username, displayName, messageText, bas
       return msg;
     }
 
-    // Deduct ball
+    // Deduct ball & set cooldown immediately
     user.balls[ballType] -= 1;
     user.lastCatchAttempt = now;
     await db.saveUser(channelId, user);
+
+    // If no wild Pokémon is active, the ball breaks on empty screen (anti-spam penalty)
+    if (!session.activeWildPokemon) {
+      const msg = `💨 @${displayName} threw a ${ballType} but there was no wild Pokémon on screen! The ball broke and was wasted.`;
+      io.to(channelId).emit('balls_updated', { username, balls: user.balls });
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      sendGameLog(channelId, 'capture', msg);
+      return msg;
+    }
 
     let multiplier = 1.0;
     if (ballType === 'pokeball') multiplier = session.config.catchMultiplierPokeball !== undefined ? session.config.catchMultiplierPokeball : 1.0;
