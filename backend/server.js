@@ -786,6 +786,17 @@ async function runBattle(channelId, playerA, playerB) {
       loserName = opponentName;
       resultMessage = `🏆 ${winnerName}'s ${pokeA.name} defeated ${loserName}'s ${pokeB.name}! (${Math.round(finalPowerA)} vs ${Math.round(finalPowerB)} Power)`;
       
+      // If Steal Battle mode is selected by the streamer and it's a PvP battle, transfer the fainted Pokémon!
+      const isStealMode = session.config.battleType === 'steal';
+      if (isStealMode && !isWildBattle) {
+        try {
+          await db.stealPokemon(channelId, playerA.username, playerB.username, pokeB.instanceId);
+          resultMessage += ` 💥 @${playerA.displayName} STOLE @${playerB.displayName}'s ${pokeB.name}!`;
+        } catch (err) {
+          console.error('[Steal Battle Error]:', err.message);
+        }
+      }
+
       const evoResult = await db.addWin(channelId, playerA.username, pokeA.instanceId, pokemonDb);
       
       // Award XP & Coins to challenger for winning the battle
@@ -811,6 +822,17 @@ async function runBattle(channelId, playerA, playerB) {
       resultMessage = `🏆 ${winnerName}'s ${pokeB.name} defeated ${loserName}'s ${pokeA.name}! (${Math.round(finalPowerB)} vs ${Math.round(finalPowerA)} Power)`;
       
       if (!isWildBattle) {
+        // If Steal Battle mode is selected by the streamer and it's a PvP battle, transfer the fainted Pokémon!
+        const isStealMode = session.config.battleType === 'steal';
+        if (isStealMode) {
+          try {
+            await db.stealPokemon(channelId, playerB.username, playerA.username, pokeA.instanceId);
+            resultMessage += ` 💥 @${playerB.displayName} STOLE @${playerA.displayName}'s ${pokeA.name}!`;
+          } catch (err) {
+            console.error('[Steal Battle Error]:', err.message);
+          }
+        }
+
         const evoResult = await db.addWin(channelId, playerB.username, pokeB.instanceId, pokemonDb);
         
         // Award XP & Coins to opponent player for winning
@@ -1857,10 +1879,28 @@ async function processCommand(channelId, username, displayName, messageText, bas
         
         io.to(channelId).emit('balls_updated', { username: winnerUsername, balls: winUser.balls });
       }
+
+      // 🏆 Award Raid Boss Pokémon to the participant with the highest damage
+      const topContributor = sortedContributors[0];
+      let caughtMsg = "";
+      if (topContributor) {
+        try {
+          const topUser = await db.getUser(channelId, topContributor.username);
+          const basePokeData = pokemonDb[boss.id];
+          if (basePokeData) {
+            await db.addPokemon(channelId, topContributor.username, topUser.displayName, basePokeData, boss.shiny);
+            caughtMsg = `🎉 @${topUser.displayName} dealt the highest damage (${topContributor.damage} HP) and caught ${boss.name}!`;
+            sendGameLog(channelId, 'capture', caughtMsg);
+          }
+        } catch (err) {
+          console.error('[Raid Capture Error]:', err.message);
+        }
+      }
       
+      const raidEndMsg = `🏆 The Raid Boss ${boss.name} has been defeated! Rewards distributed. ${caughtMsg}`;
       io.to(channelId).emit('raid_end', {
         victory: true,
-        message: `🏆 The Raid Boss ${boss.name} has been defeated! Rewards distributed.`,
+        message: raidEndMsg,
         participants: boss.participants
       });
       

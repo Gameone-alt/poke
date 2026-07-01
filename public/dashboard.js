@@ -126,6 +126,7 @@ const primaryColorInput = document.getElementById('primary-color');
 const primaryColorTextInput = document.getElementById('primary-color-text');
 const sfxVolumeInput = document.getElementById('sfx-volume');
 const showBattleArenaInput = document.getElementById('show-battle-arena');
+const battleTypeSelect = document.getElementById('battle-type');
 const showLeaderboardInput = document.getElementById('show-leaderboard');
 const showLiveFeedInput = document.getElementById('show-live-feed');
 const liveFeedTitleInput = document.getElementById('live-feed-title');
@@ -283,6 +284,7 @@ function populateConfig(config) {
   primaryColorTextInput.value = config.primaryColor || '#3b82f6';
   sfxVolumeInput.value = config.sfxVolume !== undefined ? config.sfxVolume : 50;
   showBattleArenaInput.checked = config.showBattleArena !== false;
+  if (battleTypeSelect) battleTypeSelect.value = config.battleType || 'normal';
   showLeaderboardInput.checked = config.showLeaderboard !== false;
   showLiveFeedInput.checked = config.showLiveFeed !== false;
   liveFeedTitleInput.value = config.liveFeedTitle || 'LIVE GAME FEED';
@@ -474,6 +476,7 @@ function compileConfigObject() {
     primaryColor: primaryColorInput.value,
     sfxVolume: parseInt(sfxVolumeInput.value),
     showBattleArena: showBattleArenaInput.checked,
+    battleType: battleTypeSelect ? battleTypeSelect.value : 'normal',
     showLeaderboard: showLeaderboardInput.checked,
     
     // Custom Economy & Game Rewards

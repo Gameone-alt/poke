@@ -262,7 +262,8 @@ async function runAutoMigrations() {
       ADD COLUMN IF NOT EXISTS raid_left VARCHAR(20) DEFAULT '',
       ADD COLUMN IF NOT EXISTS raid_right VARCHAR(20) DEFAULT '',
       ADD COLUMN IF NOT EXISTS raid_top VARCHAR(20) DEFAULT '',
-      ADD COLUMN IF NOT EXISTS raid_bottom VARCHAR(20) DEFAULT '';
+      ADD COLUMN IF NOT EXISTS raid_bottom VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS battle_type VARCHAR(20) DEFAULT 'normal';
     `);
 
     // Add columns to inventories table
@@ -966,7 +967,8 @@ async function getStreamerConfig(streamerId) {
         feedScale: 1.0,
         battleAcceptTimeoutSeconds: 30,
         streamDelaySeconds: 0,
-        hideSpawnDetails: false
+        hideSpawnDetails: false,
+        battleType: 'normal'
       };
       saveLocalConfigs();
     } else {
@@ -1078,12 +1080,13 @@ async function getStreamerConfig(streamerId) {
       raidLeft: '',
       raidRight: '',
       raidTop: '',
-      raidBottom: ''
+      raidBottom: '',
+      battleType: 'normal'
     };
     
     await query(
-      `INSERT INTO streamer_configs (channel_id, youtube_channel_id, video_id, spawn_interval_ms, wild_despawn_timeout_ms, catch_cooldown_ms, shiny_chance, admin_password, theme, sfx_volume, show_live_feed, live_feed_title, show_spawn_alert, spawn_alert_title, spawn_catch_guide, show_battle_arena, primary_color, custom_css, spawn_card_scale, spawn_card_position, show_card_sprite, show_card_types, show_card_instructions, twitch_channel, obs_websocket_url, spawn_target, youtube_api_key, spawn_card_left, spawn_card_right, spawn_card_top, spawn_card_bottom, ticker_position, ticker_left, ticker_right, ticker_top, ticker_bottom, feed_position, feed_left, feed_right, feed_top, feed_bottom, battle_position, battle_left, battle_right, battle_top, battle_bottom, show_leaderboard, coins_capture_normal, coins_capture_shiny, xp_capture_normal, xp_capture_shiny, level_up_coins, level_up_greatballs, level_up_ultraballs, catch_multiplier_pokeball, catch_multiplier_greatball, catch_multiplier_ultraball, price_pokeball, price_greatball, price_ultraball, price_masterball, catch_multiplier_normal, catch_multiplier_rare, catch_multiplier_legendary, price_pack_kanto, price_pack_johto, price_pack_hoenn, price_pack_sinnoh, price_pack_unova, price_pack_kalos, price_pack_alola, price_pack_legendary, price_fire_stone, price_water_stone, price_thunder_stone, price_leaf_stone, price_moon_stone, raid_chance, raid_boss_hp, raid_reward_coins, raid_reward_xp, raid_drop_stone_chance, inventory_base_url, sprite_format, spawn_catch_guide_mode)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41, $42, $43, $44, $45, $46, $47, $48, $49, $50, $51, $52, $53, $54, $55, $56, $57, $58, $59, $60, $61, $62, $63, $64, $65, $66, $67, $68, $69, $70, $71, $72, $73, $74, $75, $76, $77, $78, $79, $80, $81, $82, $83, $84, $85)`,
+      `INSERT INTO streamer_configs (channel_id, youtube_channel_id, video_id, spawn_interval_ms, wild_despawn_timeout_ms, catch_cooldown_ms, shiny_chance, admin_password, theme, sfx_volume, show_live_feed, live_feed_title, show_spawn_alert, spawn_alert_title, spawn_catch_guide, show_battle_arena, primary_color, custom_css, spawn_card_scale, spawn_card_position, show_card_sprite, show_card_types, show_card_instructions, twitch_channel, obs_websocket_url, spawn_target, youtube_api_key, spawn_card_left, spawn_card_right, spawn_card_top, spawn_card_bottom, ticker_position, ticker_left, ticker_right, ticker_top, ticker_bottom, feed_position, feed_left, feed_right, feed_top, feed_bottom, battle_position, battle_left, battle_right, battle_top, battle_bottom, show_leaderboard, coins_capture_normal, coins_capture_shiny, xp_capture_normal, xp_capture_shiny, level_up_coins, level_up_greatballs, level_up_ultraballs, catch_multiplier_pokeball, catch_multiplier_greatball, catch_multiplier_ultraball, price_pokeball, price_greatball, price_ultraball, price_masterball, catch_multiplier_normal, catch_multiplier_rare, catch_multiplier_legendary, price_pack_kanto, price_pack_johto, price_pack_hoenn, price_pack_sinnoh, price_pack_unova, price_pack_kalos, price_pack_alola, price_pack_legendary, price_fire_stone, price_water_stone, price_thunder_stone, price_leaf_stone, price_moon_stone, raid_chance, raid_boss_hp, raid_reward_coins, raid_reward_xp, raid_drop_stone_chance, inventory_base_url, sprite_format, spawn_catch_guide_mode, battle_type)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41, $42, $43, $44, $45, $46, $47, $48, $49, $50, $51, $52, $53, $54, $55, $56, $57, $58, $59, $60, $61, $62, $63, $64, $65, $66, $67, $68, $69, $70, $71, $72, $73, $74, $75, $76, $77, $78, $79, $80, $81, $82, $83, $84, $85, $86)`,
       [
         defaultConfig.channelId, defaultConfig.youtubeChannelId, defaultConfig.videoId, defaultConfig.spawnIntervalMs, defaultConfig.wildDespawnTimeoutMs, defaultConfig.catchCooldownMs, defaultConfig.shinyChance, defaultConfig.adminPassword,
         defaultConfig.theme, defaultConfig.sfxVolume, defaultConfig.showLiveFeed, defaultConfig.liveFeedTitle, defaultConfig.showSpawnAlert, defaultConfig.spawnAlertTitle, defaultConfig.spawnCatchGuide, defaultConfig.showBattleArena, defaultConfig.primaryColor, defaultConfig.customCss,
@@ -1101,7 +1104,7 @@ async function getStreamerConfig(streamerId) {
         defaultConfig.pricePackKanto, defaultConfig.pricePackJohto, defaultConfig.pricePackHoenn, defaultConfig.pricePackSinnoh, defaultConfig.pricePackUnova, defaultConfig.pricePackKalos, defaultConfig.pricePackAlola, defaultConfig.pricePackLegendary,
         defaultConfig.priceFireStone, defaultConfig.priceWaterStone, defaultConfig.priceThunderStone, defaultConfig.priceLeafStone, defaultConfig.priceMoonStone,
         defaultConfig.raidChance, defaultConfig.raidBossHp, defaultConfig.raidRewardCoins, defaultConfig.raidRewardXp, defaultConfig.raidDropStoneChance,
-        defaultConfig.inventoryBaseUrl, defaultConfig.spriteFormat, defaultConfig.spawnCatchGuideMode
+        defaultConfig.inventoryBaseUrl, defaultConfig.spriteFormat, defaultConfig.spawnCatchGuideMode, defaultConfig.battleType
       ]
     );
     
@@ -1207,7 +1210,8 @@ async function getStreamerConfig(streamerId) {
     raidLeft: row.raid_left || '',
     raidRight: row.raid_right || '',
     raidTop: row.raid_top || '',
-    raidBottom: row.raid_bottom || ''
+    raidBottom: row.raid_bottom || '',
+    battleType: row.battle_type || 'normal'
   };
 }
 
@@ -1256,8 +1260,9 @@ async function saveStreamerConfig(streamerId, config) {
          hide_spawn_details = $91,
          raid_scale = $92, raid_position = $93,
          raid_left = $94, raid_right = $95,
-         raid_top = $96, raid_bottom = $97
-     WHERE channel_id = $98`,
+         raid_top = $96, raid_bottom = $97,
+         battle_type = $98
+     WHERE channel_id = $99`,
     [
       config.videoId || '',
       config.spawnIntervalMs,
@@ -1356,6 +1361,7 @@ async function saveStreamerConfig(streamerId, config) {
       config.raidRight || '',
       config.raidTop || '',
       config.raidBottom || '',
+      config.battleType || 'normal',
       streamer
     ]
   );
@@ -1695,6 +1701,59 @@ async function renamePlayer(streamerId, oldUsername, newUsername, newDisplayName
   );
 }
 
+/**
+ * Transfers a Pokémon instance from one player to another (Steal Battle).
+ */
+async function stealPokemon(streamerId, winnerUsername, loserUsername, pokemonInstanceId) {
+  const streamer = streamerId.toLowerCase().trim();
+  const winner = winnerUsername.toLowerCase().trim();
+  const loser = loserUsername.toLowerCase().trim();
+
+  if (useLocalFallback) {
+    const userWinner = await getUser(streamerId, winner);
+    const userLoser = await getUser(streamerId, loser);
+
+    const index = userLoser.inventory.findIndex(p => p.instanceId === pokemonInstanceId);
+    if (index === -1) {
+      throw new Error("Pokémon not found in loser's inventory.");
+    }
+
+    const stolenPoke = userLoser.inventory.splice(index, 1)[0];
+    userWinner.inventory.push(stolenPoke);
+
+    // Reset buddy/active if they were the stolen Pokémon
+    if (userLoser.buddyInstanceId === pokemonInstanceId) userLoser.buddyInstanceId = null;
+    if (userLoser.activePokemonId === pokemonInstanceId) {
+      userLoser.activePokemonId = userLoser.inventory[0]?.instanceId || null;
+    }
+
+    await saveUser(streamerId, userWinner);
+    await saveUser(streamerId, userLoser);
+    return stolenPoke;
+  }
+
+  // PostgreSQL Mode
+  await query(
+    'UPDATE inventories SET username = $1 WHERE streamer_id = $2 AND instance_id = $3',
+    [winner, streamer, pokemonInstanceId]
+  );
+
+  const userLoser = await getUser(streamerId, loser);
+  
+  if (userLoser.buddyInstanceId === pokemonInstanceId) {
+    await query('UPDATE players SET buddy_instance_id = NULL WHERE streamer_id = $1 AND username = $2', [streamer, loser]);
+  }
+  if (userLoser.activePokemonId === pokemonInstanceId) {
+    const nextActive = (await query('SELECT instance_id FROM inventories WHERE streamer_id = $1 AND username = $2 LIMIT 1', [streamer, loser])).rows[0]?.instance_id || null;
+    await query('UPDATE players SET active_pokemon_id = $1 WHERE streamer_id = $2 AND username = $3', [nextActive, streamer, loser]);
+  }
+  
+  // Return the transfer details
+  const userWinner = await getUser(streamerId, winner);
+  const transferred = userWinner.inventory.find(p => p.instanceId === pokemonInstanceId);
+  return transferred;
+}
+
 module.exports = {
   getUser,
   saveUser,
@@ -1710,5 +1769,6 @@ module.exports = {
   swapPokemonOwnership,
   evolvePokemon,
   fusePokemon,
-  renamePlayer
+  renamePlayer,
+  stealPokemon
 };
