@@ -1906,6 +1906,9 @@ async function processCommand(channelId, username, displayName, messageText, bas
       
       sendGameLog(channelId, 'system', `🏆 The Raid Boss ${boss.name} was defeated! Participants rewarded.`);
       session.activeRaidBoss = null;
+      
+      // Override reply with complete raid end results for chat feedback
+      reply = `@${displayName}'s ${pokemonName} hit ${boss.name} for 💥 ${attackPower} damage and DEFEATED IT! ${raidEndMsg}`;
     }
     
     return reply;
