@@ -1036,8 +1036,7 @@ async function processCommand(channelId, username, displayName, messageText, bas
       return msg;
     }
 
-    // Deduct ball and set cooldown since target is active
-    user.balls[ballType] -= 1;
+    // Set cooldown since catch attempt is made, but do NOT deduct the ball yet (it only deducts on success!)
     user.lastCatchAttempt = now;
     await db.saveUser(channelId, user);
 
@@ -1061,6 +1060,10 @@ async function processCommand(channelId, username, displayName, messageText, bas
     const success = Math.random() < finalCatchRate;
 
     if (success) {
+      // Deduct the ball on successful catch
+      user.balls[ballType] -= 1;
+      await db.saveUser(channelId, user);
+
       if (session.wildDespawnTimer) clearTimeout(session.wildDespawnTimer);
       
       const isShiny = session.activeWildPokemon.isShiny;
