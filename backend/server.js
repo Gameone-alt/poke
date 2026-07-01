@@ -1005,10 +1005,6 @@ async function processCommand(channelId, username, displayName, messageText, bas
 
   // 4. !catch command
   if (cleanMsg === '!catch' || cleanMsg.startsWith('!catch ')) {
-    if (!session.activeWildPokemon) {
-      return `❌ @${displayName}, no wild Pokémon is active to catch right now!`;
-    }
-
     const user = await db.getUser(channelId, username, displayName);
     const now = Date.now();
 
@@ -1039,7 +1035,16 @@ async function processCommand(channelId, username, displayName, messageText, bas
       return msg;
     }
 
-    // Deduct ball
+    // If no wild Pokémon is active, trigger cooldown to prevent spam, but do NOT deduct the ball
+    if (!session.activeWildPokemon) {
+      user.lastCatchAttempt = now;
+      await db.saveUser(channelId, user);
+      const msg = `❌ @${displayName}, no wild Pokémon is active to catch! (Anti-spam cooldown triggered, but no ball was used)`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+
+    // Deduct ball and set cooldown since target is active
     user.balls[ballType] -= 1;
     user.lastCatchAttempt = now;
     await db.saveUser(channelId, user);
