@@ -1785,6 +1785,37 @@ async function deletePlayer(streamerId, username) {
   await query('DELETE FROM inventories WHERE streamer_id = $1 AND username = $2', [streamer, key]);
 }
 
+/**
+ * Resolves a player profile by nickname (checks username OR display_name).
+ * Falls back to getUser if no match is found.
+ */
+async function findPlayerByNickname(streamerId, nickname) {
+  const streamer = streamerId.toLowerCase().trim();
+  const key = nickname.toLowerCase().trim().replace(/^@/, '');
+
+  if (useLocalFallback) {
+    const matched = Object.keys(localUsers).find(k => {
+      if (!k.startsWith(`${streamer}_`)) return false;
+      const u = localUsers[k];
+      return u.username.toLowerCase() === key || u.displayName.toLowerCase() === key;
+    });
+    if (matched) {
+      return migrateLocalUser(JSON.parse(JSON.stringify(localUsers[matched])));
+    }
+    return await getUser(streamerId, key);
+  }
+
+  // PostgreSQL Mode
+  const res = await query(
+    'SELECT username FROM players WHERE streamer_id = $1 AND (LOWER(username) = $2 OR LOWER(display_name) = $2) LIMIT 1',
+    [streamer, key]
+  );
+  if (res && res.rows.length > 0) {
+    return await getUser(streamerId, res.rows[0].username);
+  }
+  return await getUser(streamerId, key);
+}
+
 module.exports = {
   getUser,
   saveUser,
@@ -1802,5 +1833,6 @@ module.exports = {
   fusePokemon,
   renamePlayer,
   stealPokemon,
-  deletePlayer
+  deletePlayer,
+  findPlayerByNickname
 };

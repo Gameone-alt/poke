@@ -1155,7 +1155,7 @@ async function processCommand(channelId, username, displayName, messageText, bas
     }
 
     // Handle fight player
-    const targetUser = await db.getUser(channelId, rawTarget);
+    const targetUser = await db.findPlayerByNickname(channelId, rawTarget);
     if (!targetUser || targetUser.inventory.length === 0) {
       const msg = `❌ @${displayName}, could not find player @${rawTarget} or they have no Pokémon.`;
       io.to(channelId).emit('command_feedback', { username, text: msg });
@@ -1700,7 +1700,10 @@ async function processCommand(channelId, username, displayName, messageText, bas
     }
     
     const targetMention = parts[1].replace('@', '').toLowerCase().trim();
-    if (targetMention === username.toLowerCase()) {
+    const resolvedTarget = await db.findPlayerByNickname(channelId, targetMention);
+    const targetUsername = resolvedTarget ? resolvedTarget.username.toLowerCase() : targetMention;
+
+    if (targetUsername === username.toLowerCase()) {
       const msg = `❌ @${displayName}, you cannot trade with yourself!`;
       io.to(channelId).emit('command_feedback', { username, text: msg });
       return msg;
@@ -1713,19 +1716,19 @@ async function processCommand(channelId, username, displayName, messageText, bas
       return msg;
     }
     
-    const targetOffer = session.tradeOffers[targetMention];
+    const targetOffer = session.tradeOffers[targetUsername];
     if (!targetOffer) {
-      const msg = `❌ @${displayName}, @${targetMention} is not currently offering any Pokémon for trade.`;
+      const msg = `❌ @${displayName}, @${resolvedTarget ? resolvedTarget.displayName : targetMention} is not currently offering any Pokémon for trade.`;
       io.to(channelId).emit('command_feedback', { username, text: msg });
       return msg;
     }
     
-    session.tradeAcceptances[username.toLowerCase()] = targetMention;
+    session.tradeAcceptances[username.toLowerCase()] = targetUsername;
     
-    if (session.tradeAcceptances[targetMention] === username.toLowerCase()) {
+    if (session.tradeAcceptances[targetUsername] === username.toLowerCase()) {
       try {
         const userA = await db.getUser(channelId, username, displayName);
-        const userB = await db.getUser(channelId, targetMention);
+        const userB = resolvedTarget;
         
         const ownA = userA.inventory.some(p => p.instanceId === myOffer.pokemon.instanceId);
         const ownB = userB.inventory.some(p => p.instanceId === targetOffer.pokemon.instanceId);
@@ -1733,9 +1736,9 @@ async function processCommand(channelId, username, displayName, messageText, bas
         if (!ownA || !ownB) {
           const msg = `❌ Trade cancelled: One or both trainers no longer own the offered Pokémon.`;
           delete session.tradeOffers[username.toLowerCase()];
-          delete session.tradeOffers[targetMention];
+          delete session.tradeOffers[targetUsername];
           delete session.tradeAcceptances[username.toLowerCase()];
-          delete session.tradeAcceptances[targetMention];
+          delete session.tradeAcceptances[targetUsername];
           io.to(channelId).emit('command_feedback', { username, text: msg });
           return msg;
         }
