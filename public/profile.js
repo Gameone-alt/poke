@@ -1,3 +1,7 @@
+let cachedUserData = null;
+let globalPokemonList = [];
+let activeRegion = 'all';
+
 document.addEventListener('DOMContentLoaded', () => {
   const pathParts = window.location.pathname.split('/');
   const urlParams = new URLSearchParams(window.location.search);
@@ -18,13 +22,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const backend = urlParams.get('backend') || '';
   const apiBase = backend.replace(/\/$/, '');
-  fetch(`${apiBase}/api/trainer/${channel}/${username}`)
+
+  // Fetch all Pokémon list for Pokédex checklist first
+  fetch(`${apiBase}/api/pokemon-list`)
+    .then(res => res.json())
+    .then(list => {
+      globalPokemonList = list.sort((a, b) => a.id - b.id);
+      
+      // Now fetch trainer profile data
+      return fetch(`${apiBase}/api/trainer/${channel}/${username}`);
+    })
     .then(res => {
       if (!res.ok) throw new Error('Trainer profile not found.');
       return res.json();
     })
     .then(data => {
+      cachedUserData = data;
       renderTrainerProfile(data);
+      updateRegionStats(data);
     })
     .catch(err => {
       console.error(err);
@@ -250,4 +265,143 @@ function generateTreeHTML(node, activePokemonId) {
 
   html += `</div>`;
   return html;
+}
+
+/**
+ * Calculates how many unique Pokémon have been caught in each region and updates stats row labels.
+ */
+function updateRegionStats(user) {
+  if (!user || !user.inventory) return;
+
+  const caughtIds = new Set(user.inventory.map(p => p.pokemonId));
+  const regions = {
+    kanto: { min: 1, max: 151, total: 151 },
+    johto: { min: 152, max: 251, total: 100 },
+    hoenn: { min: 252, max: 386, total: 135 },
+    sinnoh: { min: 387, max: 493, total: 107 },
+    unova: { min: 494, max: 649, total: 156 },
+    kalos: { min: 650, max: 721, total: 72 },
+    alola: { min: 722, max: 809, total: 88 },
+    'galar-paldea': { min: 810, max: 1025, total: 216 }
+  };
+
+  Object.keys(regions).forEach(reg => {
+    const config = regions[reg];
+    let caughtCount = 0;
+
+    for (let id = config.min; id <= config.max; id++) {
+      if (caughtIds.has(id)) {
+        caughtCount++;
+      }
+    }
+
+    const el = document.getElementById(`stats-${reg}`);
+    if (el) {
+      el.textContent = `${caughtCount}/${config.total}`;
+    }
+  });
+}
+
+/**
+ * Tab/Pill click handler to toggle between main Collection view and regional Pokédex checklist views.
+ */
+window.selectRegion = function(region) {
+  activeRegion = region;
+
+  const pills = document.querySelectorAll('.region-pill');
+  pills.forEach(pill => pill.classList.remove('active'));
+
+  const activePill = document.getElementById(`pill-${region}`);
+  if (activePill) {
+    activePill.classList.add('active');
+  }
+
+  if (cachedUserData) {
+    if (region === 'all') {
+      renderTrainerProfile(cachedUserData);
+    } else {
+      renderPokedexRegion(cachedUserData, region);
+    }
+  }
+};
+
+/**
+ * Renders the regional checklist. Caught entries show full artwork/names, locked entries hide them behind question marks.
+ */
+function renderPokedexRegion(user, region) {
+  const grid = document.getElementById('pokemon-grid');
+  grid.innerHTML = '';
+
+  const regions = {
+    kanto: { min: 1, max: 151 },
+    johto: { min: 152, max: 251 },
+    hoenn: { min: 252, max: 386 },
+    sinnoh: { min: 387, max: 493 },
+    unova: { min: 494, max: 649 },
+    kalos: { min: 650, max: 721 },
+    alola: { min: 722, max: 809 },
+    'galar-paldea': { min: 810, max: 1025 }
+  };
+
+  const config = regions[region];
+  if (!config) return;
+
+  const caughtMap = new Map();
+  if (user.inventory) {
+    user.inventory.forEach(poke => {
+      const id = poke.pokemonId;
+      if (id >= config.min && id <= config.max) {
+        const existing = caughtMap.get(id);
+        if (!existing || (poke.shiny && !existing.shiny) || (poke.wins > existing.wins)) {
+          caughtMap.set(id, poke);
+        }
+      }
+    });
+  }
+
+  const regionPokes = globalPokemonList.filter(p => p.id >= config.min && p.id <= config.max);
+
+  if (regionPokes.length === 0) {
+    grid.innerHTML = '<div class="empty-state">No Pokémon data loaded. Please reload the page.</div>';
+    return;
+  }
+
+  regionPokes.forEach(staticPoke => {
+    const card = document.createElement('div');
+    const poke = caughtMap.get(staticPoke.id);
+
+    if (poke) {
+      card.className = 'pokemon-card';
+      const isLegendary = poke.isLegendary || (poke.catchRate !== undefined && poke.catchRate <= 0.1);
+      if (isLegendary) card.classList.add('legendary');
+      if (poke.shiny) card.classList.add('shiny');
+
+      const typeBadges = poke.types.map(t => `<span class="type-badge type-${t.toLowerCase()}">${t}</span>`).join(' ');
+      const spriteUrl = getSafeSprite(poke.spriteUrl, poke.fallbackSpriteUrl, poke.pokemonId, poke.shiny);
+      const shinySpark = poke.shiny ? '<span class="shiny-sparkle">✨</span>' : '';
+
+      card.innerHTML = `
+        <div class="pokemon-cp" style="font-size: 11px; color: var(--text-muted); top: 12px; left: 14px; position: absolute; font-weight: 700;">#${staticPoke.id}</div>
+        <img src="${spriteUrl}" alt="${poke.name}" class="pokemon-sprite" style="margin-top: 10px;">
+        <div class="pokemon-name" style="margin-top: 5px;">${shinySpark}${poke.name}</div>
+        <div class="pokemon-types" style="justify-content: center; margin-bottom: 5px;">${typeBadges}</div>
+        <div style="font-size: 11px; color: #10b981; font-weight: 700; display: flex; align-items: center; gap: 4px; justify-content: center; margin-bottom: 5px;">✅ Caught</div>
+      `;
+
+      card.style.cursor = 'pointer';
+      card.addEventListener('click', () => {
+        showEvolutionTree(poke.pokemonId);
+      });
+    } else {
+      card.className = 'pokemon-card locked';
+      card.innerHTML = `
+        <div class="pokemon-cp" style="font-size: 11px; color: var(--text-muted); top: 12px; left: 14px; position: absolute; font-weight: 700;">#${staticPoke.id}</div>
+        <div class="locked-sprite-placeholder" style="margin-top: 10px;">🔒</div>
+        <div class="pokemon-name" style="color: var(--text-muted); font-style: italic; margin-top: 5px;">????</div>
+        <div style="font-size: 11px; color: var(--text-muted); font-weight: 500; text-align: center; margin-bottom: 5px;">Missing</div>
+      `;
+    }
+
+    grid.appendChild(card);
+  });
 }
