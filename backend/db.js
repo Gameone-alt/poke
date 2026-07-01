@@ -319,8 +319,15 @@ async function query(text, params) {
   try {
     return await pool.query(text, params);
   } catch (err) {
-    console.error('[Database] PostgreSQL Query failed, falling back to local JSON database:', err.message);
-    useLocalFallback = true;
+    // If the database server successfully replied with a standard SQLSTATE error code (exactly 5 characters, e.g. '23505' for unique constraint violation),
+    // do NOT fall back to local JSON, because the database server connection is healthy and responsive.
+    const isStandardSqlError = err.code && typeof err.code === 'string' && /^[0-9A-Z]{5}$/.test(err.code);
+    if (!isStandardSqlError) {
+      console.error('[Database] Connection failure detected, falling back to local JSON database:', err.message);
+      useLocalFallback = true;
+    } else {
+      console.error('[Database] Query execution error (integrity constraint/syntax):', err.message);
+    }
     throw err;
   }
 }
@@ -1681,11 +1688,14 @@ async function renamePlayer(streamerId, oldUsername, newUsername, newDisplayName
   const newDisplay = newDisplayName.trim();
   
   if (useLocalFallback) {
-    if (localUsers[streamer] && localUsers[streamer][oldUser]) {
-      const userData = localUsers[streamer][oldUser];
+    const oldKey = `${streamer}_${oldUser}`;
+    const newKey = `${streamer}_${newUser}`;
+    if (localUsers[oldKey]) {
+      const userData = localUsers[oldKey];
+      userData.username = newUser;
       userData.displayName = newDisplay;
-      localUsers[streamer][newUser] = userData;
-      delete localUsers[streamer][oldUser];
+      localUsers[newKey] = userData;
+      delete localUsers[oldKey];
       saveLocalUsers();
     }
     return;
