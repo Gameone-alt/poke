@@ -22,6 +22,7 @@ const sparkleEmitter = document.getElementById('sparkle-emitter');
 
 // Battle Arena references
 const battleOverlay = document.getElementById('battle-overlay');
+const battleOverlayCard = document.getElementById('battle-overlay-card');
 const weatherArena = document.getElementById('weather-arena');
 const challengerFighter = document.getElementById('fighter-challenger');
 const opponentFighter = document.getElementById('fighter-opponent');
@@ -807,7 +808,7 @@ function showDamagePopup(x, y, text, color = '#ef4444', isLocal = false) {
   popup.style.pointerEvents = 'none';
 
   if (isLocal) {
-    const container = document.getElementById('battle-overlay');
+    const container = document.getElementById('battle-overlay-card');
     if (container) container.appendChild(popup);
     else document.body.appendChild(popup);
   } else {
@@ -838,7 +839,7 @@ function showComicPop(x, y, type = 'normal', isLocal = false) {
   popup.style.border = '4px solid #000';
   
   if (isLocal) {
-    const container = document.getElementById('battle-overlay');
+    const container = document.getElementById('battle-overlay-card');
     if (container) container.appendChild(popup);
     else document.body.appendChild(popup);
   } else {
@@ -1051,7 +1052,7 @@ socket.on('battle_start', (data) => {
   activeBattleSimulationTimers = [];
   
   // Kill any running GSAP animations on these elements
-  gsap.killTweensOf([battleOverlay, challengerFighter, opponentFighter]);
+  gsap.killTweensOf([battleOverlayCard, challengerFighter, opponentFighter]);
 
   const battleId = ++currentBattleId; // Guard: all timers check this
 
@@ -1064,7 +1065,7 @@ socket.on('battle_start', (data) => {
   battleOverlay.classList.remove('hidden');
 
   // Hard-reset positions and scales using GSAP
-  gsap.set(battleOverlay, { scale: 0.7, opacity: 0, transformOrigin: "center center" });
+  gsap.set(battleOverlayCard, { scale: 0.7, opacity: 0, transformOrigin: "center center" });
   gsap.set(challengerFighter, { x: -350, y: 0, opacity: 0, rotation: 0, scale: 1, filter: "none" });
   gsap.set(opponentFighter, { x: 350, y: 0, opacity: 0, rotation: 0, scale: 1, filter: "none" });
   impactFlash.classList.remove('impact-active');
@@ -1098,7 +1099,7 @@ socket.on('battle_start', (data) => {
   battleStatusText.textContent = 'BATTLE START!';
 
   // ── 4. Reveal overlay with a juicy spring pop ──
-  gsap.to(battleOverlay, { duration: 0.5, scale: 1, opacity: 1, ease: "back.out(1.2)" });
+  gsap.to(battleOverlayCard, { duration: 0.5, scale: 1, opacity: 1, ease: "back.out(1.2)" });
   playSound(sfxSpawn);
 
   // Slide-in sprites onto center stage
@@ -1142,9 +1143,9 @@ socket.on('battle_start', (data) => {
     battleStatusText.textContent = 'FIGHT!';
 
     // Star burst screen shake
-    gsap.fromTo(battleOverlay, 
+    gsap.fromTo(battleOverlayCard, 
       { x: "+=10", y: "+=10" }, 
-      { duration: 0.05, x: "50%", y: "50%", clearProps: "x,y", repeat: 5, yoyo: true }
+      { duration: 0.05, x: 0, y: 0, clearProps: "x,y", repeat: 5, yoyo: true }
     );
   }, 1200);
   activeBattleSimulationTimers.push(t1);
@@ -1369,7 +1370,7 @@ socket.on('battle_start', (data) => {
   const tCleanup = setTimeout(() => {
     if (battleId !== currentBattleId) return;
     
-    gsap.to(battleOverlay, {
+    gsap.to(battleOverlayCard, {
       duration: 0.4,
       scale: 0.7,
       opacity: 0,
@@ -1393,7 +1394,7 @@ socket.on('battle_end', (data) => {
   // If overlay is somehow still visible, hide it as a safety net.
   const safetyTimer = setTimeout(() => {
     if (!battleOverlay.classList.contains('hidden')) {
-      gsap.to(battleOverlay, {
+      gsap.to(battleOverlayCard, {
         duration: 0.4,
         scale: 0.7,
         opacity: 0,
