@@ -1791,29 +1791,39 @@ async function deletePlayer(streamerId, username) {
  */
 async function findPlayerByNickname(streamerId, nickname) {
   const streamer = streamerId.toLowerCase().trim();
-  const key = nickname.toLowerCase().trim().replace(/^@/, '');
+  const rawKey = nickname.toLowerCase().trim();
+  const cleanKey = rawKey.replace(/^@/, '');
+  const keyWithAt = '@' + cleanKey;
 
   if (useLocalFallback) {
     const matched = Object.keys(localUsers).find(k => {
       if (!k.startsWith(`${streamer}_`)) return false;
       const u = localUsers[k];
-      return u.username.toLowerCase() === key || u.displayName.toLowerCase() === key;
+      const dbUserLower = u.username.toLowerCase();
+      const dbDisplayLower = u.displayName.toLowerCase();
+      return dbUserLower === cleanKey || dbUserLower === keyWithAt ||
+             dbDisplayLower === cleanKey || dbDisplayLower === keyWithAt;
     });
     if (matched) {
       return migrateLocalUser(JSON.parse(JSON.stringify(localUsers[matched])));
     }
-    return await getUser(streamerId, key);
+    return await getUser(streamerId, cleanKey);
   }
 
   // PostgreSQL Mode
+  // Check against username and display_name, matching both raw, clean (without @), and prefix version
   const res = await query(
-    'SELECT username FROM players WHERE streamer_id = $1 AND (LOWER(username) = $2 OR LOWER(display_name) = $2) LIMIT 1',
-    [streamer, key]
+    `SELECT username FROM players 
+     WHERE streamer_id = $1 
+       AND (LOWER(username) = $2 OR LOWER(username) = $3
+            OR LOWER(display_name) = $2 OR LOWER(display_name) = $3) 
+     LIMIT 1`,
+    [streamer, cleanKey, keyWithAt]
   );
   if (res && res.rows.length > 0) {
     return await getUser(streamerId, res.rows[0].username);
   }
-  return await getUser(streamerId, key);
+  return await getUser(streamerId, cleanKey);
 }
 
 module.exports = {

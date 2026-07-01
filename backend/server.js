@@ -1215,7 +1215,12 @@ async function processCommand(channelId, username, displayName, messageText, bas
       return `❌ @${displayName}, you do not have any pending battle challenges.`;
     }
 
-    if (session.activeChallenge.opponent.username !== username) {
+    const expectedOpponent = session.activeChallenge.opponent.username.toLowerCase();
+    const senderUsername = username.toLowerCase();
+    const expectedDisplay = session.activeChallenge.opponent.displayName.toLowerCase().replace(/^@/, '');
+    const senderDisplay = displayName.toLowerCase().replace(/^@/, '');
+
+    if (expectedOpponent !== senderUsername && expectedDisplay !== senderDisplay) {
       return `❌ @${displayName}, you are not the opponent of this challenge.`;
     }
 
