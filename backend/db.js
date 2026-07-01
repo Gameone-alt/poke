@@ -1754,6 +1754,27 @@ async function stealPokemon(streamerId, winnerUsername, loserUsername, pokemonIn
   return transferred;
 }
 
+/**
+ * Deletes a player profile and all associated inventory data.
+ */
+async function deletePlayer(streamerId, username) {
+  const streamer = streamerId.toLowerCase().trim();
+  const key = username.toLowerCase().trim();
+
+  if (useLocalFallback) {
+    const localKey = `${streamer}_${key}`;
+    if (localUsers[localKey]) {
+      delete localUsers[localKey];
+      saveLocalUsers();
+    }
+    return;
+  }
+
+  // PostgreSQL Mode
+  await query('DELETE FROM players WHERE streamer_id = $1 AND username = $2', [streamer, key]);
+  await query('DELETE FROM inventories WHERE streamer_id = $1 AND username = $2', [streamer, key]);
+}
+
 module.exports = {
   getUser,
   saveUser,
@@ -1770,5 +1791,6 @@ module.exports = {
   evolvePokemon,
   fusePokemon,
   renamePlayer,
-  stealPokemon
+  stealPokemon,
+  deletePlayer
 };

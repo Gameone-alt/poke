@@ -2286,6 +2286,32 @@ io.on('connection', async (socket) => {
     }
   });
 
+  // Admin delete player profile (from dashboard viewer management table actions)
+  socket.on('admin_delete_player', async (data) => {
+    const { password, playerUsername } = data;
+    if (session.config.adminPassword && password !== session.config.adminPassword) {
+      socket.emit('command_feedback', { text: '❌ Unauthorized: Incorrect admin password!' });
+      return;
+    }
+    
+    try {
+      console.log(`[Admin] [${channelId}] Deleting player profile ${playerUsername}...`);
+      await db.deletePlayer(channelId, playerUsername);
+      
+      // Notify all clients of update (in case they were on leaderboard)
+      io.to(channelId).emit('leaderboard_update', await db.getLeaderboard(channelId));
+      
+      // Refresh player list for dashboard
+      const list = await db.getAllPlayers(channelId);
+      socket.emit('all_players_data', list);
+      
+      socket.emit('player_deleted_ack', { success: true, username: playerUsername });
+    } catch (err) {
+      console.error(`[Admin] [${channelId}] Player delete failed:`, err.message);
+      socket.emit('player_deleted_ack', { success: false, error: err.message });
+    }
+  });
+
   // Clean up timers/listeners on complete disconnect
   socket.on('disconnect', () => {
     console.log(`[Sockets] Client disconnected: ${socket.id} from room: ${channelId}`);

@@ -1014,6 +1014,7 @@ function renderViewersTable(players) {
         <button type="button" class="btn btn-preset btn-save-player" data-user="${p.username}" style="margin: 0; background:var(--color-primary); font-size:11px; padding:6px 12px; border:none; color:#fff; border-radius: 4px; cursor: pointer;">Save</button>
         <button type="button" class="btn btn-preset btn-rename-player" data-user="${p.username}" data-display="${p.displayName}" style="margin-left: 6px; background:#eab308; font-size:11px; padding:6px 12px; border:none; color:#000; border-radius: 4px; cursor: pointer; font-weight:600;">✏️ Rename</button>
         <button type="button" class="btn btn-preset btn-give-player" data-user="${p.username}" data-display="${p.displayName}" style="margin-left: 6px; background:#3b82f6; font-size:11px; padding:6px 12px; border:none; color:#fff; border-radius: 4px; cursor: pointer; font-weight:600;">🎁 Give Poke</button>
+        <button type="button" class="btn btn-preset btn-delete-player" data-user="${p.username}" data-display="${p.displayName}" style="margin-left: 6px; background:#ef4444; font-size:11px; padding:6px 12px; border:none; color:#fff; border-radius: 4px; cursor: pointer; font-weight:600;">🗑️ Delete</button>
         <a href="/trainer/${channelId}/${p.username}${urlParams.get('backend') ? '?backend=' + encodeURIComponent(urlParams.get('backend')) : ''}" target="_blank" class="btn btn-preset" style="margin-left: 6px; background:#475569; font-size:11px; padding:6px 12px; border:none; color:#fff; text-decoration:none; display:inline-block; border-radius:4px; font-weight:600;">🔍 Profile</a>
       </td>
     `;
@@ -1073,6 +1074,21 @@ function renderViewersTable(players) {
       const giveModal = document.getElementById('give-pokemon-modal');
       giveModal.style.display = 'flex';
       giveModal.classList.remove('hidden');
+    });
+  });
+
+  // Bind Delete Player Buttons
+  viewerDbBody.querySelectorAll('.btn-delete-player').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const username = btn.getAttribute('data-user');
+      const display = btn.getAttribute('data-display');
+      
+      document.getElementById('delete-target-username').value = username;
+      document.getElementById('delete-display-name').textContent = `@${display} (${username})`;
+      
+      const deleteModal = document.getElementById('delete-player-modal');
+      deleteModal.style.display = 'flex';
+      deleteModal.classList.remove('hidden');
     });
   });
 
@@ -1178,12 +1194,12 @@ socket.on('players_bulk_updated_ack', (data) => {
   }
 });
 
-// Receive update confirmations
-socket.on('player_updated_ack', (data) => {
+// Receive delete confirmation
+socket.on('player_deleted_ack', (data) => {
   if (data.success) {
-    alert(`Player @${data.username} profile updated successfully!`);
+    alert(`Player @${data.username} profile and inventory deleted successfully!`);
   } else {
-    alert(`Update failed: ${data.error}`);
+    alert(`Delete failed: ${data.error}`);
   }
 });
 
@@ -1469,6 +1485,33 @@ if (btnSubmitGive) {
     
     giveModal.style.display = 'none';
     giveModal.classList.add('hidden');
+  });
+}
+
+// Modals Delete Profile Controllers
+const deleteModal = document.getElementById('delete-player-modal');
+const btnCancelDelete = document.getElementById('btn-cancel-delete');
+const btnSubmitDelete = document.getElementById('btn-submit-delete');
+
+if (btnCancelDelete) {
+  btnCancelDelete.addEventListener('click', () => {
+    deleteModal.style.display = 'none';
+    deleteModal.classList.add('hidden');
+  });
+}
+
+if (btnSubmitDelete) {
+  btnSubmitDelete.addEventListener('click', () => {
+    const targetUsername = document.getElementById('delete-target-username').value;
+    if (!targetUsername) return;
+    
+    socket.emit('admin_delete_player', {
+      password: adminPassword,
+      playerUsername: targetUsername
+    });
+    
+    deleteModal.style.display = 'none';
+    deleteModal.classList.add('hidden');
   });
 }
 
