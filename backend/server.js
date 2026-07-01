@@ -950,16 +950,26 @@ async function processCommand(channelId, username, displayName, messageText, bas
     const user = await db.getUser(channelId, username, displayName);
     const invCount = user.inventory.length;
     const active = user.inventory.find(p => p.instanceId === user.activePokemonId);
-    const activeText = active ? `Active: ${active.name} (${active.wins} wins)` : 'None';
+    const activeText = active ? `${active.name} (${active.wins} wins)` : 'None';
     
     // Check buddy
     const buddy = user.inventory.find(p => p.instanceId === user.buddyInstanceId);
-    const buddyText = buddy ? ` | Buddy: ${buddy.name}` : '';
+    const buddyText = buddy ? buddy.name : 'None';
 
     const baseLink = session.config.inventoryBaseUrl 
       ? `${session.config.inventoryBaseUrl.replace(/\/$/, '')}/trainer/${channelId}/${username}?backend=${finalBaseUrl}` 
       : `${finalBaseUrl}/trainer/${channelId}/${username}`;
-    const msg = `🔗 @${displayName}'s Profile: ${baseLink}`;
+    
+    // Check if client is Twitch (prefixed with twitch_)
+    const isTwitch = username.startsWith('twitch_');
+    
+    // Include full text stats to show details directly in chat (essential for YouTube link blocking)
+    let msg = `📊 @${displayName}'s Profile: Level ${user.level} | Coins: 🪙 ${user.coins} | Box: ${invCount} Pokémon | Buddy: ${buddyText} | Active: ${activeText}`;
+    
+    // Only append link for Twitch chat (YouTube silently blocks messages with links for non-mods)
+    if (isTwitch) {
+      msg += ` 🔗 View Box: ${baseLink}`;
+    }
     
     io.to(channelId).emit('command_feedback', {
       username,
