@@ -541,7 +541,21 @@ async function spawnWildPokemon(channelId) {
   if (allowedIds.length === 0) {
     allowedIds = pokemonIds;
   }
-  const basePoke = targetPoke || pokemonDb[allowedIds[Math.floor(Math.random() * allowedIds.length)]];
+  let basePoke = targetPoke;
+  if (!basePoke) {
+    const rolledPoke = pokemonDb[allowedIds[Math.floor(Math.random() * allowedIds.length)]];
+    // If a legendary is rolled randomly, apply a 90% chance to reroll to a non-legendary
+    if (rolledPoke.catchRate <= 0.1 && Math.random() < 0.90) {
+      const nonLegendaries = allowedIds.filter(id => pokemonDb[id].catchRate > 0.1);
+      if (nonLegendaries.length > 0) {
+        basePoke = pokemonDb[nonLegendaries[Math.floor(Math.random() * nonLegendaries.length)]];
+      } else {
+        basePoke = rolledPoke;
+      }
+    } else {
+      basePoke = rolledPoke;
+    }
+  }
   
   const isShiny = Math.random() < session.config.shinyChance;
   const sprite = isShiny ? basePoke.shinySpriteUrl : basePoke.spriteUrl;
