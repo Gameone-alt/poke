@@ -30,6 +30,9 @@ const socket = io(apiBase, {
 
 // Setup DOM elements
 document.addEventListener('DOMContentLoaded', () => {
+  // Eagerly load trainer data on page load (doesn't need socket)
+  setTimeout(() => { if (!cachedUserData) loadTrainerData(); }, 500);
+
   const securityOverlay = document.getElementById('security-overlay');
   const adminPassInput = document.getElementById('admin-pass-input');
   const btnSubmitPass = document.getElementById('btn-submit-pass');
@@ -53,6 +56,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Sockets password flow
   socket.on('connect', () => {
     console.log('[Sockets] Connected to channel:', channel);
+    // Always load trainer data on connect so the page shows the player's collection
+    loadTrainerData();
   });
 
   socket.on('password_status', (data) => {
