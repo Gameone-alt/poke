@@ -2029,6 +2029,20 @@ io.on('connection', async (socket) => {
   const session = getOrCreateSession(channelId);
 
   // Synchronously register all socket event handlers on connection to prevent race conditions (packet loss)
+  
+  // Helper to verify that the password matches the session's admin password
+  function isAuthorizedAdmin(password, socket) {
+    if (!session.config.adminPassword) {
+      socket.emit('command_feedback', { text: '❌ Unauthorized: Admin password has not been created yet!' });
+      return false;
+    }
+    if (password !== session.config.adminPassword) {
+      socket.emit('command_feedback', { text: '❌ Unauthorized: Incorrect admin password!' });
+      return false;
+    }
+    return true;
+  }
+
   socket.on('verify_password', async (data) => {
     if (session.initializationPromise) await session.initializationPromise;
     const { password } = data;
@@ -2061,7 +2075,8 @@ io.on('connection', async (socket) => {
   });
 
   socket.on('simulate_chat', (data) => {
-    const { username, displayName, messageText } = data;
+    const { username, displayName, messageText, password } = data || {};
+    if (!isAuthorizedAdmin(password, socket)) return;
     console.log(`[Simulator] [${channelId}] ${displayName} (${username}): ${messageText}`);
     const host = socket.handshake.headers.host || 'localhost:3000';
     const protocol = socket.handshake.headers['x-forwarded-proto'] || 'http';
@@ -2072,10 +2087,7 @@ io.on('connection', async (socket) => {
   socket.on('update_config', async (data) => {
     if (session.initializationPromise) await session.initializationPromise;
     const { newConfig, password } = data;
-    if (session.config.adminPassword && password !== session.config.adminPassword) {
-      socket.emit('command_feedback', { text: '❌ Unauthorized: Incorrect admin password!' });
-      return;
-    }
+    if (!isAuthorizedAdmin(password, socket)) return;
     
     try {
       console.log(`[Server] [${channelId}] Configuration updating...`);
@@ -2110,10 +2122,7 @@ io.on('connection', async (socket) => {
   // Force spawn button from dashboard
   socket.on('force_spawn', (data) => {
     const { password } = data || {};
-    if (session.config.adminPassword && password !== session.config.adminPassword) {
-      socket.emit('command_feedback', { text: '❌ Unauthorized: Incorrect admin password!' });
-      return;
-    }
+    if (!isAuthorizedAdmin(password, socket)) return;
     
     console.log(`[Server] [${channelId}] Forcing wild Pokemon spawn...`);
     spawnWildPokemon(channelId);
@@ -2122,10 +2131,7 @@ io.on('connection', async (socket) => {
   // Trigger Raid button from dashboard
   socket.on('trigger_raid', async (data) => {
     const { password, bossName } = data || {};
-    if (session.config.adminPassword && password !== session.config.adminPassword) {
-      socket.emit('command_feedback', { text: '❌ Unauthorized: Incorrect admin password!' });
-      return;
-    }
+    if (!isAuthorizedAdmin(password, socket)) return;
     
     try {
       console.log(`[Server] [${channelId}] Triggering boss raid manually: ${bossName || 'Random'}`);
@@ -2140,10 +2146,7 @@ io.on('connection', async (socket) => {
   // Reset database button from dashboard
   socket.on('reset_db', async (data) => {
     const { password } = data || {};
-    if (session.config.adminPassword && password !== session.config.adminPassword) {
-      socket.emit('command_feedback', { text: '❌ Unauthorized: Incorrect admin password!' });
-      return;
-    }
+    if (!isAuthorizedAdmin(password, socket)) return;
     
     try {
       console.log(`[Server] [${channelId}] Resetting database...`);
@@ -2159,10 +2162,7 @@ io.on('connection', async (socket) => {
   // Rename a player in the viewer management database
   socket.on('rename_player', async (data) => {
     const { password, oldUsername, newUsername, newDisplayName } = data || {};
-    if (session.config.adminPassword && password !== session.config.adminPassword) {
-      socket.emit('command_feedback', { text: '❌ Unauthorized: Incorrect admin password!' });
-      return;
-    }
+    if (!isAuthorizedAdmin(password, socket)) return;
     if (!oldUsername || !newUsername || !newDisplayName) {
       socket.emit('command_feedback', { text: '❌ Error: Missing required rename values.' });
       return;
@@ -2188,10 +2188,7 @@ io.on('connection', async (socket) => {
   // Give a pokemon to a player from the viewer management database
   socket.on('give_pokemon', async (data) => {
     const { password, targetUsername, targetDisplayName, pokemonId, isShiny } = data || {};
-    if (session.config.adminPassword && password !== session.config.adminPassword) {
-      socket.emit('command_feedback', { text: '❌ Unauthorized: Incorrect admin password!' });
-      return;
-    }
+    if (!isAuthorizedAdmin(password, socket)) return;
     if (!targetUsername || !pokemonId) {
       socket.emit('command_feedback', { text: '❌ Error: Missing required give pokemon values.' });
       return;
@@ -2220,7 +2217,9 @@ io.on('connection', async (socket) => {
   });
 
   // Request all registered players (for viewer management search list)
-  socket.on('get_all_players', async () => {
+  socket.on('get_all_players', async (data) => {
+    const { password } = data || {};
+    if (!isAuthorizedAdmin(password, socket)) return;
     try {
       const list = await db.getAllPlayers(channelId);
       socket.emit('all_players_data', list);
@@ -2232,10 +2231,7 @@ io.on('connection', async (socket) => {
   // Admin edit player details (from dashboard viewer management actions)
   socket.on('admin_update_player', async (data) => {
     const { password, playerUsername, updatedFields } = data;
-    if (session.config.adminPassword && password !== session.config.adminPassword) {
-      socket.emit('command_feedback', { text: '❌ Unauthorized: Incorrect admin password!' });
-      return;
-    }
+    if (!isAuthorizedAdmin(password, socket)) return;
     
     try {
       console.log(`[Admin] [${channelId}] Updating player profile ${playerUsername}...`);
@@ -2269,10 +2265,7 @@ io.on('connection', async (socket) => {
   // Admin bulk update player details (from dashboard viewer management table multi-selection)
   socket.on('admin_bulk_update_players', async (data) => {
     const { password, usernames, item, actionType, amount } = data;
-    if (session.config.adminPassword && password !== session.config.adminPassword) {
-      socket.emit('command_feedback', { text: '❌ Unauthorized: Incorrect admin password!' });
-      return;
-    }
+    if (!isAuthorizedAdmin(password, socket)) return;
     
     if (!usernames || !Array.isArray(usernames) || usernames.length === 0) {
       socket.emit('players_bulk_updated_ack', { success: false, error: 'No viewers selected!' });
@@ -2327,10 +2320,7 @@ io.on('connection', async (socket) => {
   // Admin delete player profile (from dashboard viewer management table actions)
   socket.on('admin_delete_player', async (data) => {
     const { password, playerUsername } = data;
-    if (session.config.adminPassword && password !== session.config.adminPassword) {
-      socket.emit('command_feedback', { text: '❌ Unauthorized: Incorrect admin password!' });
-      return;
-    }
+    if (!isAuthorizedAdmin(password, socket)) return;
     
     try {
       console.log(`[Admin] [${channelId}] Deleting player profile ${playerUsername}...`);

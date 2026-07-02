@@ -3,7 +3,11 @@
   "rewrites": [
     {
       "source": "/trainer/:channel/:username",
-      "destination": "/profile.html"
+      "destination": "/public/profile.html"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/public/:path*"
     }
   ]
 }

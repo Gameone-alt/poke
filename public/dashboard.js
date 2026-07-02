@@ -672,7 +672,8 @@ function sendChatMessage(text) {
   socket.emit('simulate_chat', {
     username,
     displayName,
-    messageText: text
+    messageText: text,
+    password: adminPassword
   });
 }
 
@@ -926,7 +927,7 @@ if (btnTabViewers) {
     if (mainViewersView) mainViewersView.classList.remove('hidden');
     
     // Trigger socket load
-    socket.emit('get_all_players');
+    socket.emit('get_all_players', { password: adminPassword });
   });
 }
 
