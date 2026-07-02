@@ -1105,48 +1105,96 @@ function renderViewersTable(players) {
           return;
         }
         
-        // Render inventory list
+        // Helper functions for card rendering
+        const getSafeSprite = (spriteUrl, fallbackUrl, pokemonId, isShiny) => {
+          if (spriteUrl && spriteUrl !== '/null' && !spriteUrl.endsWith('null') && !spriteUrl.endsWith('undefined')) {
+            return spriteUrl;
+          }
+          if (fallbackUrl && fallbackUrl !== '/null' && !fallbackUrl.endsWith('null') && !fallbackUrl.endsWith('undefined')) {
+            return fallbackUrl;
+          }
+          if (pokemonId) {
+            if (isShiny) {
+              return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${pokemonId}.png`;
+            }
+            return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonId}.png`;
+          }
+          return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png';
+        };
+
+        const calculateCP = (baseStats, wins, isLegendary) => {
+          const hp = baseStats ? (baseStats.hp || 50) : 50;
+          const attack = baseStats ? (baseStats.attack || 50) : 50;
+          const defense = baseStats ? (baseStats.defense || 50) : 50;
+          const speed = baseStats ? (baseStats.speed || 50) : 50;
+          
+          let baseCP = (hp + attack * 1.5 + defense + speed) * 3.5;
+          if (isLegendary) {
+            baseCP *= 1.8;
+          }
+          let finalCP = baseCP * (1 + (wins || 0) * 0.02);
+          return Math.max(10, Math.floor(finalCP));
+        };
+
+        // Render inventory cards
         listContainer.innerHTML = '';
-        user.inventory.forEach(poke => {
-          const div = document.createElement('div');
-          div.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; margin-bottom: 8px; background: #1e293b; border: 1px solid var(--border-color); border-radius: 6px;';
+        
+        // Sort inventory: active/buddy first, shiny first, then wins
+        const sortedInventory = [...user.inventory].sort((a, b) => {
+          const isBuddyA = a.instanceId === user.activePokemonId ? 1 : 0;
+          const isBuddyB = b.instanceId === user.activePokemonId ? 1 : 0;
+          if (isBuddyA !== isBuddyB) return isBuddyB - isBuddyA;
+          if (a.shiny !== b.shiny) return b.shiny - a.shiny;
+          return (b.wins || 0) - (a.wins || 0);
+        });
+
+        sortedInventory.forEach(poke => {
+          const isLegendary = poke.catchRate !== undefined && poke.catchRate <= 0.1;
+          const isBuddy = poke.instanceId === user.activePokemonId;
           
-          const detailsDiv = document.createElement('div');
-          const typeBadges = poke.types ? poke.types.map(t => `<span class="type-badge type-${t.toLowerCase()}" style="font-size: 9px; padding: 1px 4px; border-radius: 3px; margin-left: 4px; text-transform: uppercase;">${t}</span>`).join('') : '';
+          const card = document.createElement('div');
+          card.className = 'dashboard-poke-card';
+          if (isLegendary) card.classList.add('legendary');
+          if (poke.shiny) card.classList.add('shiny');
           
-          detailsDiv.innerHTML = `
-            <div style="font-weight: bold; color: #fff; font-size: 13px;">
-              ${poke.shiny ? '✨ ' : ''}${poke.name}
-              ${typeBadges}
+          const buddyTag = isBuddy ? '<div class="buddy-badge">★ BUDDY</div>' : '';
+          const cp = calculateCP(poke.baseStats, poke.wins, isLegendary);
+          const spriteUrl = getSafeSprite(poke.spriteUrl, poke.fallbackSpriteUrl, poke.pokemonId, poke.shiny);
+          const typeBadges = poke.types ? poke.types.map(t => `<span class="type-badge type-${t.toLowerCase()}">${t}</span>`).join(' ') : '';
+          
+          card.innerHTML = `
+            ${buddyTag}
+            <div class="pokemon-cp">CP ${cp}</div>
+            <img src="${spriteUrl}" alt="${poke.name}" class="pokemon-sprite">
+            <div class="pokemon-name">${poke.shiny ? '✨ ' : ''}${poke.name}</div>
+            <div class="pokemon-types">${typeBadges}</div>
+            <div class="pokemon-stats-block">
+              <div class="stat-row"><span>HP:</span> <strong>${poke.baseStats ? (poke.baseStats.hp || 50) : 50}</strong></div>
+              <div class="stat-row"><span>ATK:</span> <strong>${poke.baseStats ? (poke.baseStats.attack || 50) : 50}</strong></div>
+              <div class="stat-row"><span>DEF:</span> <strong>${poke.baseStats ? (poke.baseStats.defense || 50) : 50}</strong></div>
             </div>
-            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
-              Wins: ${poke.wins || 0} | Stage: ${poke.currentStage || 1}
-            </div>
+            <div class="pokemon-wins">🏆 Wins: ${poke.wins || 0}</div>
+            <button type="button" class="btn-release">🗑️ Release</button>
           `;
           
-          const delBtn = document.createElement('button');
-          delBtn.type = 'button';
-          delBtn.className = 'btn';
-          delBtn.style.cssText = 'margin: 0; background: #ef4444; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600;';
-          delBtn.textContent = '🗑️ Remove';
-          delBtn.addEventListener('click', () => {
-            if (confirm(`Are you sure you want to delete ${poke.name} from @${display}'s inventory?`)) {
+          // Bind Release Button click
+          const releaseBtn = card.querySelector('.btn-release');
+          releaseBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm(`Are you sure you want to release ${poke.name} from @${display}'s inventory?`)) {
               socket.emit('admin_delete_pokemon', {
                 password: adminPassword,
                 playerUsername: username,
                 instanceId: poke.instanceId
               });
-              // Visual remove immediately
-              div.remove();
+              card.remove();
               if (listContainer.children.length === 0) {
-                listContainer.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">This trainer has no Pokémon in their inventory.</div>';
+                listContainer.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px; width: 100%; grid-column: 1 / -1;">This trainer has no Pokémon in their inventory.</div>';
               }
             }
           });
           
-          div.appendChild(detailsDiv);
-          div.appendChild(delBtn);
-          listContainer.appendChild(div);
+          listContainer.appendChild(card);
         });
       } catch (err) {
         console.error(err);
