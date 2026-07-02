@@ -688,7 +688,7 @@ function getCombatMultiplier(attackerTypes, defenderTypes) {
 }
 
 // Execute Battle between two players in a room
-async function runBattle(channelId, playerA, playerB) {
+async function runBattle(channelId, playerA, playerB, onComplete) {
   const session = getOrCreateSession(channelId);
   const isWildBattle = playerB === 'wild';
   
@@ -701,8 +701,10 @@ async function runBattle(channelId, playerA, playerB) {
   
   if (isWildBattle) {
     if (!session.activeWildPokemon) {
-      sendGameLog(channelId, 'system', `❌ Battle failed: No wild Pokémon is active.`);
+      const msg = `❌ Battle failed: No wild Pokémon is active.`;
+      sendGameLog(channelId, 'system', msg);
       session.activeBattle = null;
+      if (onComplete) onComplete(msg);
       return;
     }
     pokeB = {
@@ -721,8 +723,10 @@ async function runBattle(channelId, playerA, playerB) {
   }
 
   if (!pokeA || !pokeB) {
-    sendGameLog(channelId, 'system', `❌ Battle failed: Active Pokémon not found.`);
+    const msg = `❌ Battle failed: Active Pokémon not found.`;
+    sendGameLog(channelId, 'system', msg);
     session.activeBattle = null;
+    if (onComplete) onComplete(msg);
     return;
   }
 
@@ -787,9 +791,12 @@ async function runBattle(channelId, playerA, playerB) {
   sendGameLog(channelId, 'battle', `⚔️ Battle Started: @${playerA.displayName}'s ${pokeA.name} vs ${opponentName}'s ${pokeB.name}!`);
   
   setTimeout(async () => {
-    // 12s delay to allow multi-turn client animation to finish
+    // 15s delay to allow multi-turn client animation to finish
     // Guard clause: ensure the session still exists
-    if (!activeSessions.has(channelId)) return;
+    if (!activeSessions.has(channelId)) {
+      if (onComplete) onComplete('❌ Battle cancelled: Session no longer exists.');
+      return;
+    }
     
     let resultMessage = '';
     let winnerName = '';
@@ -876,7 +883,8 @@ async function runBattle(channelId, playerA, playerB) {
     session.activeChallenge = null;
     
     io.to(channelId).emit('leaderboard_update', await db.getLeaderboard(channelId));
-  }, 12000);
+    if (onComplete) onComplete(resultMessage);
+  }, 15000);
 }
 
 /**
@@ -940,6 +948,16 @@ async function processCommand(channelId, username, displayName, messageText, bas
   const session = getOrCreateSession(channelId);
   const finalBaseUrl = baseUrl || process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000';
   const cleanMsg = messageText.toLowerCase().trim();
+  const isBroadcaster = username.toLowerCase().trim() === channelId.toLowerCase().trim();
+  
+  // Broadcaster-only Spawn command
+  if (cleanMsg === '!spawn' || cleanMsg === 'spawn') {
+    if (!isBroadcaster) {
+      return `❌ @${displayName}, only the streamer can trigger manual spawns.`;
+    }
+    await spawnWildPokemon(channelId);
+    return `🌟 Wild Pokémon spawned manually by the streamer!`;
+  }
   
   // 1. !daily command
   if (cleanMsg === '!daily' || cleanMsg === 'daily') {
@@ -1167,8 +1185,10 @@ async function processCommand(channelId, username, displayName, messageText, bas
         io.to(channelId).emit('command_feedback', { username, text: msg });
         return msg;
       }
-      runBattle(channelId, { username, displayName, pokemonInstanceId: foundPokeA.instanceId }, 'wild');
-      return `⚔️ Battle Started: @${displayName}'s ${foundPokeA.name} vs wild ${session.activeWildPokemon.name}!`;
+      const resultMessage = await new Promise((resolve) => {
+        runBattle(channelId, { username, displayName, pokemonInstanceId: foundPokeA.instanceId }, 'wild', resolve);
+      });
+      return resultMessage;
     }
 
     // Handle fight player
@@ -1266,9 +1286,10 @@ async function processCommand(channelId, username, displayName, messageText, bas
       pokemonInstanceId: foundPokeB.instanceId
     };
     
-    runBattle(channelId, challenger, opponent);
-    const msg = `⚔️ Battle accepted! @${displayName}'s ${foundPokeB.name} is entering the arena against @${challenger.displayName}'s ${session.activeChallenge.challengerPokeName}!`;
-    return msg;
+    const resultMessage = await new Promise((resolve) => {
+      runBattle(channelId, challenger, opponent, resolve);
+    });
+    return resultMessage;
   }
 
   // 7. !shop / !store command

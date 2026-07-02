@@ -1105,18 +1105,36 @@ socket.on('battle_start', (data) => {
   // Slide-in sprites onto center stage
   gsap.to(challengerFighter, { duration: 0.8, x: 0, opacity: 1, ease: "power2.out", delay: 0.2 });
   gsap.to(opponentFighter, { duration: 0.8, x: 0, opacity: 1, ease: "power2.out", delay: 0.2 });
-
+ 
   // ── 5. Build the dynamic turn schedule ──
-  const totalTurns = 4 + Math.floor(Math.random() * 3); // 4–6 turns
+  // Decide randomly who attacks first (challenger or opponent)
+  const challengerGoesFirst = Math.random() < 0.5;
+  let totalTurns = 5 + Math.floor(Math.random() * 2); // 5–6 turns base
+  const isWinnerChallenger = data.winner === 'challenger';
+
+  // Ensure the final turn always belongs to the winner so the KO animation triggers correctly
+  const lastTurnIndex = totalTurns - 1;
+  const lastTurnIsChallenger = challengerGoesFirst ? (lastTurnIndex % 2 === 0) : (lastTurnIndex % 2 !== 0);
+  if (isWinnerChallenger !== lastTurnIsChallenger) {
+    totalTurns += 1; // Shift final turn parity to the winner
+  }
+
+  // Pre-calculate exact attack counts for both fighters in the schedule to prevent division by zero
+  let challengerAttackCountTotal = 0;
+  let opponentAttackCountTotal = 0;
+  for (let t = 0; t < totalTurns; t++) {
+    const isChal = challengerGoesFirst ? (t % 2 === 0) : (t % 2 !== 0);
+    if (isChal) challengerAttackCountTotal++;
+    else opponentAttackCountTotal++;
+  }
+
   const chalMaxHp = data.challengerHp || 100;
   const oppMaxHp = data.opponentHp || 100;
 
-  // Pre-compute damage per turn so winner always KOs on the last turn
-  const isWinnerChallenger = data.winner === 'challenger';
   // Winner's attacks: split opponent's full HP across their attack turns
   // Loser's attacks: drain only 40-60% of winner's HP
-  const winnerAttackTurns = Math.ceil(totalTurns / 2);
-  const loserAttackTurns = Math.floor(totalTurns / 2);
+  const winnerAttackTurns = isWinnerChallenger ? challengerAttackCountTotal : opponentAttackCountTotal;
+  const loserAttackTurns = isWinnerChallenger ? opponentAttackCountTotal : challengerAttackCountTotal;
   const loserHpToDrain = (isWinnerChallenger ? oppMaxHp : chalMaxHp);
   const winnerHpToDrain = (isWinnerChallenger ? chalMaxHp : oppMaxHp) * (0.4 + Math.random() * 0.2);
 
@@ -1156,7 +1174,7 @@ socket.on('battle_start', (data) => {
 
   for (let turn = 0; turn < totalTurns; turn++) {
     const turnDelay = TURN_DELAY_BASE + turn * TURN_INTERVAL;
-    const isChallengerTurn = turn % 2 === 0; // Challenger attacks on even, opponent on odd
+    const isChallengerTurn = challengerGoesFirst ? (turn % 2 === 0) : (turn % 2 !== 0);
     const isFinalTurn = turn === totalTurns - 1;
 
     const tt = setTimeout(() => {
@@ -1232,6 +1250,9 @@ socket.on('battle_start', (data) => {
 
             // Check KO
             if (oppCurrentHp <= 0) {
+              // Clear remaining simulation timers to prevent fainted player from lunging
+              activeBattleSimulationTimers.forEach(clearTimeout);
+              
               showDamagePopup(600, 130, 'KO!', '#ef4444', true);
               showComicPop(600, 180, 'defeat', true);
               
@@ -1329,6 +1350,9 @@ socket.on('battle_start', (data) => {
 
             // Check KO
             if (chalCurrentHp <= 0) {
+              // Clear remaining simulation timers to prevent fainted player from lunging
+              activeBattleSimulationTimers.forEach(clearTimeout);
+              
               showDamagePopup(160, 130, 'KO!', '#ef4444', true);
               showComicPop(160, 180, 'defeat', true);
               
