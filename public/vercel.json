@@ -3,6 +3,10 @@
     {
       "source": "/trainer/:channel/:username",
       "destination": "/profile.html"
+    },
+    {
+      "source": "/admin/:channel/:username",
+      "destination": "/admin.html"
     }
   ]
 }
