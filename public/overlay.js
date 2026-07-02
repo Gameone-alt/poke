@@ -1197,7 +1197,13 @@ socket.on('battle_start', (data) => {
           // Loser's attack (challenger is loser, attacking opponent)
           damage = Math.round(winnerHpToDrain / loserAttackTurns) + Math.floor(Math.random() * 5);
         }
-        damage = Math.min(damage, oppCurrentHp);
+        
+        // Safety cap: non-final turns cannot reduce HP to 0. Must leave at least 5 HP.
+        if (!isFinalTurn) {
+          damage = Math.max(1, Math.min(damage, oppCurrentHp - 5));
+        } else {
+          damage = Math.min(damage, oppCurrentHp);
+        }
 
         // --- GSAP Challenger Lunge Animation ---
         gsap.to(challengerFighter, {
@@ -1268,6 +1274,24 @@ socket.on('battle_start', (data) => {
 
               battleStatusText.textContent = `🏆 WINNER: @${data.challenger}!`;
               playSound(sfxCatchSuccess);
+
+              // Schedule post-KO cleanup to fade out overlay after 4 seconds
+              const postKoCleanup = setTimeout(() => {
+                if (battleId !== currentBattleId) return;
+                gsap.to(battleOverlayCard, {
+                  duration: 0.4,
+                  scale: 0.7,
+                  opacity: 0,
+                  ease: "power2.in",
+                  onComplete: () => {
+                    if (battleId !== currentBattleId) return;
+                    battleOverlay.classList.add('hidden');
+                    clearWeather();
+                    gsap.set([challengerFighter, opponentFighter], { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1, filter: "none" });
+                  }
+                });
+              }, 4000);
+              activeBattleSimulationTimers.push(postKoCleanup);
             } else {
               showDamagePopup(600, 130, `-${damage} HP!`, '#ef4444', true);
               showComicPop(600, 180, 'normal', true);
@@ -1297,7 +1321,13 @@ socket.on('battle_start', (data) => {
         } else {
           damage = Math.round(winnerHpToDrain / loserAttackTurns) + Math.floor(Math.random() * 5);
         }
-        damage = Math.min(damage, chalCurrentHp);
+        
+        // Safety cap: non-final turns cannot reduce HP to 0. Must leave at least 5 HP.
+        if (!isFinalTurn) {
+          damage = Math.max(1, Math.min(damage, chalCurrentHp - 5));
+        } else {
+          damage = Math.min(damage, chalCurrentHp);
+        }
 
         // --- GSAP Opponent Lunge Animation ---
         gsap.to(opponentFighter, {
@@ -1369,6 +1399,24 @@ socket.on('battle_start', (data) => {
               const oppLabel = data.opponent === 'Wild' ? 'Wild Pokémon' : `@${data.opponent}`;
               battleStatusText.textContent = `🏆 WINNER: ${oppLabel}!`;
               playSound(sfxCatchFail);
+
+              // Schedule post-KO cleanup to fade out overlay after 4 seconds
+              const postKoCleanup = setTimeout(() => {
+                if (battleId !== currentBattleId) return;
+                gsap.to(battleOverlayCard, {
+                  duration: 0.4,
+                  scale: 0.7,
+                  opacity: 0,
+                  ease: "power2.in",
+                  onComplete: () => {
+                    if (battleId !== currentBattleId) return;
+                    battleOverlay.classList.add('hidden');
+                    clearWeather();
+                    gsap.set([challengerFighter, opponentFighter], { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1, filter: "none" });
+                  }
+                });
+              }, 4000);
+              activeBattleSimulationTimers.push(postKoCleanup);
             } else {
               showDamagePopup(160, 130, `-${damage} HP!`, '#ef4444', true);
               showComicPop(160, 180, 'normal', true);
@@ -1415,9 +1463,10 @@ socket.on('battle_start', (data) => {
 socket.on('battle_end', (data) => {
   // The client-side cleanup is already handled by the timed cleanup above.
   // This event is now purely for server-side state sync (leaderboard, etc.)
-  // If overlay is somehow still visible, hide it as a safety net.
+  // If overlay is somehow still visible, hide it as a safety net (30s backup).
   const safetyTimer = setTimeout(() => {
     if (!battleOverlay.classList.contains('hidden')) {
+      console.log('Battle end safety backup triggered.');
       gsap.to(battleOverlayCard, {
         duration: 0.4,
         scale: 0.7,
@@ -1430,7 +1479,7 @@ socket.on('battle_end', (data) => {
         }
       });
     }
-  }, 500);
+  }, 30000);
   activeBattleSimulationTimers.push(safetyTimer);
 });
 
