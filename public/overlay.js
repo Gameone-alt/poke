@@ -1168,280 +1168,255 @@ socket.on('battle_start', (data) => {
   }, 1200);
   activeBattleSimulationTimers.push(t1);
 
-  // ── TURN LOOP ──
-  const TURN_DELAY_BASE = 2000; // first turn starts at 2s
-  const TURN_INTERVAL = 1600;   // 1.6s per turn
+  // ── SEQUENTIAL TURN CONTROLLER (RECURSIVE) ──
+  function playNextTurn(turn) {
+    if (battleId !== currentBattleId) return;
+    
+    // Safety check if we exceed turns without a KO
+    if (turn >= totalTurns) {
+      triggerFadeOutCleanup();
+      return;
+    }
 
-  for (let turn = 0; turn < totalTurns; turn++) {
-    const turnDelay = TURN_DELAY_BASE + turn * TURN_INTERVAL;
     const isChallengerTurn = challengerGoesFirst ? (turn % 2 === 0) : (turn % 2 !== 0);
     const isFinalTurn = turn === totalTurns - 1;
 
-    const tt = setTimeout(() => {
-      if (battleId !== currentBattleId) return;
-      impactFlash.classList.remove('impact-active');
+    impactFlash.classList.remove('impact-active');
 
-      if (isChallengerTurn) {
-        // ── Challenger attacks Opponent ──
-        chalAttackCount++;
-        startWeatherEffect(data.challengerTypes);
+    if (isChallengerTurn) {
+      // ── Challenger attacks Opponent ──
+      chalAttackCount++;
+      startWeatherEffect(data.challengerTypes);
 
-        let damage;
-        if (isWinnerChallenger && isFinalTurn) {
-          // Final KO blow — drain all remaining HP
-          damage = oppCurrentHp;
-        } else if (isWinnerChallenger) {
-          // Winner's normal attack
-          damage = Math.round(loserHpToDrain / winnerAttackTurns) + Math.floor(Math.random() * 5);
-        } else {
-          // Loser's attack (challenger is loser, attacking opponent)
-          damage = Math.round(winnerHpToDrain / loserAttackTurns) + Math.floor(Math.random() * 5);
-        }
-        
-        // Safety cap: non-final turns cannot reduce HP to 0. Must leave at least 5 HP.
-        if (!isFinalTurn) {
-          damage = Math.max(1, Math.min(damage, oppCurrentHp - 5));
-        } else {
-          damage = Math.min(damage, oppCurrentHp);
-        }
-
-        // --- GSAP Challenger Lunge Animation ---
-        gsap.to(challengerFighter, {
-          duration: 0.15,
-          x: 100, // lunge forward right
-          scale: 1.15,
-          ease: "power1.in",
-          onComplete: () => {
-            if (battleId !== currentBattleId) return;
-
-            // Retract back to position
-            gsap.to(challengerFighter, { duration: 0.3, x: 0, scale: 1, ease: "power2.out" });
-
-            // Trigger hit reaction
-            playSound(sfxHit);
-            
-            // Shake defender
-            gsap.fromTo(opponentFighter, 
-              { x: 0 }, 
-              { duration: 0.05, x: 15, repeat: 5, yoyo: true, onComplete: () => gsap.set(opponentFighter, { x: 0 }) }
-            );
-
-            // Red damage flash
-            gsap.fromTo(opponentFighter,
-              { filter: "brightness(2.2) sepia(1) saturate(800%) hue-rotate(-50deg) drop-shadow(0 0 25px #ef4444)" },
-              { duration: 0.4, filter: "none", ease: "power2.out" }
-            );
-
-            // Render slash overlay
-            const slash = document.createElement('div');
-            slash.className = 'slash-slice';
-            opponentFighter.appendChild(slash);
-            setTimeout(() => slash.remove(), 400);
-
-            // Health calculation
-            oppCurrentHp = Math.max(0, oppCurrentHp - damage);
-            const hpPct = Math.max(0, (oppCurrentHp / oppMaxHp) * 100);
-
-            if (opponentHpFill) {
-              opponentHpFill.style.width = `${hpPct}%`;
-              if (hpPct < 30) opponentHpFill.style.backgroundColor = '#ef4444';
-              else if (hpPct < 60) opponentHpFill.style.backgroundColor = '#f59e0b';
-            }
-            if (opponentHpTrail) {
-              setTimeout(() => { 
-                if (battleId === currentBattleId && opponentHpTrail) opponentHpTrail.style.width = `${hpPct}%`; 
-              }, 400);
-            }
-            if (opponentHpText) opponentHpText.textContent = `HP: ${oppCurrentHp}/${oppMaxHp}`;
-
-            // Check KO
-            if (oppCurrentHp <= 0) {
-              // Clear remaining simulation timers to prevent fainted player from lunging
-              activeBattleSimulationTimers.forEach(clearTimeout);
-              
-              showDamagePopup(600, 130, 'KO!', '#ef4444', true);
-              showComicPop(600, 180, 'defeat', true);
-              
-              // Loser slide and roll off-screen
-              gsap.to(opponentFighter, {
-                duration: 0.8,
-                y: 150,
-                x: 250,
-                rotation: 90,
-                opacity: 0,
-                ease: "power2.in"
-              });
-
-              battleStatusText.textContent = `🏆 WINNER: @${data.challenger}!`;
-              playSound(sfxCatchSuccess);
-
-              // Schedule post-KO cleanup to fade out overlay after 4 seconds
-              const postKoCleanup = setTimeout(() => {
-                if (battleId !== currentBattleId) return;
-                gsap.to(battleOverlayCard, {
-                  duration: 0.4,
-                  scale: 0.7,
-                  opacity: 0,
-                  ease: "power2.in",
-                  onComplete: () => {
-                    if (battleId !== currentBattleId) return;
-                    battleOverlay.classList.add('hidden');
-                    clearWeather();
-                    gsap.set([challengerFighter, opponentFighter], { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1, filter: "none" });
-                  }
-                });
-              }, 4000);
-              activeBattleSimulationTimers.push(postKoCleanup);
-            } else {
-              showDamagePopup(600, 130, `-${damage} HP!`, '#ef4444', true);
-              showComicPop(600, 180, 'normal', true);
-
-              if (chalAttackCount === 1) {
-                if (data.challengerMultiplier > 1) {
-                  showDamagePopup(600, 90, 'SUPER EFFECTIVE!', '#eab308', true);
-                } else if (data.challengerMultiplier < 1) {
-                  showDamagePopup(600, 90, 'Not very effective...', '#94a3b8', true);
-                }
-              }
-              battleStatusText.textContent = `${data.challengerPoke} attacks!`;
-            }
-          }
-        });
-
+      let damage;
+      if (isWinnerChallenger && isFinalTurn) {
+        // Final KO blow — drain all remaining HP
+        damage = oppCurrentHp;
+      } else if (isWinnerChallenger) {
+        // Winner's normal attack
+        damage = Math.round(loserHpToDrain / winnerAttackTurns) + Math.floor(Math.random() * 5);
       } else {
-        // ── Opponent attacks Challenger ──
-        oppAttackCount++;
-        startWeatherEffect(data.opponentTypes);
-
-        let damage;
-        if (!isWinnerChallenger && isFinalTurn) {
-          damage = chalCurrentHp;
-        } else if (!isWinnerChallenger) {
-          damage = Math.round(loserHpToDrain / winnerAttackTurns) + Math.floor(Math.random() * 5);
-        } else {
-          damage = Math.round(winnerHpToDrain / loserAttackTurns) + Math.floor(Math.random() * 5);
-        }
-        
-        // Safety cap: non-final turns cannot reduce HP to 0. Must leave at least 5 HP.
-        if (!isFinalTurn) {
-          damage = Math.max(1, Math.min(damage, chalCurrentHp - 5));
-        } else {
-          damage = Math.min(damage, chalCurrentHp);
-        }
-
-        // --- GSAP Opponent Lunge Animation ---
-        gsap.to(opponentFighter, {
-          duration: 0.15,
-          x: -100, // lunge forward left
-          scale: 1.15,
-          ease: "power1.in",
-          onComplete: () => {
-            if (battleId !== currentBattleId) return;
-
-            // Retract back to position
-            gsap.to(opponentFighter, { duration: 0.3, x: 0, scale: 1, ease: "power2.out" });
-
-            // Trigger hit reaction
-            playSound(sfxHit);
-            
-            // Shake defender
-            gsap.fromTo(challengerFighter, 
-              { x: 0 }, 
-              { duration: 0.05, x: -15, repeat: 5, yoyo: true, onComplete: () => gsap.set(challengerFighter, { x: 0 }) }
-            );
-
-            // Red damage flash
-            gsap.fromTo(challengerFighter,
-              { filter: "brightness(2.2) sepia(1) saturate(800%) hue-rotate(-50deg) drop-shadow(0 0 25px #ef4444)" },
-              { duration: 0.4, filter: "none", ease: "power2.out" }
-            );
-
-            // Render slash overlay
-            const slash = document.createElement('div');
-            slash.className = 'slash-slice';
-            challengerFighter.appendChild(slash);
-            setTimeout(() => slash.remove(), 400);
-
-            // Health calculation
-            chalCurrentHp = Math.max(0, chalCurrentHp - damage);
-            const hpPct = Math.max(0, (chalCurrentHp / chalMaxHp) * 100);
-
-            if (challengerHpFill) {
-              challengerHpFill.style.width = `${hpPct}%`;
-              if (hpPct < 30) challengerHpFill.style.backgroundColor = '#ef4444';
-              else if (hpPct < 60) challengerHpFill.style.backgroundColor = '#f59e0b';
-            }
-            if (challengerHpTrail) {
-              setTimeout(() => { 
-                if (battleId === currentBattleId && challengerHpTrail) challengerHpTrail.style.width = `${hpPct}%`; 
-              }, 400);
-            }
-            if (challengerHpText) challengerHpText.textContent = `HP: ${chalCurrentHp}/${chalMaxHp}`;
-
-            // Check KO
-            if (chalCurrentHp <= 0) {
-              // Clear remaining simulation timers to prevent fainted player from lunging
-              activeBattleSimulationTimers.forEach(clearTimeout);
-              
-              showDamagePopup(160, 130, 'KO!', '#ef4444', true);
-              showComicPop(160, 180, 'defeat', true);
-              
-              // Loser slide and roll off-screen
-              gsap.to(challengerFighter, {
-                duration: 0.8,
-                y: 150,
-                x: -250,
-                rotation: -90,
-                opacity: 0,
-                ease: "power2.in"
-              });
-
-              const oppLabel = data.opponent === 'Wild' ? 'Wild Pokémon' : `@${data.opponent}`;
-              battleStatusText.textContent = `🏆 WINNER: ${oppLabel}!`;
-              playSound(sfxCatchFail);
-
-              // Schedule post-KO cleanup to fade out overlay after 4 seconds
-              const postKoCleanup = setTimeout(() => {
-                if (battleId !== currentBattleId) return;
-                gsap.to(battleOverlayCard, {
-                  duration: 0.4,
-                  scale: 0.7,
-                  opacity: 0,
-                  ease: "power2.in",
-                  onComplete: () => {
-                    if (battleId !== currentBattleId) return;
-                    battleOverlay.classList.add('hidden');
-                    clearWeather();
-                    gsap.set([challengerFighter, opponentFighter], { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1, filter: "none" });
-                  }
-                });
-              }, 4000);
-              activeBattleSimulationTimers.push(postKoCleanup);
-            } else {
-              showDamagePopup(160, 130, `-${damage} HP!`, '#ef4444', true);
-              showComicPop(160, 180, 'normal', true);
-
-              if (oppAttackCount === 1) {
-                if (data.opponentMultiplier > 1) {
-                  showDamagePopup(160, 90, 'SUPER EFFECTIVE!', '#eab308', true);
-                } else if (data.opponentMultiplier < 1) {
-                  showDamagePopup(160, 90, 'Not very effective...', '#94a3b8', true);
-                }
-              }
-              battleStatusText.textContent = `${data.opponentPoke} attacks!`;
-            }
-          }
-        });
+        // Loser's attack (challenger is loser, attacking opponent)
+        damage = Math.round(winnerHpToDrain / loserAttackTurns) + Math.floor(Math.random() * 5);
       }
-    }, turnDelay);
-    activeBattleSimulationTimers.push(tt);
+      
+      // Safety cap: non-final turns cannot reduce HP to 0. Must leave at least 5 HP.
+      if (!isFinalTurn) {
+        damage = Math.max(1, Math.min(damage, oppCurrentHp - 5));
+      } else {
+        damage = Math.min(damage, oppCurrentHp);
+      }
+
+      // --- GSAP Challenger Lunge Animation ---
+      gsap.to(challengerFighter, {
+        duration: 0.15,
+        x: 100, // lunge forward right
+        scale: 1.15,
+        ease: "power1.in",
+        onComplete: () => {
+          if (battleId !== currentBattleId) return;
+
+          // Retract back to position
+          gsap.to(challengerFighter, { duration: 0.3, x: 0, scale: 1, ease: "power2.out" });
+
+          // Trigger hit reaction
+          playSound(sfxHit);
+          
+          // Shake defender
+          gsap.fromTo(opponentFighter, 
+            { x: 0 }, 
+            { duration: 0.05, x: 15, repeat: 5, yoyo: true, onComplete: () => gsap.set(opponentFighter, { x: 0 }) }
+          );
+
+          // Red damage flash
+          gsap.fromTo(opponentFighter,
+            { filter: "brightness(2.2) sepia(1) saturate(800%) hue-rotate(-50deg) drop-shadow(0 0 25px #ef4444)" },
+            { duration: 0.4, filter: "none", ease: "power2.out" }
+          );
+
+          // Render slash overlay
+          const slash = document.createElement('div');
+          slash.className = 'slash-slice';
+          opponentFighter.appendChild(slash);
+          setTimeout(() => slash.remove(), 400);
+
+          // Health calculation
+          oppCurrentHp = Math.max(0, oppCurrentHp - damage);
+          const hpPct = Math.max(0, (oppCurrentHp / oppMaxHp) * 100);
+
+          if (opponentHpFill) {
+            opponentHpFill.style.width = `${hpPct}%`;
+            if (hpPct < 30) opponentHpFill.style.backgroundColor = '#ef4444';
+            else if (hpPct < 60) opponentHpFill.style.backgroundColor = '#f59e0b';
+          }
+          if (opponentHpTrail) {
+            setTimeout(() => { 
+              if (battleId === currentBattleId && opponentHpTrail) opponentHpTrail.style.width = `${hpPct}%`; 
+            }, 400);
+          }
+          if (opponentHpText) opponentHpText.textContent = `HP: ${oppCurrentHp}/${oppMaxHp}`;
+
+          // Check KO
+          if (oppCurrentHp <= 0) {
+            showDamagePopup(600, 130, 'KO!', '#ef4444', true);
+            showComicPop(600, 180, 'defeat', true);
+            
+            // Loser slide and roll off-screen
+            gsap.to(opponentFighter, {
+              duration: 0.8,
+              y: 150,
+              x: 250,
+              rotation: 90,
+              opacity: 0,
+              ease: "power2.in"
+            });
+
+            battleStatusText.textContent = `🏆 WINNER: @${data.challenger}!`;
+            playSound(sfxCatchSuccess);
+
+            // Schedule cleanup to fade out overlay after 4 seconds
+            const tCleanup = setTimeout(() => {
+              triggerFadeOutCleanup();
+            }, 4000);
+            activeBattleSimulationTimers.push(tCleanup);
+          } else {
+            showDamagePopup(600, 130, `-${damage} HP!`, '#ef4444', true);
+            showComicPop(600, 180, 'normal', true);
+
+            if (chalAttackCount === 1) {
+              if (data.challengerMultiplier > 1) {
+                showDamagePopup(600, 90, 'SUPER EFFECTIVE!', '#eab308', true);
+              } else if (data.challengerMultiplier < 1) {
+                showDamagePopup(600, 90, 'Not very effective...', '#94a3b8', true);
+              }
+            }
+            battleStatusText.textContent = `${data.challengerPoke} attacks!`;
+
+            // Wait 1.5 seconds, then execute next turn sequentially
+            const tNext = setTimeout(() => playNextTurn(turn + 1), 1500);
+            activeBattleSimulationTimers.push(tNext);
+          }
+        }
+      });
+
+    } else {
+      // ── Opponent attacks Challenger ──
+      oppAttackCount++;
+      startWeatherEffect(data.opponentTypes);
+
+      let damage;
+      if (!isWinnerChallenger && isFinalTurn) {
+        damage = chalCurrentHp;
+      } else if (!isWinnerChallenger) {
+        damage = Math.round(loserHpToDrain / winnerAttackTurns) + Math.floor(Math.random() * 5);
+      } else {
+        damage = Math.round(winnerHpToDrain / loserAttackTurns) + Math.floor(Math.random() * 5);
+      }
+      
+      // Safety cap: non-final turns cannot reduce HP to 0. Must leave at least 5 HP.
+      if (!isFinalTurn) {
+        damage = Math.max(1, Math.min(damage, chalCurrentHp - 5));
+      } else {
+        damage = Math.min(damage, chalCurrentHp);
+      }
+
+      // --- GSAP Opponent Lunge Animation ---
+      gsap.to(opponentFighter, {
+        duration: 0.15,
+        x: -100, // lunge forward left
+        scale: 1.15,
+        ease: "power1.in",
+        onComplete: () => {
+          if (battleId !== currentBattleId) return;
+
+          // Retract back to position
+          gsap.to(opponentFighter, { duration: 0.3, x: 0, scale: 1, ease: "power2.out" });
+
+          // Trigger hit reaction
+          playSound(sfxHit);
+          
+          // Shake defender
+          gsap.fromTo(challengerFighter, 
+            { x: 0 }, 
+            { duration: 0.05, x: -15, repeat: 5, yoyo: true, onComplete: () => gsap.set(challengerFighter, { x: 0 }) }
+          );
+
+          // Red damage flash
+          gsap.fromTo(challengerFighter,
+            { filter: "brightness(2.2) sepia(1) saturate(800%) hue-rotate(-50deg) drop-shadow(0 0 25px #ef4444)" },
+            { duration: 0.4, filter: "none", ease: "power2.out" }
+          );
+
+          // Render slash overlay
+          const slash = document.createElement('div');
+          slash.className = 'slash-slice';
+          challengerFighter.appendChild(slash);
+          setTimeout(() => slash.remove(), 400);
+
+          // Health calculation
+          chalCurrentHp = Math.max(0, chalCurrentHp - damage);
+          const hpPct = Math.max(0, (chalCurrentHp / chalMaxHp) * 100);
+
+          if (challengerHpFill) {
+            challengerHpFill.style.width = `${hpPct}%`;
+            if (hpPct < 30) challengerHpFill.style.backgroundColor = '#ef4444';
+            else if (hpPct < 60) challengerHpFill.style.backgroundColor = '#f59e0b';
+          }
+          if (challengerHpTrail) {
+            setTimeout(() => { 
+              if (battleId === currentBattleId && challengerHpTrail) challengerHpTrail.style.width = `${hpPct}%`; 
+            }, 400);
+          }
+          if (challengerHpText) challengerHpText.textContent = `HP: ${chalCurrentHp}/${chalMaxHp}`;
+
+          // Check KO
+          if (chalCurrentHp <= 0) {
+            showDamagePopup(160, 130, 'KO!', '#ef4444', true);
+            showComicPop(160, 180, 'defeat', true);
+            
+            // Loser slide and roll off-screen
+            gsap.to(challengerFighter, {
+              duration: 0.8,
+              y: 150,
+              x: -250,
+              rotation: -90,
+              opacity: 0,
+              ease: "power2.in"
+            });
+
+            const oppLabel = data.opponent === 'Wild' ? 'Wild Pokémon' : `@${data.opponent}`;
+            battleStatusText.textContent = `🏆 WINNER: ${oppLabel}!`;
+            playSound(sfxCatchFail);
+
+            // Schedule cleanup to fade out overlay after 4 seconds
+            const tCleanup = setTimeout(() => {
+              triggerFadeOutCleanup();
+            }, 4000);
+            activeBattleSimulationTimers.push(tCleanup);
+          } else {
+            showDamagePopup(160, 130, `-${damage} HP!`, '#ef4444', true);
+            showComicPop(160, 180, 'normal', true);
+
+            if (oppAttackCount === 1) {
+              if (data.opponentMultiplier > 1) {
+                showDamagePopup(160, 90, 'SUPER EFFECTIVE!', '#eab308', true);
+              } else if (data.opponentMultiplier < 1) {
+                showDamagePopup(160, 90, 'Not very effective...', '#94a3b8', true);
+              }
+            }
+            battleStatusText.textContent = `${data.opponentPoke} attacks!`;
+
+            // Wait 1.5 seconds, then execute next turn sequentially
+            const tNext = setTimeout(() => playNextTurn(turn + 1), 1500);
+            activeBattleSimulationTimers.push(tNext);
+          }
+        }
+      });
+    }
   }
 
-  // ── CLEANUP PHASE: hide overlay after last turn + 3s ──
-  const cleanupDelay = TURN_DELAY_BASE + totalTurns * TURN_INTERVAL + 3000;
-  const tCleanup = setTimeout(() => {
+  function triggerFadeOutCleanup() {
     if (battleId !== currentBattleId) return;
-    
     gsap.to(battleOverlayCard, {
       duration: 0.4,
       scale: 0.7,
@@ -1451,12 +1426,14 @@ socket.on('battle_start', (data) => {
         if (battleId !== currentBattleId) return;
         battleOverlay.classList.add('hidden');
         clearWeather();
-        // Reset properties
         gsap.set([challengerFighter, opponentFighter], { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1, filter: "none" });
       }
     });
-  }, cleanupDelay);
-  activeBattleSimulationTimers.push(tCleanup);
+  }
+
+  // Start the first turn after 2 seconds
+  const tStart = setTimeout(() => playNextTurn(0), 2000);
+  activeBattleSimulationTimers.push(tStart);
 });
 
 // Battle End Event — Server signals results are processed; client may already be cleaned up

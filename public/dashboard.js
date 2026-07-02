@@ -1018,6 +1018,7 @@ function renderViewersTable(players) {
         <button type="button" class="btn btn-preset btn-manage-inventory" data-user="${p.username}" data-display="${p.displayName}" style="margin-left: 6px; background:#8b5cf6; font-size:11px; padding:6px 12px; border:none; color:#fff; border-radius: 4px; cursor: pointer; font-weight:600;">🎒 Inventory</button>
         <button type="button" class="btn btn-preset btn-delete-player" data-user="${p.username}" data-display="${p.displayName}" style="margin-left: 6px; background:#ef4444; font-size:11px; padding:6px 12px; border:none; color:#fff; border-radius: 4px; cursor: pointer; font-weight:600;">🗑️ Delete</button>
         <a href="/trainer/${channelId}/${p.username}${urlParams.get('backend') ? '?backend=' + encodeURIComponent(urlParams.get('backend')) : ''}" target="_blank" class="btn btn-preset" style="margin-left: 6px; background:#475569; font-size:11px; padding:6px 12px; border:none; color:#fff; text-decoration:none; display:inline-block; border-radius:4px; font-weight:600;">🔍 Profile</a>
+        <a href="/admin/${channelId}/${p.username}${urlParams.get('backend') ? '?backend=' + encodeURIComponent(urlParams.get('backend')) : ''}" target="_blank" class="btn btn-preset" style="margin-left: 6px; background:#ef4444; font-size:11px; padding:6px 12px; border:none; color:#fff; text-decoration:none; display:inline-block; border-radius:4px; font-weight:600;">🛡️ Admin</a>
       </td>
     `;
     viewerDbBody.appendChild(tr);

@@ -58,6 +58,10 @@ app.get('/trainer/:channel/:username', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'profile.html'));
 });
 
+app.get('/admin/:channel/:username', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'admin.html'));
+});
+
 app.get('/api/trainer/:channel/:username', async (req, res) => {
   const channel = req.params.channel.toLowerCase().trim();
   const username = req.params.username.toLowerCase().trim();
@@ -791,7 +795,7 @@ async function runBattle(channelId, playerA, playerB, onComplete) {
   sendGameLog(channelId, 'battle', `⚔️ Battle Started: @${playerA.displayName}'s ${pokeA.name} vs ${opponentName}'s ${pokeB.name}!`);
   
   setTimeout(async () => {
-    // 15s delay to allow multi-turn client animation to finish
+    // 20s delay to allow multi-turn client animation to finish
     // Guard clause: ensure the session still exists
     if (!activeSessions.has(channelId)) {
       if (onComplete) onComplete('❌ Battle cancelled: Session no longer exists.');
@@ -884,7 +888,7 @@ async function runBattle(channelId, playerA, playerB, onComplete) {
     
     io.to(channelId).emit('leaderboard_update', await db.getLeaderboard(channelId));
     if (onComplete) onComplete(resultMessage);
-  }, 15000);
+  }, 20000);
 }
 
 /**

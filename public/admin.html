@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokémon Inventory Manager (Admin)</title>
+  <!-- Google Fonts Outfit & Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-primary: #ef4444;
+      --color-primary-glow: rgba(239, 68, 68, 0.15);
+      --bg-dark: #0f172a;
+      --bg-card: rgba(30, 41, 59, 0.7);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at top, #1e293b, var(--bg-dark));
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      overflow-x: hidden;
+    }
+
+    .profile-container {
+      width: 100%;
+      max-width: 1000px;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+
+    /* Admin notice bar */
+    .admin-notice-bar {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 16px;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      backdrop-filter: blur(10px);
+    }
+
+    .admin-title-badge {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: 14px;
+      color: #f87171;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .trainer-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 30px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      align-items: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .trainer-avatar-wrapper {
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(135deg, #ef4444, #ec4899);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Outfit', sans-serif;
+      font-size: 40px;
+      font-weight: 800;
+      color: #fff;
+      box-shadow: 0 8px 16px rgba(239, 68, 68, 0.3);
+      z-index: 1;
+    }
+
+    .trainer-details {
+      flex: 1;
+      min-width: 250px;
+      z-index: 1;
+    }
+
+    .trainer-name {
+      font-family: 'Outfit', sans-serif;
+      font-size: 32px;
+      font-weight: 800;
+      background: linear-gradient(to right, #fff, #cbd5e1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+
+    .trainer-level-badge {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 50px;
+      padding: 4px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #f87171;
+      margin-bottom: 12px;
+    }
+
+    .xp-bar-container {
+      width: 100%;
+      max-width: 400px;
+      margin-top: 8px;
+    }
+
+    .xp-text {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .xp-bar {
+      height: 8px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .xp-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ef4444, #f43f5e);
+      width: 0%;
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .trainer-stats {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      z-index: 1;
+    }
+
+    .stat-box {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 15px 24px;
+      min-width: 130px;
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-family: 'Outfit', sans-serif;
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    /* Admin Manager Actions Widget */
+    .admin-tools-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .tools-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .tool-section {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .tool-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+    }
+
+    .form-group label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .form-group input, .form-group select {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 10px 14px;
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .form-group input:focus, .form-group select:focus {
+      border-color: #ef4444;
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.25);
+    }
+
+    /* Autocomplete dropdown styles */
+    .autocomplete-list {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #1e293b;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 10;
+      margin-top: 4px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+
+    .autocomplete-item {
+      padding: 10px 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+
+    .autocomplete-item:hover {
+      background: rgba(239, 68, 68, 0.15);
+    }
+
+    .autocomplete-item img {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+    }
+
+    .btn-action {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+      transition: all 0.2s ease;
+    }
+
+    .btn-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(239, 68, 68, 0.5);
+    }
+
+    /* Pokedex Regions Bar */
+    .pokedex-regions-bar {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding: 10px 5px 15px 5px;
+      margin-bottom: 20px;
+      scroll-behavior: smooth;
+    }
+
+    .region-pill {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 10px 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      min-width: 110px;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .region-pill:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(239, 68, 68, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .region-pill.active {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      border-color: rgba(239, 68, 68, 0.5);
+      box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+    }
+
+    .region-pill.active .pill-name {
+      color: #fff;
+    }
+
+    .region-pill.active .pill-stats {
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .pill-name {
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .pill-stats {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    /* Inventory Grid */
+    .inventory-section {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .section-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .pokemon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 20px;
+    }
+
+    .pokemon-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pokemon-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(239, 68, 68, 0.4);
+    }
+
+    .pokemon-card.legendary {
+      border: 2px solid transparent;
+      background-image: linear-gradient(var(--bg-card), var(--bg-card)), 
+                        linear-gradient(135deg, #f59e0b, #eab308, #ef4444, #8b5cf6, #ec4899, #f59e0b);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      background-size: 400% 400%;
+      animation: legendaryGlow 8s ease infinite;
+    }
+
+    .pokemon-card.shiny {
+      background: linear-gradient(135deg, rgba(253, 244, 255, 0.08) 0%, rgba(219, 39, 119, 0.08) 100%);
+      border: 2px solid transparent;
+      background-clip: padding-box, border-box;
+      background-origin: padding-box, border-box;
+      background-image: 
+        linear-gradient(135deg, #1e293b, #0f172a),
+        linear-gradient(135deg, #ec4899 0%, #a855f7 50%, #ef4444 100%);
+      box-shadow: 0 5px 15px rgba(236, 72, 153, 0.25);
+    }
+
+    @keyframes legendaryGlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .pokemon-sprite {
+      width: 96px;
+      height: 96px;
+      object-fit: contain;
+      image-rendering: pixelated;
+      margin-bottom: 10px;
+    }
+
+    .pokemon-name {
+      font-family: 'Outfit', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+
+    .pokemon-types {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .type-badge {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      color: #fff;
+    }
+
+    .type-normal { background: #a8a77a; }
+    .type-fire { background: #ee8130; }
+    .type-water { background: #6390f0; }
+    .type-electric { background: #f7d02c; color: #000; }
+    .type-grass { background: #7ac74c; }
+    .type-ice { background: #96d9d6; color: #000; }
+    .type-fighting { background: #c22e28; }
+    .type-poison { background: #a33ea1; }
+    .type-ground { background: #e2bf65; }
+    .type-flying { background: #a98ff3; }
+    .type-psychic { background: #f95587; }
+    .type-bug { background: #a6b91a; }
+    .type-rock { background: #b6a136; }
+    .type-ghost { background: #705746; }
+    .type-dragon { background: #6f35fc; }
+    .type-steel { background: #b7b7ce; }
+    .type-fairy { background: #d685ad; }
+
+    .pokemon-cp {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      color: #ef4444;
+    }
+
+    .pokemon-stats-block {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      gap: 4px;
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 8px;
+      padding: 6px 10px;
+      margin-bottom: 8px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .stat-row strong {
+      color: #fff;
+    }
+
+    .buddy-badge {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 3px 6px;
+      border-radius: 8px;
+    }
+
+    /* Delete Button overlay on cards */
+    .btn-delete-poke {
+      background: #ef4444;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 0.2s ease;
+    }
+
+    .btn-delete-poke:hover {
+      background: #dc2626;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      background: var(--bg-card);
+      border-radius: 20px;
+      border: 1px dashed var(--border-color);
+      color: var(--text-muted);
+    }
+
+    /* Security Lock Overlay */
+    .security-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.3s ease;
+    }
+
+    .security-overlay.hidden {
+      display: none;
+      pointer-events: none;
+    }
+
+    .security-card {
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 28px;
+      padding: 40px;
+      width: 90%;
+      max-width: 450px;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .lock-icon {
+      font-size: 48px;
+      color: #ef4444;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+
+    .feedback-error {
+      color: #ef4444;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .feedback-success {
+      color: #22c55e;
+      font-size: 13px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="profile-container">
+    <!-- Admin badge notice -->
+    <div class="admin-notice-bar">
+      <div class="admin-title-badge">
+        <span>🛡️</span> Streamer Admin Mode
+      </div>
+      <div style="font-size: 13px; color: var(--text-muted);">
+        Directly add or delete Pokémon from this viewer's inventory.
+      </div>
+    </div>
+
+    <!-- Trainer Info Card -->
+    <div class="trainer-card">
+      <div class="trainer-avatar-wrapper" id="avatar">T</div>
+      <div class="trainer-details">
+        <div class="trainer-name" id="trainer-name">@Trainer</div>
+        <div class="trainer-level-badge" id="level-badge">Trainer Level 1</div>
+        <div class="xp-bar-container">
+          <div class="xp-text">
+            <span>Experience Points</span>
+            <span id="xp-ratio">0 / 100 XP</span>
+          </div>
+          <div class="xp-bar">
+            <div class="xp-fill" id="xp-fill"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- General stats -->
+      <div class="trainer-stats">
+        <div class="stat-box">
+          <div class="stat-label">Wallet Balance</div>
+          <div class="stat-value" id="coins-value">🪙 0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Total Caught</div>
+          <div class="stat-value" id="caught-value">0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Management Widget -->
+    <div class="admin-tools-card">
+      <div class="tools-grid">
+        <!-- Add Pokemon Section -->
+        <div class="tool-section">
+          <div class="tool-title">🎁 Grant Pokémon Directly</div>
+          
+          <div class="form-group">
+            <label for="pokemon-search">Search Pokémon Name or ID</label>
+            <input type="text" id="pokemon-search" placeholder="Type name (e.g. Pikachu)..." autocomplete="off">
+            <div id="autocomplete-list" class="autocomplete-list" style="display: none;"></div>
+          </div>
+
+          <div style="display: flex; gap: 20px; align-items: center; margin-top: 5px;">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 13px;">
+              <input type="checkbox" id="shiny-toggle" style="width: 16px; height: 16px; cursor: pointer;">
+              <label for="shiny-toggle" style="cursor: pointer; font-weight: 600;">✨ Shiny Version</label>
+            </div>
+          </div>
+
+          <button id="btn-grant-pokemon" class="btn-action" style="margin-top: 10px;">
+            <span>🎁</span> Grant to Player
+          </button>
+          <div id="grant-feedback" style="font-size: 13px; text-align: center; margin-top: 5px;"></div>
+        </div>
+
+        <!-- Edit Resources Section -->
+        <div class="tool-section">
+          <div class="tool-title">🪙 Edit Trainer Balance & Level</div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="form-group">
+              <label for="input-coins">Coins</label>
+              <input type="number" id="input-coins" placeholder="100">
+            </div>
+            <div class="form-group">
+              <label for="input-level">Level</label>
+              <input type="number" id="input-level" placeholder="1">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="form-group">
+              <label for="input-xp">XP</label>
+              <input type="number" id="input-xp" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label for="input-pokeballs">Pokéballs</label>
+              <input type="number" id="input-pokeballs" placeholder="0">
+            </div>
+          </div>
+
+          <button id="btn-update-trainer" class="btn-action" style="margin-top: 10px; background: linear-gradient(135deg, #3b82f6, #2563eb); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);">
+            <span>💾</span> Save Trainer Stats
+          </button>
+          <div id="update-feedback" style="font-size: 13px; text-align: center; margin-top: 5px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pokédex Regions Bar -->
+    <div class="pokedex-regions-bar" id="regions-bar">
+      <div class="region-pill active" id="pill-all" onclick="selectRegion('all')">
+        <span class="pill-name">🌐 Collection</span>
+        <span class="pill-stats" id="stats-all">All Cards</span>
+      </div>
+      <div class="region-pill" id="pill-kanto" onclick="selectRegion('kanto')">
+        <span class="pill-name">Kanto</span>
+        <span class="pill-stats" id="stats-kanto">0/151</span>
+      </div>
+      <div class="region-pill" id="pill-johto" onclick="selectRegion('johto')">
+        <span class="pill-name">Johto</span>
+        <span class="pill-stats" id="stats-johto">0/100</span>
+      </div>
+      <div class="region-pill" id="pill-hoenn" onclick="selectRegion('hoenn')">
+        <span class="pill-name">Hoenn</span>
+        <span class="pill-stats" id="stats-hoenn">0/135</span>
+      </div>
+      <div class="region-pill" id="pill-sinnoh" onclick="selectRegion('sinnoh')">
+        <span class="pill-name">Sinnoh</span>
+        <span class="pill-stats" id="stats-sinnoh">0/107</span>
+      </div>
+      <div class="region-pill" id="pill-unova" onclick="selectRegion('unova')">
+        <span class="pill-name">Unova</span>
+        <span class="pill-stats" id="stats-unova">0/156</span>
+      </div>
+      <div class="region-pill" id="pill-kalos" onclick="selectRegion('kalos')">
+        <span class="pill-name">Kalos</span>
+        <span class="pill-stats" id="stats-kalos">0/72</span>
+      </div>
+      <div class="region-pill" id="pill-alola" onclick="selectRegion('alola')">
+        <span class="pill-name">Alola</span>
+        <span class="pill-stats" id="stats-alola">0/88</span>
+      </div>
+      <div class="region-pill" id="pill-galar-paldea" onclick="selectRegion('galar-paldea')">
+        <span class="pill-name">Galar & Paldea</span>
+        <span class="pill-stats" id="stats-galar-paldea">0/216</span>
+      </div>
+    </div>
+
+    <!-- Inventory Box -->
+    <div class="inventory-section">
+      <div class="section-title">
+        🎒 Collected Pokémon Pokebox (Admin View)
+      </div>
+      
+      <div class="pokemon-grid" id="pokemon-grid">
+        <div class="empty-state">Loading inventory...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Security Lock Overlay -->
+  <div id="security-overlay" class="security-overlay hidden">
+    <div class="security-card">
+      <span class="lock-icon">🔒</span>
+      <h2>Admin Authentication Required</h2>
+      <p>Please enter your secret password to manage this viewer's inventory.</p>
+      <div class="form-group">
+        <input type="password" id="admin-pass-input" placeholder="Enter password...">
+      </div>
+      <button id="btn-submit-pass" class="btn-action">Unlock Panel</button>
+      <div id="pass-feedback" class="feedback-error"></div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/admin.js"></script>
+</body>
+</html>
