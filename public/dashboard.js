@@ -1015,6 +1015,7 @@ function renderViewersTable(players) {
         <button type="button" class="btn btn-preset btn-save-player" data-user="${p.username}" style="margin: 0; background:var(--color-primary); font-size:11px; padding:6px 12px; border:none; color:#fff; border-radius: 4px; cursor: pointer;">Save</button>
         <button type="button" class="btn btn-preset btn-rename-player" data-user="${p.username}" data-display="${p.displayName}" style="margin-left: 6px; background:#eab308; font-size:11px; padding:6px 12px; border:none; color:#000; border-radius: 4px; cursor: pointer; font-weight:600;">✏️ Rename</button>
         <button type="button" class="btn btn-preset btn-give-player" data-user="${p.username}" data-display="${p.displayName}" style="margin-left: 6px; background:#3b82f6; font-size:11px; padding:6px 12px; border:none; color:#fff; border-radius: 4px; cursor: pointer; font-weight:600;">🎁 Give Poke</button>
+        <button type="button" class="btn btn-preset btn-manage-inventory" data-user="${p.username}" data-display="${p.displayName}" style="margin-left: 6px; background:#8b5cf6; font-size:11px; padding:6px 12px; border:none; color:#fff; border-radius: 4px; cursor: pointer; font-weight:600;">🎒 Inventory</button>
         <button type="button" class="btn btn-preset btn-delete-player" data-user="${p.username}" data-display="${p.displayName}" style="margin-left: 6px; background:#ef4444; font-size:11px; padding:6px 12px; border:none; color:#fff; border-radius: 4px; cursor: pointer; font-weight:600;">🗑️ Delete</button>
         <a href="/trainer/${channelId}/${p.username}${urlParams.get('backend') ? '?backend=' + encodeURIComponent(urlParams.get('backend')) : ''}" target="_blank" class="btn btn-preset" style="margin-left: 6px; background:#475569; font-size:11px; padding:6px 12px; border:none; color:#fff; text-decoration:none; display:inline-block; border-radius:4px; font-weight:600;">🔍 Profile</a>
       </td>
@@ -1075,6 +1076,82 @@ function renderViewersTable(players) {
       const giveModal = document.getElementById('give-pokemon-modal');
       giveModal.style.display = 'flex';
       giveModal.classList.remove('hidden');
+    });
+  });
+
+  // Bind Manage Inventory Buttons
+  viewerDbBody.querySelectorAll('.btn-manage-inventory').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const username = btn.getAttribute('data-user');
+      const display = btn.getAttribute('data-display');
+      
+      document.getElementById('inventory-target-username').value = username;
+      document.getElementById('inventory-display-name').textContent = `@${display} (${username})`;
+      
+      const listContainer = document.getElementById('inventory-list-container');
+      listContainer.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">Loading player inventory...</div>';
+      
+      const invModal = document.getElementById('manage-inventory-modal');
+      invModal.style.display = 'flex';
+      invModal.classList.remove('hidden');
+      
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/trainer/${channelId}/${username}`);
+        if (!res.ok) throw new Error('Failed to load profile');
+        const user = await res.json();
+        
+        if (!user.inventory || user.inventory.length === 0) {
+          listContainer.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">This trainer has no Pokémon in their inventory.</div>';
+          return;
+        }
+        
+        // Render inventory list
+        listContainer.innerHTML = '';
+        user.inventory.forEach(poke => {
+          const div = document.createElement('div');
+          div.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; margin-bottom: 8px; background: #1e293b; border: 1px solid var(--border-color); border-radius: 6px;';
+          
+          const detailsDiv = document.createElement('div');
+          const typeBadges = poke.types ? poke.types.map(t => `<span class="type-badge type-${t.toLowerCase()}" style="font-size: 9px; padding: 1px 4px; border-radius: 3px; margin-left: 4px; text-transform: uppercase;">${t}</span>`).join('') : '';
+          
+          detailsDiv.innerHTML = `
+            <div style="font-weight: bold; color: #fff; font-size: 13px;">
+              ${poke.shiny ? '✨ ' : ''}${poke.name}
+              ${typeBadges}
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+              Wins: ${poke.wins || 0} | Stage: ${poke.currentStage || 1}
+            </div>
+          `;
+          
+          const delBtn = document.createElement('button');
+          delBtn.type = 'button';
+          delBtn.className = 'btn';
+          delBtn.style.cssText = 'margin: 0; background: #ef4444; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600;';
+          delBtn.textContent = '🗑️ Remove';
+          delBtn.addEventListener('click', () => {
+            if (confirm(`Are you sure you want to delete ${poke.name} from @${display}'s inventory?`)) {
+              socket.emit('admin_delete_pokemon', {
+                password: adminPassword,
+                playerUsername: username,
+                instanceId: poke.instanceId
+              });
+              // Visual remove immediately
+              div.remove();
+              if (listContainer.children.length === 0) {
+                listContainer.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">This trainer has no Pokémon in their inventory.</div>';
+              }
+            }
+          });
+          
+          div.appendChild(detailsDiv);
+          div.appendChild(delBtn);
+          listContainer.appendChild(div);
+        });
+      } catch (err) {
+        console.error(err);
+        listContainer.innerHTML = `<div style="color: #ef4444; text-align: center; padding: 20px;">Error: ${err.message}</div>`;
+      }
     });
   });
 
@@ -1536,3 +1613,13 @@ async function loadPokemonList() {
   }
 }
 loadPokemonList();
+
+// Modals Manage Inventory Controllers
+const manageInventoryModal = document.getElementById('manage-inventory-modal');
+const btnCloseInventory = document.getElementById('btn-close-inventory');
+if (btnCloseInventory) {
+  btnCloseInventory.addEventListener('click', () => {
+    manageInventoryModal.style.display = 'none';
+    manageInventoryModal.classList.add('hidden');
+  });
+}

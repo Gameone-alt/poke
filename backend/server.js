@@ -2340,6 +2340,29 @@ io.on('connection', async (socket) => {
     }
   });
 
+  // Admin delete a single pokemon from player inventory (from dashboard inventory view modal)
+  socket.on('admin_delete_pokemon', async (data) => {
+    const { password, playerUsername, instanceId } = data || {};
+    if (!isAuthorizedAdmin(password, socket)) return;
+    
+    try {
+      console.log(`[Admin] [${channelId}] Deleting Pokémon ${instanceId} from player ${playerUsername}...`);
+      await db.deletePokemon(channelId, playerUsername, instanceId);
+      
+      // Notify all clients of update (in case they were on leaderboard or active pokemon changed)
+      io.to(channelId).emit('leaderboard_update', await db.getLeaderboard(channelId));
+      
+      // Refresh player list for dashboard
+      const list = await db.getAllPlayers(channelId);
+      socket.emit('all_players_data', list);
+      
+      socket.emit('pokemon_deleted_ack', { success: true, username: playerUsername, instanceId });
+    } catch (err) {
+      console.error(`[Admin] [${channelId}] Pokémon delete failed:`, err.message);
+      socket.emit('pokemon_deleted_ack', { success: false, error: err.message });
+    }
+  });
+
   // Clean up timers/listeners on complete disconnect
   socket.on('disconnect', () => {
     console.log(`[Sockets] Client disconnected: ${socket.id} from room: ${channelId}`);

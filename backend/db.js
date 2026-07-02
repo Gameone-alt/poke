@@ -1786,6 +1786,44 @@ async function deletePlayer(streamerId, username) {
 }
 
 /**
+ * Deletes a single Pokémon instance from a player's inventory.
+ */
+async function deletePokemon(streamerId, username, instanceId) {
+  const streamer = streamerId.toLowerCase().trim();
+  const key = username.toLowerCase().trim();
+  
+  if (useLocalFallback) {
+    const user = await getUser(streamerId, username);
+    user.inventory = user.inventory.filter(p => p.instanceId !== instanceId);
+    
+    // If the fainted/removed Pokémon was active, set active to another one (if inventory not empty)
+    if (user.activePokemonId === instanceId) {
+      user.activePokemonId = user.inventory.length > 0 ? user.inventory[0].instanceId : null;
+    }
+    
+    await saveUser(streamerId, user);
+    return true;
+  }
+  
+  // PostgreSQL Mode
+  await query(
+    'DELETE FROM inventories WHERE streamer_id = $1 AND username = $2 AND instance_id = $3',
+    [streamer, key, instanceId]
+  );
+  
+  // Update active pokemon if fainted/removed
+  const user = await getUser(streamerId, username);
+  if (user.activePokemonId === instanceId) {
+    const newActiveId = user.inventory.length > 0 ? user.inventory[0].instanceId : null;
+    await query(
+      'UPDATE players SET active_pokemon_id = $1 WHERE streamer_id = $2 AND username = $3',
+      [newActiveId, streamer, key]
+    );
+  }
+  return true;
+}
+
+/**
  * Resolves a player profile by nickname (checks username OR display_name).
  * Falls back to getUser if no match is found.
  */
@@ -1844,5 +1882,6 @@ module.exports = {
   renamePlayer,
   stealPokemon,
   deletePlayer,
+  deletePokemon,
   findPlayerByNickname
 };
