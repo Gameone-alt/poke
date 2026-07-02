@@ -636,6 +636,78 @@
       font-size: 13px;
       font-weight: 600;
     }
+
+    /* Filter Bar Styles */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding: 15px 20px;
+      background: rgba(30, 41, 59, 0.4);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-grow: 1;
+    }
+
+    .filter-input {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+      max-width: 250px;
+    }
+
+    .filter-input:focus {
+      border-color: var(--color-primary);
+    }
+
+    .filter-select {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+      cursor: pointer;
+      min-width: 150px;
+      max-width: 180px;
+    }
+
+    .filter-checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .filter-checkbox-group input {
+      cursor: pointer;
+      accent-color: var(--color-primary);
+      width: 16px;
+      height: 16px;
+    }
   </style>
 </head>
 <body>
@@ -784,6 +856,30 @@
     <div class="inventory-section">
       <div class="section-title">
         🎒 Collected Pokémon Pokebox (Admin View)
+      </div>
+
+      <!-- Filter & Search Bar -->
+      <div class="filter-bar">
+        <div class="filter-group">
+          <input type="text" id="poke-search" class="filter-input" placeholder="🔍 Search by name or ID...">
+          <select id="poke-sort" class="filter-select">
+            <option value="recent">Sort: Recent</option>
+            <option value="cp">Sort: CP (High → Low)</option>
+            <option value="cp-asc">Sort: CP (Low → High)</option>
+            <option value="hp">Sort: HP</option>
+            <option value="attack">Sort: Attack</option>
+            <option value="defense">Sort: Defense</option>
+            <option value="wins">Sort: Wins</option>
+          </select>
+        </div>
+        <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+          <label class="filter-checkbox-group">
+            <input type="checkbox" id="poke-shiny-filter"> ✨ Shiny Only
+          </label>
+          <label class="filter-checkbox-group">
+            <input type="checkbox" id="poke-legendary-filter"> 👑 Legendary Only
+          </label>
+        </div>
       </div>
       
       <div class="pokemon-grid" id="pokemon-grid">

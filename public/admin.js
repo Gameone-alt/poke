@@ -3,6 +3,12 @@ let globalPokemonList = [];
 let activeRegion = 'all';
 let adminPassword = '';
 
+// Filtering and sorting state variables
+let searchTerm = '';
+let sortBy = 'recent';
+let shinyOnly = false;
+let legendaryOnly = false;
+
 // Parse channel and username from clean path routing /admin/:channel/:username
 const pathParts = window.location.pathname.split('/');
 const urlParams = new URLSearchParams(window.location.search);
@@ -255,6 +261,48 @@ document.addEventListener('DOMContentLoaded', () => {
       autocompleteList.style.display = 'none';
     }
   });
+
+  // Hook filter and search inputs
+  const searchInput = document.getElementById('poke-search');
+  const sortSelect = document.getElementById('poke-sort');
+  const shinyCheckbox = document.getElementById('poke-shiny-filter');
+  const legendaryCheckbox = document.getElementById('poke-legendary-filter');
+
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      searchTerm = searchInput.value.trim().toLowerCase();
+      if (cachedUserData) {
+        renderTrainerProfile(cachedUserData);
+      }
+    });
+  }
+
+  if (sortSelect) {
+    sortSelect.addEventListener('change', () => {
+      sortBy = sortSelect.value;
+      if (cachedUserData) {
+        renderTrainerProfile(cachedUserData);
+      }
+    });
+  }
+
+  if (shinyCheckbox) {
+    shinyCheckbox.addEventListener('change', () => {
+      shinyOnly = shinyCheckbox.checked;
+      if (cachedUserData) {
+        renderTrainerProfile(cachedUserData);
+      }
+    });
+  }
+
+  if (legendaryCheckbox) {
+    legendaryCheckbox.addEventListener('change', () => {
+      legendaryOnly = legendaryCheckbox.checked;
+      if (cachedUserData) {
+        renderTrainerProfile(cachedUserData);
+      }
+    });
+  }
 });
 
 // Render UI functions
@@ -277,32 +325,65 @@ function renderTrainerProfile(user) {
   const grid = document.getElementById('pokemon-grid');
   grid.innerHTML = '';
 
-  if (!user.inventory || user.inventory.length === 0) {
-    grid.innerHTML = '<div class="empty-state">No Pokémon in collection. Grant some Pokémon to get started!</div>';
+  // Apply Region, Search, and Filters
+  let filtered = [...user.inventory];
+
+  // 1. Filter by Region
+  if (activeRegion !== 'all') {
+    filtered = filtered.filter(poke => {
+      const pokeId = parseInt(poke.pokemonId, 10);
+      return getPokemonRegion(pokeId) === activeRegion;
+    });
+  }
+
+  // 2. Filter by Search Term
+  if (searchTerm) {
+    filtered = filtered.filter(poke => 
+      poke.name.toLowerCase().includes(searchTerm) || 
+      poke.pokemonId.toString() === searchTerm
+    );
+  }
+
+  // 3. Filter by Shiny
+  if (shinyOnly) {
+    filtered = filtered.filter(poke => poke.shiny);
+  }
+
+  // 4. Filter by Legendary
+  if (legendaryOnly) {
+    filtered = filtered.filter(poke => poke.isLegendary || (poke.catchRate !== undefined && poke.catchRate <= 0.1));
+  }
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="empty-state">No Pokémon found matching the filters.</div>';
     return;
   }
 
-  // Filter by region first
-  const filteredInventory = user.inventory.filter(poke => {
-    if (activeRegion === 'all') return true;
-    const pokeId = parseInt(poke.pokemonId, 10);
-    return getPokemonRegion(pokeId) === activeRegion;
-  });
-
-  if (filteredInventory.length === 0) {
-    grid.innerHTML = '<div class="empty-state">No Pokémon found in this region.</div>';
-    return;
-  }
-
-  // Sort Pokémon: buddy first, shiny first, highest wins, then caught date
-  const sortedInventory = [...filteredInventory].sort((a, b) => {
+  // Sort Pokémon: buddy first, then chosen sort field
+  const sortedInventory = [...filtered].sort((a, b) => {
     const isBuddyA = a.instanceId === user.buddyInstanceId ? 1 : 0;
     const isBuddyB = b.instanceId === user.buddyInstanceId ? 1 : 0;
     if (isBuddyA !== isBuddyB) return isBuddyB - isBuddyA;
-    
-    if (a.shiny !== b.shiny) return b.shiny - a.shiny;
-    if (a.wins !== b.wins) return b.wins - a.wins;
-    return b.caughtAt - a.caughtAt;
+
+    if (sortBy === 'cp') {
+      const isLegendaryA = a.isLegendary || (a.catchRate !== undefined && a.catchRate <= 0.1);
+      const isLegendaryB = b.isLegendary || (b.catchRate !== undefined && b.catchRate <= 0.1);
+      return calculateCP(b.baseStats, b.wins, isLegendaryB) - calculateCP(a.baseStats, a.wins, isLegendaryA);
+    } else if (sortBy === 'cp-asc') {
+      const isLegendaryA = a.isLegendary || (a.catchRate !== undefined && a.catchRate <= 0.1);
+      const isLegendaryB = b.isLegendary || (b.catchRate !== undefined && b.catchRate <= 0.1);
+      return calculateCP(a.baseStats, a.wins, isLegendaryA) - calculateCP(b.baseStats, b.wins, isLegendaryB);
+    } else if (sortBy === 'hp') {
+      return (b.baseStats.hp || 0) - (a.baseStats.hp || 0);
+    } else if (sortBy === 'attack') {
+      return (b.baseStats.attack || 0) - (a.baseStats.attack || 0);
+    } else if (sortBy === 'defense') {
+      return (b.baseStats.defense || 0) - (a.baseStats.defense || 0);
+    } else if (sortBy === 'wins') {
+      return (b.wins || 0) - (a.wins || 0);
+    } else { // default to 'recent'
+      return b.caughtAt - a.caughtAt;
+    }
   });
 
   sortedInventory.forEach(poke => {
@@ -404,7 +485,7 @@ function updateRegionStats(user) {
   document.getElementById('stats-unova').textContent = `${counts.unova}/156`;
   document.getElementById('stats-kalos').textContent = `${counts.kalos}/72`;
   document.getElementById('stats-alola').textContent = `${counts.alola}/88`;
-  document.getElementById('stats-galar-paldea').textContent = `${counts.'galar-paldea' || 0}/216`;
+  document.getElementById('stats-galar-paldea').textContent = `${counts['galar-paldea'] || 0}/216`;
 }
 
 function getPokemonRegion(id) {
