@@ -333,41 +333,106 @@ async function query(text, params) {
 }
 
 /**
- * Gets a user by username or initializes a new one.
+ * Ensures that a player mapping record exists for the specific streamer channel.
  */
-async function getUser(streamerId, username, displayName = null) {
+async function ensureChannelPlayerExists(streamerId, username, displayName) {
+  const streamer = streamerId.toLowerCase().trim();
   const key = username.toLowerCase().trim();
-  const streamer = 'global';
   const compositeKey = `${streamer}_${key}`;
-  
+
   if (useLocalFallback) {
     if (!localUsers[compositeKey]) {
       localUsers[compositeKey] = {
         username: key,
         displayName: displayName || username,
-        balls: {
-          pokeball: 10,
-          greatball: 3,
-          ultraball: 1,
-          masterball: 0
-        },
+        balls: { pokeball: 10, greatball: 3, ultraball: 1, masterball: 0 },
         coins: 100,
         xp: 0,
         level: 1,
         buddyInstanceId: null,
-        items: {
-          fire_stone: 0,
-          water_stone: 0,
-          thunder_stone: 0,
-          leaf_stone: 0,
-          moon_stone: 0
-        },
+        items: { fire_stone: 0, water_stone: 0, thunder_stone: 0, leaf_stone: 0, moon_stone: 0 },
         gymBadges: [],
         inventory: [],
         activePokemonId: null,
         lastCatchAttempt: 0,
         lastDaily: 0
       };
+      saveLocalUsers();
+    }
+    return;
+  }
+
+  // PostgreSQL version
+  const res = await query(
+    'SELECT username FROM players WHERE streamer_id = $1 AND username = $2',
+    [streamer, key]
+  );
+  if (res.rows.length === 0) {
+    const defaultBalls = { pokeball: 10, greatball: 3, ultraball: 1, masterball: 0 };
+    await query(
+      `INSERT INTO players (streamer_id, username, display_name, pokeballs, greatballs, ultraballs, masterballs, coins, xp, level, last_daily, last_catch_attempt, active_pokemon_id, buddy_instance_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 100, 0, 1, 0, 0, NULL, NULL)`,
+      [streamer, key, displayName || username, defaultBalls.pokeball, defaultBalls.greatball, defaultBalls.ultraball, defaultBalls.masterball]
+    );
+  }
+}
+
+/**
+ * Gets a user by username or initializes a new one.
+ */
+async function getUser(streamerId, username, displayName = null) {
+  const key = username.toLowerCase().trim();
+  const cleanStreamerId = streamerId.toLowerCase().trim();
+  
+  if (cleanStreamerId !== 'global') {
+    await ensureChannelPlayerExists(cleanStreamerId, key, displayName || username);
+  }
+  
+  const streamer = 'global';
+  const compositeKey = `${streamer}_${key}`;
+  
+  if (useLocalFallback) {
+    if (!localUsers[compositeKey]) {
+      // Migrate from existing channel profile if found
+      const existingKey = Object.keys(localUsers).find(k => k.endsWith(`_${key}`) && !k.startsWith('global_'));
+      if (existingKey) {
+        localUsers[compositeKey] = JSON.parse(JSON.stringify(localUsers[existingKey]));
+        localUsers[compositeKey].username = key;
+        if (displayName) localUsers[compositeKey].displayName = displayName;
+        
+        // Reset the old channel record to be a simple placeholder
+        localUsers[existingKey] = {
+          username: key,
+          displayName: localUsers[existingKey].displayName || displayName || username,
+          balls: { pokeball: 10, greatball: 3, ultraball: 1, masterball: 0 },
+          coins: 100,
+          xp: 0,
+          level: 1,
+          buddyInstanceId: null,
+          items: { fire_stone: 0, water_stone: 0, thunder_stone: 0, leaf_stone: 0, moon_stone: 0 },
+          gymBadges: [],
+          inventory: [],
+          activePokemonId: null,
+          lastCatchAttempt: 0,
+          lastDaily: 0
+        };
+      } else {
+        localUsers[compositeKey] = {
+          username: key,
+          displayName: displayName || username,
+          balls: { pokeball: 10, greatball: 3, ultraball: 1, masterball: 0 },
+          coins: 100,
+          xp: 0,
+          level: 1,
+          buddyInstanceId: null,
+          items: { fire_stone: 0, water_stone: 0, thunder_stone: 0, leaf_stone: 0, moon_stone: 0 },
+          gymBadges: [],
+          inventory: [],
+          activePokemonId: null,
+          lastCatchAttempt: 0,
+          lastDaily: 0
+        };
+      }
       saveLocalUsers();
     } else {
       migrateLocalUser(localUsers[compositeKey]);
@@ -386,12 +451,32 @@ async function getUser(streamerId, username, displayName = null) {
   );
   
   if (res.rows.length === 0) {
-    const defaultBalls = { pokeball: 10, greatball: 3, ultraball: 1, masterball: 0 };
-    await query(
-      `INSERT INTO players (streamer_id, username, display_name, pokeballs, greatballs, ultraballs, masterballs, coins, xp, level, last_daily, last_catch_attempt, active_pokemon_id, buddy_instance_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, 100, 0, 1, 0, 0, NULL, NULL)`,
-      [streamer, key, displayName || username, defaultBalls.pokeball, defaultBalls.greatball, defaultBalls.ultraball, defaultBalls.masterball]
+    // Check if they have an existing channel-specific player record (e.g. from 'sam' or another streamer)
+    const existingRes = await query(
+      "SELECT * FROM players WHERE streamer_id != 'global' AND username = $1 LIMIT 1",
+      [key]
     );
+    if (existingRes.rows.length > 0) {
+      const p = existingRes.rows[0];
+      // copy stats to global
+      await query(
+        `INSERT INTO players (streamer_id, username, display_name, pokeballs, greatballs, ultraballs, masterballs, coins, xp, level, last_daily, last_catch_attempt, active_pokemon_id, buddy_instance_id, items, gym_badges)
+         VALUES ('global', $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
+        [key, p.display_name, p.pokeballs, p.greatballs, p.ultraballs, p.masterballs || 0, p.coins, p.xp, p.level, p.last_daily, p.last_catch_attempt, p.active_pokemon_id, p.buddy_instance_id, p.items, p.gym_badges]
+      );
+      // Migrate caught pokemon to global
+      await query(
+        "UPDATE inventories SET streamer_id = 'global' WHERE streamer_id = $1 AND username = $2",
+        [p.streamer_id, key]
+      );
+    } else {
+      const defaultBalls = { pokeball: 10, greatball: 3, ultraball: 1, masterball: 0 };
+      await query(
+        `INSERT INTO players (streamer_id, username, display_name, pokeballs, greatballs, ultraballs, masterballs, coins, xp, level, last_daily, last_catch_attempt, active_pokemon_id, buddy_instance_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, 100, 0, 1, 0, 0, NULL, NULL)`,
+        [streamer, key, displayName || username, defaultBalls.pokeball, defaultBalls.greatball, defaultBalls.ultraball, defaultBalls.masterball]
+      );
+    }
     res = await query(
       'SELECT * FROM players WHERE streamer_id = $1 AND username = $2',
       [streamer, key]
@@ -841,88 +926,43 @@ async function claimDaily(streamerId, username, displayName) {
  * Returns streamer-specific leaderboard.
  */
 async function getLeaderboard(streamerId) {
-  const streamer = 'global';
+  const streamer = streamerId.toLowerCase().trim();
   
   if (useLocalFallback) {
-    const list = Object.keys(localUsers)
-      .filter(k => k.startsWith(`${streamer}_`))
-      .map(k => {
-        const u = localUsers[k];
+    const list = [];
+    for (const k of Object.keys(localUsers)) {
+      if (k.startsWith(`${streamer}_`)) {
+        const channelUser = localUsers[k];
+        const u = await getUser('global', channelUser.username);
         const totalWins = u.inventory.reduce((sum, p) => sum + (p.wins || 0), 0);
-        return {
+        list.push({
           displayName: u.displayName,
           username: u.username,
           totalPokemon: u.inventory.length,
           totalWins: totalWins,
           activePokemon: u.inventory.find(p => p.instanceId === u.activePokemonId)
-        };
-      });
-      
+        });
+      }
+    }
     return list.sort((a, b) => b.totalPokemon - a.totalPokemon || b.totalWins - a.totalWins).slice(0, 10);
   }
   
   // PostgreSQL version
   const playersRes = await query(
-    `SELECT 
-       p.username, 
-       p.display_name as "displayName", 
-       p.active_pokemon_id as "activePokemonId",
-       COUNT(i.instance_id)::int as "totalPokemon",
-       COALESCE(SUM(i.wins), 0)::int as "totalWins"
-     FROM players p
-     LEFT JOIN inventories i ON p.streamer_id = i.streamer_id AND p.username = i.username
-     WHERE p.streamer_id = $1
-     GROUP BY p.username, p.display_name, p.active_pokemon_id`,
+    'SELECT username FROM players WHERE streamer_id = $1',
     [streamer]
   );
   
   const list = [];
   for (const row of playersRes.rows) {
-    let activePokemon = null;
-    if (row.activePokemonId) {
-      const activeRes = await query(
-        'SELECT * FROM inventories WHERE instance_id = $1',
-        [row.activePokemonId]
-      );
-      if (activeRes.rows.length > 0) {
-        const p = activeRes.rows[0];
-        const staticPoke = staticPokemonDb[p.pokemon_id.toString()] || {};
-        const baseName = staticPoke.name || p.pokemon_name || 'Unknown';
-        const name = p.shiny ? `✨ Shiny ${baseName}` : baseName;
-        const types = staticPoke.types || p.types || [];
-        const baseStats = staticPoke.stats || {
-          hp: p.base_hp || 50,
-          attack: p.base_atk || 50,
-          defense: p.base_def || 50,
-          speed: p.base_spd || 50
-        };
-
-        activePokemon = {
-          instanceId: p.instance_id,
-          pokemonId: p.pokemon_id,
-          name: name,
-          originalName: baseName,
-          types: types,
-          baseStats: {
-            hp: baseStats.hp,
-            attack: baseStats.attack,
-            defense: baseStats.defense,
-            speed: baseStats.speed
-          },
-          shiny: p.shiny,
-          wins: p.wins,
-          currentStage: p.current_stage,
-          caughtAt: Number(p.caught_at)
-        };
-      }
-    }
-    
+    const u = await getUser('global', row.username);
+    const totalWins = u.inventory.reduce((sum, p) => sum + (p.wins || 0), 0);
     list.push({
       username: row.username,
-      displayName: row.displayName,
-      totalPokemon: row.totalPokemon,
-      totalWins: row.totalWins,
-      activePokemon
+      displayName: u.displayName,
+      totalPokemon: u.inventory.length,
+      totalWins: totalWins,
+      activePokemon: u.inventory.find(p => p.instanceId === u.activePokemonId)
     });
   }
   
@@ -1398,39 +1438,47 @@ async function resetDatabase(streamerId) {
  * Retrieves all players registered under a streamer.
  */
 async function getAllPlayers(streamerId) {
-  const streamer = 'global';
+  const streamer = streamerId.toLowerCase().trim();
   if (useLocalFallback) {
-    return Object.keys(localUsers)
-      .filter(k => k.startsWith(`${streamer}_`))
-      .map(k => migrateLocalUser(JSON.parse(JSON.stringify(localUsers[k]))));
+    const list = [];
+    for (const k of Object.keys(localUsers)) {
+      if (k.startsWith(`${streamer}_`)) {
+        const channelUser = localUsers[k];
+        const u = await getUser('global', channelUser.username);
+        list.push({
+          username: u.username,
+          displayName: u.displayName,
+          level: u.level || 1,
+          xp: u.xp || 0,
+          coins: u.coins !== undefined && u.coins !== null ? u.coins : 100,
+          balls: u.balls,
+          activePokemonId: u.activePokemonId,
+          buddyInstanceId: u.buddyInstanceId,
+          inventoryCount: u.inventory.length,
+          lastCatchAttempt: u.lastCatchAttempt,
+          lastDaily: u.lastDaily
+        });
+      }
+    }
+    return list;
   }
   
-  const res = await query('SELECT * FROM players WHERE streamer_id = $1 ORDER BY username ASC', [streamer]);
+  const res = await query('SELECT username FROM players WHERE streamer_id = $1 ORDER BY username ASC', [streamer]);
   const list = [];
   for (const row of res.rows) {
-    // Load inventory to count inventory items or details if needed
-    const invRes = await query(
-      'SELECT * FROM inventories WHERE streamer_id = $1 AND username = $2',
-      [streamer, row.username]
-    );
-    
+    const u = await getUser('global', row.username);
     list.push({
-      username: row.username,
-      displayName: row.display_name,
-      level: row.level || 1,
-      xp: row.xp || 0,
-      coins: row.coins !== undefined && row.coins !== null ? row.coins : 100,
-      balls: {
-        pokeball: row.pokeballs,
-        greatball: row.greatballs,
-        ultraball: row.ultraballs,
-        masterball: row.masterballs || 0
-      },
-      activePokemonId: row.active_pokemon_id,
-      buddyInstanceId: row.buddy_instance_id,
-      inventoryCount: invRes.rows.length,
-      lastCatchAttempt: Number(row.last_catch_attempt),
-      lastDaily: Number(row.last_daily)
+      username: u.username,
+      displayName: u.displayName,
+      level: u.level || 1,
+      xp: u.xp || 0,
+      coins: u.coins !== undefined && u.coins !== null ? u.coins : 100,
+      balls: u.balls,
+      activePokemonId: u.activePokemonId,
+      buddyInstanceId: u.buddyInstanceId,
+      inventoryCount: u.inventory.length,
+      lastCatchAttempt: u.lastCatchAttempt,
+      lastDaily: u.lastDaily
     });
   }
   return list;
@@ -1682,11 +1730,12 @@ async function fusePokemon(streamerId, username, targetName) {
  * Renames a player in the players and inventories tables.
  */
 async function renamePlayer(streamerId, oldUsername, newUsername, newDisplayName) {
-  const streamer = 'global';
+  const streamer = streamerId.toLowerCase().trim();
   const oldUser = oldUsername.toLowerCase().trim();
   const newUser = newUsername.toLowerCase().trim();
   const newDisplay = newDisplayName.trim();
   
+  // 1. Rename on channel-specific player record
   if (useLocalFallback) {
     const oldKey = `${streamer}_${oldUser}`;
     const newKey = `${streamer}_${newUser}`;
@@ -1698,17 +1747,35 @@ async function renamePlayer(streamerId, oldUsername, newUsername, newDisplayName
       delete localUsers[oldKey];
       saveLocalUsers();
     }
-    return;
+  } else {
+    await query(
+      'UPDATE players SET username = $1, display_name = $2 WHERE streamer_id = $3 AND username = $4',
+      [newUser, newDisplay, streamer, oldUser]
+    );
   }
   
-  await query(
-    'UPDATE players SET username = $1, display_name = $2 WHERE streamer_id = $3 AND username = $4',
-    [newUser, newDisplay, streamer, oldUser]
-  );
-  await query(
-    'UPDATE inventories SET username = $1 WHERE streamer_id = $2 AND username = $3',
-    [newUser, streamer, oldUser]
-  );
+  // 2. Rename on global player record
+  if (useLocalFallback) {
+    const oldKey = `global_${oldUser}`;
+    const newKey = `global_${newUser}`;
+    if (localUsers[oldKey]) {
+      const userData = localUsers[oldKey];
+      userData.username = newUser;
+      userData.displayName = newDisplay;
+      localUsers[newKey] = userData;
+      delete localUsers[oldKey];
+      saveLocalUsers();
+    }
+  } else {
+    await query(
+      'UPDATE players SET username = $1, display_name = $2 WHERE streamer_id = $3 AND username = $4',
+      [newUser, newDisplay, 'global', oldUser]
+    );
+    await query(
+      'UPDATE inventories SET username = $1 WHERE streamer_id = $2 AND username = $3',
+      [newUser, 'global', oldUser]
+    );
+  }
 }
 
 /**
@@ -1768,7 +1835,7 @@ async function stealPokemon(streamerId, winnerUsername, loserUsername, pokemonIn
  * Deletes a player profile and all associated inventory data.
  */
 async function deletePlayer(streamerId, username) {
-  const streamer = 'global';
+  const streamer = streamerId.toLowerCase().trim();
   const key = username.toLowerCase().trim();
 
   if (useLocalFallback) {
@@ -1780,9 +1847,8 @@ async function deletePlayer(streamerId, username) {
     return;
   }
 
-  // PostgreSQL Mode
+  // PostgreSQL Mode — only delete the player-streamer association
   await query('DELETE FROM players WHERE streamer_id = $1 AND username = $2', [streamer, key]);
-  await query('DELETE FROM inventories WHERE streamer_id = $1 AND username = $2', [streamer, key]);
 }
 
 /**
@@ -1828,7 +1894,7 @@ async function deletePokemon(streamerId, username, instanceId) {
  * Falls back to getUser if no match is found.
  */
 async function findPlayerByNickname(streamerId, nickname) {
-  const streamer = 'global';
+  const streamer = streamerId.toLowerCase().trim();
   const rawKey = nickname.toLowerCase().trim();
   const cleanKey = rawKey.replace(/^@/, '');
   const keyWithAt = '@' + cleanKey;
@@ -1843,13 +1909,12 @@ async function findPlayerByNickname(streamerId, nickname) {
              dbDisplayLower === cleanKey || dbDisplayLower === keyWithAt;
     });
     if (matched) {
-      return migrateLocalUser(JSON.parse(JSON.stringify(localUsers[matched])));
+      return await getUser('global', localUsers[matched].username);
     }
-    return await getUser(streamerId, cleanKey);
+    return await getUser('global', cleanKey);
   }
 
-  // PostgreSQL Mode
-  // Check against username and display_name, matching both raw, clean (without @), and prefix version
+  // Check against username and display_name for the specific streamer channel
   const res = await query(
     `SELECT username FROM players 
      WHERE streamer_id = $1 
@@ -1859,9 +1924,9 @@ async function findPlayerByNickname(streamerId, nickname) {
     [streamer, cleanKey, keyWithAt]
   );
   if (res && res.rows.length > 0) {
-    return await getUser(streamerId, res.rows[0].username);
+    return await getUser('global', res.rows[0].username);
   }
-  return await getUser(streamerId, cleanKey);
+  return await getUser('global', cleanKey);
 }
 
 module.exports = {
