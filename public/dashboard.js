@@ -1676,10 +1676,8 @@ function setupLayoutEditor(config) {
 
     positionWidgetOnCanvas(wId);
 
-    // Click-to-select
-    el.addEventListener('click', () => {
-      selectWidget(wId);
-    });
+    // Click-to-select is disabled to prevent accidental selection/movement of overlapping items.
+    // Selection must be done via the dropdown selector above.
 
     // Drag Logic
     let isDragging = false;
@@ -1687,9 +1685,8 @@ function setupLayoutEditor(config) {
     let initialLeft = 0, initialTop = 0;
 
     el.addEventListener('mousedown', (e) => {
-      // Must be selected first before dragging is allowed
+      // Must be selected first via the dropdown before dragging is allowed
       if (!selectedWidget || selectedWidget.id !== wId) {
-        selectWidget(wId);
         return;
       }
       isDragging = true;
