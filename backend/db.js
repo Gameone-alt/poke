@@ -337,7 +337,7 @@ async function query(text, params) {
  */
 async function getUser(streamerId, username, displayName = null) {
   const key = username.toLowerCase().trim();
-  const streamer = streamerId.toLowerCase().trim();
+  const streamer = 'global';
   const compositeKey = `${streamer}_${key}`;
   
   if (useLocalFallback) {
@@ -468,7 +468,7 @@ async function getUser(streamerId, username, displayName = null) {
  */
 async function saveUser(streamerId, user) {
   const key = user.username.toLowerCase();
-  const streamer = streamerId.toLowerCase();
+  const streamer = 'global';
   const compositeKey = `${streamer}_${key}`;
   
   if (useLocalFallback) {
@@ -510,7 +510,7 @@ async function saveUser(streamerId, user) {
  * Adds a Pokémon instance to the player's inventory.
  */
 async function addPokemon(streamerId, username, displayName, pokemonData, isShiny = false) {
-  const streamer = streamerId.toLowerCase().trim();
+  const streamer = 'global';
   const key = username.toLowerCase().trim();
   
   // Use pre-rolled IVs from spawn time if available, otherwise roll fresh (for gacha packs)
@@ -601,7 +601,7 @@ async function addPokemon(streamerId, username, displayName, pokemonData, isShin
  * Selects active Pokémon for fights.
  */
 async function selectActivePokemon(streamerId, username, pokemonNameOrId) {
-  const streamer = streamerId.toLowerCase().trim();
+  const streamer = 'global';
   const key = username.toLowerCase().trim();
   
   if (useLocalFallback) {
@@ -652,7 +652,7 @@ async function selectActivePokemon(streamerId, username, pokemonNameOrId) {
  */
 async function addWin(streamerId, username, instanceId, staticPokemonDb) {
   const key = username.toLowerCase();
-  const streamer = streamerId.toLowerCase();
+  const streamer = 'global';
   
   if (useLocalFallback) {
     const user = await getUser(streamerId, username);
@@ -841,7 +841,7 @@ async function claimDaily(streamerId, username, displayName) {
  * Returns streamer-specific leaderboard.
  */
 async function getLeaderboard(streamerId) {
-  const streamer = streamerId.toLowerCase().trim();
+  const streamer = 'global';
   
   if (useLocalFallback) {
     const list = Object.keys(localUsers)
@@ -1398,7 +1398,7 @@ async function resetDatabase(streamerId) {
  * Retrieves all players registered under a streamer.
  */
 async function getAllPlayers(streamerId) {
-  const streamer = streamerId.toLowerCase().trim();
+  const streamer = 'global';
   if (useLocalFallback) {
     return Object.keys(localUsers)
       .filter(k => k.startsWith(`${streamer}_`))
@@ -1454,7 +1454,7 @@ module.exports = {
  * Swaps ownership of two Pokémon instances between two players.
  */
 async function swapPokemonOwnership(streamerId, playerA, instanceIdA, playerB, instanceIdB) {
-  const streamer = streamerId.toLowerCase().trim();
+  const streamer = 'global';
   const usernameA = playerA.toLowerCase().trim();
   const usernameB = playerB.toLowerCase().trim();
   
@@ -1521,7 +1521,7 @@ async function swapPokemonOwnership(streamerId, playerA, instanceIdA, playerB, i
  * Forcefully evolves a Pokémon instance to a new ID, name, types, and stats.
  */
 async function evolvePokemon(streamerId, username, instanceId, newPokemonData) {
-  const streamer = streamerId.toLowerCase().trim();
+  const streamer = 'global';
   const key = username.toLowerCase().trim();
   
   const name = newPokemonData.shiny ? `✨ Shiny ${newPokemonData.name}` : newPokemonData.name;
@@ -1573,7 +1573,7 @@ async function evolvePokemon(streamerId, username, instanceId, newPokemonData) {
  * Merges duplicate Pokémon of the same type.
  */
 async function fusePokemon(streamerId, username, targetName) {
-  const streamer = streamerId.toLowerCase().trim();
+  const streamer = 'global';
   const key = username.toLowerCase().trim();
   const searchName = targetName.toLowerCase().replace('✨ shiny ', '').trim();
 
@@ -1682,7 +1682,7 @@ async function fusePokemon(streamerId, username, targetName) {
  * Renames a player in the players and inventories tables.
  */
 async function renamePlayer(streamerId, oldUsername, newUsername, newDisplayName) {
-  const streamer = streamerId.toLowerCase().trim();
+  const streamer = 'global';
   const oldUser = oldUsername.toLowerCase().trim();
   const newUser = newUsername.toLowerCase().trim();
   const newDisplay = newDisplayName.trim();
@@ -1715,7 +1715,7 @@ async function renamePlayer(streamerId, oldUsername, newUsername, newDisplayName
  * Transfers a Pokémon instance from one player to another (Steal Battle).
  */
 async function stealPokemon(streamerId, winnerUsername, loserUsername, pokemonInstanceId) {
-  const streamer = streamerId.toLowerCase().trim();
+  const streamer = 'global';
   const winner = winnerUsername.toLowerCase().trim();
   const loser = loserUsername.toLowerCase().trim();
 
@@ -1768,7 +1768,7 @@ async function stealPokemon(streamerId, winnerUsername, loserUsername, pokemonIn
  * Deletes a player profile and all associated inventory data.
  */
 async function deletePlayer(streamerId, username) {
-  const streamer = streamerId.toLowerCase().trim();
+  const streamer = 'global';
   const key = username.toLowerCase().trim();
 
   if (useLocalFallback) {
@@ -1789,7 +1789,7 @@ async function deletePlayer(streamerId, username) {
  * Deletes a single Pokémon instance from a player's inventory.
  */
 async function deletePokemon(streamerId, username, instanceId) {
-  const streamer = streamerId.toLowerCase().trim();
+  const streamer = 'global';
   const key = username.toLowerCase().trim();
   
   if (useLocalFallback) {
@@ -1828,7 +1828,7 @@ async function deletePokemon(streamerId, username, instanceId) {
  * Falls back to getUser if no match is found.
  */
 async function findPlayerByNickname(streamerId, nickname) {
-  const streamer = streamerId.toLowerCase().trim();
+  const streamer = 'global';
   const rawKey = nickname.toLowerCase().trim();
   const cleanKey = rawKey.replace(/^@/, '');
   const keyWithAt = '@' + cleanKey;
