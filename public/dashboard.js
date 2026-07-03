@@ -1687,6 +1687,11 @@ function setupLayoutEditor(config) {
     let initialLeft = 0, initialTop = 0;
 
     el.addEventListener('mousedown', (e) => {
+      // Must be selected first before dragging is allowed
+      if (!selectedWidget || selectedWidget.id !== wId) {
+        selectWidget(wId);
+        return;
+      }
       isDragging = true;
       startX = e.clientX;
       startY = e.clientY;
