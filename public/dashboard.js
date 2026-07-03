@@ -1478,7 +1478,7 @@ const WIDGET_REGISTRY = {
     scaleKey: 'spawnCardScale', posKey: 'spawnCardPosition',
     topKey: 'spawnCardTop', bottomKey: 'spawnCardBottom', leftKey: 'spawnCardLeft', rightKey: 'spawnCardRight',
     scaleLabelId: 'lbl-scale-spawn',
-    defaultTop: '75%', defaultLeft: '5%',
+    defaultTop: '50%', defaultLeft: '5%',
     hasVisibility: true, showKey: 'showSpawnAlert'
   },
   'drag-ticker': {
@@ -1606,6 +1606,12 @@ function selectWidget(widgetId) {
   // Scale
   if (sidebarScaleSlider) sidebarScaleSlider.value = state.scale;
   if (sidebarScaleDisplay) sidebarScaleDisplay.textContent = `${state.scale.toFixed(2)}x`;
+
+  // Keep dropdown selector in sync
+  const selector = document.getElementById('layout-widget-selector');
+  if (selector) {
+    selector.value = widgetId;
+  }
 }
 
 function positionWidgetOnCanvas(widgetId) {
@@ -1652,6 +1658,17 @@ function setupLayoutEditor(config) {
   if (!container) return;
 
   initWidgetSidebarState(config);
+
+  const selector = document.getElementById('layout-widget-selector');
+  if (selector) {
+    selector.value = "";
+    selector.onchange = () => {
+      const val = selector.value;
+      if (val) {
+        selectWidget(val);
+      }
+    };
+  }
 
   Object.keys(WIDGET_REGISTRY).forEach(wId => {
     const el = document.getElementById(wId);
