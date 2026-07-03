@@ -190,6 +190,7 @@ function migrateLocalConfig(c) {
   if (c.levelUpTop === undefined) c.levelUpTop = '';
   if (c.levelUpBottom === undefined) c.levelUpBottom = '';
   if (c.levelUpScale === undefined) c.levelUpScale = 1.0;
+  if (c.showRaid === undefined) c.showRaid = true;
   return c;
 }
 
@@ -308,7 +309,8 @@ async function runAutoMigrations() {
       ADD COLUMN IF NOT EXISTS level_up_right VARCHAR(20) DEFAULT '',
       ADD COLUMN IF NOT EXISTS level_up_top VARCHAR(20) DEFAULT '',
       ADD COLUMN IF NOT EXISTS level_up_bottom VARCHAR(20) DEFAULT '',
-      ADD COLUMN IF NOT EXISTS level_up_scale NUMERIC DEFAULT 1.0;
+      ADD COLUMN IF NOT EXISTS level_up_scale NUMERIC DEFAULT 1.0,
+      ADD COLUMN IF NOT EXISTS show_raid BOOLEAN DEFAULT TRUE;
     `);
 
     // Add columns to inventories table
@@ -1460,7 +1462,8 @@ async function getStreamerConfig(streamerId) {
     levelUpRight: row.level_up_right || '',
     levelUpTop: row.level_up_top || '',
     levelUpBottom: row.level_up_bottom || '',
-    levelUpScale: row.level_up_scale !== null && row.level_up_scale !== undefined ? Number(row.level_up_scale) : 1.0
+    levelUpScale: row.level_up_scale !== null && row.level_up_scale !== undefined ? Number(row.level_up_scale) : 1.0,
+    showRaid: row.show_raid !== false
   };
 }
 
@@ -1478,7 +1481,8 @@ async function saveStreamerConfig(streamerId, config) {
   
   // PostgreSQL version
   await query(
-    `UPDATE streamer_configs 
+    `ALTER TABLE streamer_configs ADD COLUMN IF NOT EXISTS show_raid BOOLEAN DEFAULT TRUE;
+     UPDATE streamer_configs 
      SET video_id = $1, spawn_interval_ms = $2, wild_despawn_timeout_ms = $3, 
          catch_cooldown_ms = $4, shiny_chance = $5, admin_password = $6, youtube_channel_id = $7,
          theme = $8, sfx_volume = $9, show_live_feed = $10, live_feed_title = $11,
@@ -1518,8 +1522,9 @@ async function saveStreamerConfig(streamerId, config) {
          pack_scale = $107,
          show_level_up = $108, level_up_position = $109,
          level_up_left = $110, level_up_right = $111, level_up_top = $112, level_up_bottom = $113,
-         level_up_scale = $114
-     WHERE channel_id = $115`,
+         level_up_scale = $114,
+         show_raid = $115
+     WHERE channel_id = $116`,
     [
       config.videoId || '',
       config.spawnIntervalMs,
@@ -1635,6 +1640,7 @@ async function saveStreamerConfig(streamerId, config) {
       config.levelUpTop || '',
       config.levelUpBottom || '',
       config.levelUpScale !== undefined ? config.levelUpScale : 1.0,
+      config.showRaid !== false,
       streamer
     ]
   );

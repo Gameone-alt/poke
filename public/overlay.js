@@ -295,6 +295,9 @@ function applyConfig(config) {
   // 3.9. Raid Boss Positioning Setup
   const raidOverlay = document.getElementById('raid-overlay');
   if (raidOverlay) {
+    if (config.showRaid === false) {
+      raidOverlay.classList.add('hidden');
+    }
     const raidPos = config.raidPosition || 'center';
     raidOverlay.style.top = '';
     raidOverlay.style.bottom = '';
@@ -1722,6 +1725,9 @@ socket.on('gacha_pack_opened', (data) => {
 let raidCountdownInterval = null;
 
 socket.on('raid_start', (data) => {
+  if (currentOverlayConfig && currentOverlayConfig.showRaid === false) {
+    return;
+  }
   playSound(sfxSpawn);
   
   // Clear any existing countdown interval

@@ -506,11 +506,11 @@ function compileConfigObject() {
     spawnCatchGuideMode: spawnCatchGuideModeSelect.value,
     primaryColor: primaryColorInput.value,
     sfxVolume: parseInt(sfxVolumeInput.value),
-    showBattleArena: showBattleArenaInput.checked,
+    showBattleArena: widgetSidebarState['drag-battle'] ? widgetSidebarState['drag-battle'].show : true,
     battleType: battleTypeSelect ? battleTypeSelect.value : 'normal',
     fullHealTimeMinutes: fullHealTimeMinutesInput ? parseInt(fullHealTimeMinutesInput.value, 10) : 60,
     healCostCoins: healCostCoinsInput ? parseInt(healCostCoinsInput.value, 10) : 50,
-    showLeaderboard: showLeaderboardInput.checked,
+    showLeaderboard: widgetSidebarState['drag-ticker'] ? widgetSidebarState['drag-ticker'].show : true,
     
     // Custom Economy & Game Rewards
     coinsCaptureNormal: parseInt(coinsCaptureNormalInput.value),
@@ -550,9 +550,9 @@ function compileConfigObject() {
     raidDropStoneChance: parseFloat(raidDropStoneChanceInput.value) / 100,
     battleAcceptTimeoutSeconds: parseInt(battleAcceptTimeoutInput.value, 10),
     streamDelaySeconds: parseInt(streamDelayInput.value, 10),
-    showLiveFeed: showLiveFeedInput.checked,
+    showLiveFeed: widgetSidebarState['drag-feed'] ? widgetSidebarState['drag-feed'].show : true,
     liveFeedTitle: liveFeedTitleInput.value.trim(),
-    showSpawnAlert: showSpawnAlertInput.checked,
+    showSpawnAlert: widgetSidebarState['drag-spawn-card'] ? widgetSidebarState['drag-spawn-card'].show : true,
     spawnAlertTitle: spawnAlertTitleInput.value.trim(),
     spawnCatchGuide: spawnCatchGuideInput.value.trim(),
     inventoryBaseUrl: inventoryBaseUrlInput.value.trim(),
@@ -599,6 +599,7 @@ function compileConfigObject() {
     feedScale: parseFloat(document.getElementById('lbl-scale-feed').textContent) || 1.0,
     raidScale: parseFloat(document.getElementById('lbl-scale-raid').textContent) || 1.0,
 
+    showRaid: widgetSidebarState['drag-raid'] ? widgetSidebarState['drag-raid'].show : true,
     showPackOpening: widgetSidebarState['drag-pack'] ? widgetSidebarState['drag-pack'].show : true,
     packPosition: widgetSidebarState['drag-pack'] ? widgetSidebarState['drag-pack'].position : 'center',
     packLeft: widgetSidebarState['drag-pack'] ? widgetSidebarState['drag-pack'].left : '',
@@ -1478,7 +1479,7 @@ const WIDGET_REGISTRY = {
     topKey: 'spawnCardTop', bottomKey: 'spawnCardBottom', leftKey: 'spawnCardLeft', rightKey: 'spawnCardRight',
     scaleLabelId: 'lbl-scale-spawn',
     defaultTop: '75%', defaultLeft: '5%',
-    hasVisibility: false
+    hasVisibility: true, showKey: 'showSpawnAlert'
   },
   'drag-ticker': {
     type: 'ticker', icon: '👑', label: 'Ticker Bar',
@@ -1486,7 +1487,7 @@ const WIDGET_REGISTRY = {
     topKey: 'tickerTop', bottomKey: 'tickerBottom', leftKey: 'tickerLeft', rightKey: 'tickerRight',
     scaleLabelId: 'lbl-scale-ticker',
     defaultTop: '5%', defaultLeft: '5%',
-    hasVisibility: false
+    hasVisibility: true, showKey: 'showLeaderboard'
   },
   'drag-feed': {
     type: 'feed', icon: '📰', label: 'Live Feed',
@@ -1494,7 +1495,7 @@ const WIDGET_REGISTRY = {
     topKey: 'feedTop', bottomKey: 'feedBottom', leftKey: 'feedLeft', rightKey: 'feedRight',
     scaleLabelId: 'lbl-scale-feed',
     defaultTop: '5%', defaultLeft: '70%',
-    hasVisibility: false
+    hasVisibility: true, showKey: 'showLiveFeed'
   },
   'drag-battle': {
     type: 'battle', icon: '⚔️', label: 'Battle Arena',
@@ -1502,7 +1503,7 @@ const WIDGET_REGISTRY = {
     topKey: 'battleTop', bottomKey: 'battleBottom', leftKey: 'battleLeft', rightKey: 'battleRight',
     scaleLabelId: 'lbl-scale-battle',
     defaultTop: '40%', defaultLeft: '40%',
-    hasVisibility: false
+    hasVisibility: true, showKey: 'showBattleArena'
   },
   'drag-raid': {
     type: 'raid', icon: '🦖', label: 'Raid Boss',
@@ -1510,7 +1511,7 @@ const WIDGET_REGISTRY = {
     topKey: 'raidTop', bottomKey: 'raidBottom', leftKey: 'raidLeft', rightKey: 'raidRight',
     scaleLabelId: 'lbl-scale-raid',
     defaultTop: '35%', defaultLeft: '35%',
-    hasVisibility: false
+    hasVisibility: true, showKey: 'showRaid'
   },
   'drag-pack': {
     type: 'pack', icon: '🎒', label: 'Pack Opening',

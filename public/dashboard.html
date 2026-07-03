@@ -482,22 +482,13 @@
               </div>
 
               <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px; margin-bottom: 10px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
-                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; color: var(--text-muted); flex: 1; min-width: 150px;">
-                  <input type="checkbox" id="show-live-feed" checked style="width: auto;">
-                  Show Live Activity Feed
-                </label>
-                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; color: var(--text-muted); flex: 1; min-width: 150px;">
-                  <input type="checkbox" id="show-spawn-alert" checked style="width: auto;">
-                  Show Spawn Alert Box
-                </label>
-                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; color: var(--text-muted); flex: 1; min-width: 150px;">
-                  <input type="checkbox" id="show-battle-arena" checked style="width: auto;">
-                  Enable Battle Arena Overlay
-                </label>
-                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; color: var(--text-muted); flex: 1; min-width: 150px;">
-                  <input type="checkbox" id="show-leaderboard" checked style="width: auto;">
-                  Show Leaderboard Ticker
-                </label>
+                <!-- Hidden inputs so JS bindings don't break -->
+                <div style="display: none;">
+                  <input type="checkbox" id="show-live-feed" checked>
+                  <input type="checkbox" id="show-spawn-alert" checked>
+                  <input type="checkbox" id="show-battle-arena" checked>
+                  <input type="checkbox" id="show-leaderboard" checked>
+                </div>
                 <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; color: #f43f5e; font-weight: 700; flex: 1; min-width: 250px;">
                   <input type="checkbox" id="hide-spawn-details" style="width: auto;">
                   Hide Stats & Catch Rates (Simplified Mode)
@@ -546,146 +537,150 @@
               </div>
 
               <!-- Wild Spawn Card Layout -->
-              <h4 style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 10px;">📐 Wild Spawn Card Layout</h4>
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="spawn-card-scale">Card Scale / Size</label>
-                  <input type="number" id="spawn-card-scale" step="0.05" min="0.5" max="2.0" value="1.0">
+              <!-- Hidden position settings container to avoid breaking JS selectors -->
+              <div style="display: none;">
+                <!-- Wild Spawn Card Layout -->
+                <h4 style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 10px;">📐 Wild Spawn Card Layout</h4>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="spawn-card-scale">Card Scale / Size</label>
+                    <input type="number" id="spawn-card-scale" step="0.05" min="0.5" max="2.0" value="1.0">
+                  </div>
+                  <div class="form-group">
+                    <label for="spawn-card-position">Card Position</label>
+                    <select id="spawn-card-position" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
+                      <option value="bottom-left">Bottom Left</option>
+                      <option value="bottom-right">Bottom Right</option>
+                      <option value="top-left">Top Left</option>
+                      <option value="top-right">Top Right</option>
+                      <option value="center">Center Screen</option>
+                      <option value="custom">Custom Position</option>
+                    </select>
+                  </div>
                 </div>
-                <div class="form-group">
-                  <label for="spawn-card-position">Card Position</label>
-                  <select id="spawn-card-position" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
-                    <option value="bottom-left">Bottom Left</option>
-                    <option value="bottom-right">Bottom Right</option>
-                    <option value="top-left">Top Left</option>
-                    <option value="top-right">Top Right</option>
-                    <option value="center">Center Screen</option>
-                    <option value="custom">Custom Position</option>
-                  </select>
-                </div>
-              </div>
 
-              <!-- Spawn custom coords -->
-              <div class="form-row custom-position-row" id="spawn-custom-pos-row" style="display: none; gap: 10px; margin-bottom: 15px;">
-                <div class="form-group" style="flex: 1;">
-                  <label for="spawn-card-left" style="font-size: 11px;">Left</label>
-                  <input type="text" id="spawn-card-left" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                <!-- Spawn custom coords -->
+                <div class="form-row custom-position-row" id="spawn-custom-pos-row" style="display: none; gap: 10px; margin-bottom: 15px;">
+                  <div class="form-group" style="flex: 1;">
+                    <label for="spawn-card-left" style="font-size: 11px;">Left</label>
+                    <input type="text" id="spawn-card-left" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                  </div>
+                  <div class="form-group" style="flex: 1;">
+                    <label for="spawn-card-right" style="font-size: 11px;">Right</label>
+                    <input type="text" id="spawn-card-right" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                  </div>
+                  <div class="form-group" style="flex: 1;">
+                    <label for="spawn-card-top" style="font-size: 11px;">Top</label>
+                    <input type="text" id="spawn-card-top" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                  </div>
+                  <div class="form-group" style="flex: 1;">
+                    <label for="spawn-card-bottom" style="font-size: 11px;">Bottom</label>
+                    <input type="text" id="spawn-card-bottom" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                  </div>
                 </div>
-                <div class="form-group" style="flex: 1;">
-                  <label for="spawn-card-right" style="font-size: 11px;">Right</label>
-                  <input type="text" id="spawn-card-right" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-                </div>
-                <div class="form-group" style="flex: 1;">
-                  <label for="spawn-card-top" style="font-size: 11px;">Top</label>
-                  <input type="text" id="spawn-card-top" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-                </div>
-                <div class="form-group" style="flex: 1;">
-                  <label for="spawn-card-bottom" style="font-size: 11px;">Bottom</label>
-                  <input type="text" id="spawn-card-bottom" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-                </div>
-              </div>
 
-              <!-- Leaderboard Ticker Position -->
-              <h4 style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 10px;">👑 Leaderboard Ticker Position</h4>
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="ticker-position">Ticker Position Preset</label>
-                  <select id="ticker-position" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
-                    <option value="top-left">Top Left Preset</option>
-                    <option value="top-right">Top Right Preset</option>
-                    <option value="bottom-left">Bottom Left Preset</option>
-                    <option value="bottom-right">Bottom Right Preset</option>
-                    <option value="custom">Custom Position</option>
-                  </select>
+                <!-- Leaderboard Ticker Position -->
+                <h4 style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 10px;">👑 Leaderboard Ticker Position</h4>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="ticker-position">Ticker Position Preset</label>
+                    <select id="ticker-position" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
+                      <option value="top-left">Top Left Preset</option>
+                      <option value="top-right">Top Right Preset</option>
+                      <option value="bottom-left">Bottom Left Preset</option>
+                      <option value="bottom-right">Bottom Right Preset</option>
+                      <option value="custom">Custom Position</option>
+                    </select>
+                  </div>
                 </div>
-              </div>
 
-              <!-- Ticker custom coords -->
-              <div class="form-row custom-position-row" id="ticker-custom-pos-row" style="display: none; gap: 10px; margin-bottom: 15px;">
-                <div class="form-group" style="flex: 1;">
-                  <label for="ticker-left" style="font-size: 11px;">Left</label>
-                  <input type="text" id="ticker-left" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                <!-- Ticker custom coords -->
+                <div class="form-row custom-position-row" id="ticker-custom-pos-row" style="display: none; gap: 10px; margin-bottom: 15px;">
+                  <div class="form-group" style="flex: 1;">
+                    <label for="ticker-left" style="font-size: 11px;">Left</label>
+                    <input type="text" id="ticker-left" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                  </div>
+                  <div class="form-group" style="flex: 1;">
+                    <label for="ticker-right" style="font-size: 11px;">Right</label>
+                    <input type="text" id="ticker-right" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                  </div>
+                  <div class="form-group" style="flex: 1;">
+                    <label for="ticker-top" style="font-size: 11px;">Top</label>
+                    <input type="text" id="ticker-top" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                  </div>
+                  <div class="form-group" style="flex: 1;">
+                    <label for="ticker-bottom" style="font-size: 11px;">Bottom</label>
+                    <input type="text" id="ticker-bottom" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                  </div>
                 </div>
-                <div class="form-group" style="flex: 1;">
-                  <label for="ticker-right" style="font-size: 11px;">Right</label>
-                  <input type="text" id="ticker-right" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-                </div>
-                <div class="form-group" style="flex: 1;">
-                  <label for="ticker-top" style="font-size: 11px;">Top</label>
-                  <input type="text" id="ticker-top" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-                </div>
-                <div class="form-group" style="flex: 1;">
-                  <label for="ticker-bottom" style="font-size: 11px;">Bottom</label>
-                  <input type="text" id="ticker-bottom" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-                </div>
-              </div>
 
-              <!-- Live Game Feed Position -->
-              <h4 style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 10px;">📰 Live Game Feed Position</h4>
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="feed-position">Feed Position Preset</label>
-                  <select id="feed-position" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
-                    <option value="top-right">Top Right Preset</option>
-                    <option value="top-left">Top Left Preset</option>
-                    <option value="bottom-right">Bottom Right Preset</option>
-                    <option value="bottom-left">Bottom Left Preset</option>
-                    <option value="custom">Custom Position</option>
-                  </select>
+                <!-- Live Game Feed Position -->
+                <h4 style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 10px;">📰 Live Game Feed Position</h4>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="feed-position">Feed Position Preset</label>
+                    <select id="feed-position" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
+                      <option value="top-right">Top Right Preset</option>
+                      <option value="top-left">Top Left Preset</option>
+                      <option value="bottom-right">Bottom Right Preset</option>
+                      <option value="bottom-left">Bottom Left Preset</option>
+                      <option value="custom">Custom Position</option>
+                    </select>
+                  </div>
                 </div>
-              </div>
 
-              <!-- Feed custom coords -->
-              <div class="form-row custom-position-row" id="feed-custom-pos-row" style="display: none; gap: 10px; margin-bottom: 15px;">
-                <div class="form-group" style="flex: 1;">
-                  <label for="feed-left" style="font-size: 11px;">Left</label>
-                  <input type="text" id="feed-left" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                <!-- Feed custom coords -->
+                <div class="form-row custom-position-row" id="feed-custom-pos-row" style="display: none; gap: 10px; margin-bottom: 15px;">
+                  <div class="form-group" style="flex: 1;">
+                    <label for="feed-left" style="font-size: 11px;">Left</label>
+                    <input type="text" id="feed-left" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                  </div>
+                  <div class="form-group" style="flex: 1;">
+                    <label for="feed-right" style="font-size: 11px;">Right</label>
+                    <input type="text" id="feed-right" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                  </div>
+                  <div class="form-group" style="flex: 1;">
+                    <label for="feed-top" style="font-size: 11px;">Top</label>
+                    <input type="text" id="feed-top" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                  </div>
+                  <div class="form-group" style="flex: 1;">
+                    <label for="feed-bottom" style="font-size: 11px;">Bottom</label>
+                    <input type="text" id="feed-bottom" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                  </div>
                 </div>
-                <div class="form-group" style="flex: 1;">
-                  <label for="feed-right" style="font-size: 11px;">Right</label>
-                  <input type="text" id="feed-right" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-                </div>
-                <div class="form-group" style="flex: 1;">
-                  <label for="feed-top" style="font-size: 11px;">Top</label>
-                  <input type="text" id="feed-top" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-                </div>
-                <div class="form-group" style="flex: 1;">
-                  <label for="feed-bottom" style="font-size: 11px;">Bottom</label>
-                  <input type="text" id="feed-bottom" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-                </div>
-              </div>
 
-              <!-- Battle Arena Position -->
-              <h4 style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 10px;">⚔️ Battle Arena Position</h4>
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="battle-position">Battle Position Preset</label>
-                  <select id="battle-position" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
-                    <option value="center">Center Screen Preset</option>
-                    <option value="top">Top Preset</option>
-                    <option value="bottom">Bottom Preset</option>
-                    <option value="custom">Custom Position</option>
-                  </select>
+                <!-- Battle Arena Position -->
+                <h4 style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 10px;">⚔️ Battle Arena Position</h4>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="battle-position">Battle Position Preset</label>
+                    <select id="battle-position" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
+                      <option value="center">Center Screen Preset</option>
+                      <option value="top">Top Preset</option>
+                      <option value="bottom">Bottom Preset</option>
+                      <option value="custom">Custom Position</option>
+                    </select>
+                  </div>
                 </div>
-              </div>
 
-              <!-- Battle custom coords -->
-              <div class="form-row custom-position-row" id="battle-custom-pos-row" style="display: none; gap: 10px; margin-bottom: 15px;">
-                <div class="form-group" style="flex: 1;">
-                  <label for="battle-left" style="font-size: 11px;">Left</label>
-                  <input type="text" id="battle-left" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-                </div>
-                <div class="form-group" style="flex: 1;">
-                  <label for="battle-right" style="font-size: 11px;">Right</label>
-                  <input type="text" id="battle-right" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-                </div>
-                <div class="form-group" style="flex: 1;">
-                  <label for="battle-top" style="font-size: 11px;">Top</label>
-                  <input type="text" id="battle-top" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-                </div>
-                <div class="form-group" style="flex: 1;">
-                  <label for="battle-bottom" style="font-size: 11px;">Bottom</label>
-                  <input type="text" id="battle-bottom" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                <!-- Battle custom coords -->
+                <div class="form-row custom-position-row" id="battle-custom-pos-row" style="display: none; gap: 10px; margin-bottom: 15px;">
+                  <div class="form-group" style="flex: 1;">
+                    <label for="battle-left" style="font-size: 11px;">Left</label>
+                    <input type="text" id="battle-left" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                  </div>
+                  <div class="form-group" style="flex: 1;">
+                    <label for="battle-right" style="font-size: 11px;">Right</label>
+                    <input type="text" id="battle-right" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                  </div>
+                  <div class="form-group" style="flex: 1;">
+                    <label for="battle-top" style="font-size: 11px;">Top</label>
+                    <input type="text" id="battle-top" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                  </div>
+                  <div class="form-group" style="flex: 1;">
+                    <label for="battle-bottom" style="font-size: 11px;">Bottom</label>
+                    <input type="text" id="battle-bottom" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                  </div>
                 </div>
               </div>
 
@@ -717,37 +712,40 @@
                 </div>
               </div>
 
-              <!-- Raid Boss Position -->
-              <h4 style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 10px;">🦖 Raid Boss Card Position</h4>
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="raid-position">Raid Position Preset</label>
-                  <select id="raid-position" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
-                    <option value="center">Center Screen Preset</option>
-                    <option value="top">Top Preset</option>
-                    <option value="bottom">Bottom Preset</option>
-                    <option value="custom">Custom Position</option>
-                  </select>
+              <!-- Hidden Raid position settings to avoid breaking JS selectors -->
+              <div style="display: none;">
+                <!-- Raid Boss Position -->
+                <h4 style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 10px;">🦖 Raid Boss Card Position</h4>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="raid-position">Raid Position Preset</label>
+                    <select id="raid-position" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
+                      <option value="center">Center Screen Preset</option>
+                      <option value="top">Top Preset</option>
+                      <option value="bottom">Bottom Preset</option>
+                      <option value="custom">Custom Position</option>
+                    </select>
+                  </div>
                 </div>
-              </div>
 
-              <!-- Raid custom coords -->
-              <div class="form-row custom-position-row" id="raid-custom-pos-row" style="display: none; gap: 10px; margin-bottom: 15px;">
-                <div class="form-group" style="flex: 1;">
-                  <label for="raid-left" style="font-size: 11px;">Left</label>
-                  <input type="text" id="raid-left" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-                </div>
-                <div class="form-group" style="flex: 1;">
-                  <label for="raid-right" style="font-size: 11px;">Right</label>
-                  <input type="text" id="raid-right" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-                </div>
-                <div class="form-group" style="flex: 1;">
-                  <label for="raid-top" style="font-size: 11px;">Top</label>
-                  <input type="text" id="raid-top" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-                </div>
-                <div class="form-group" style="flex: 1;">
-                  <label for="raid-bottom" style="font-size: 11px;">Bottom</label>
-                  <input type="text" id="raid-bottom" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                <!-- Raid custom coords -->
+                <div class="form-row custom-position-row" id="raid-custom-pos-row" style="display: none; gap: 10px; margin-bottom: 15px;">
+                  <div class="form-group" style="flex: 1;">
+                    <label for="raid-left" style="font-size: 11px;">Left</label>
+                    <input type="text" id="raid-left" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                  </div>
+                  <div class="form-group" style="flex: 1;">
+                    <label for="raid-right" style="font-size: 11px;">Right</label>
+                    <input type="text" id="raid-right" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                  </div>
+                  <div class="form-group" style="flex: 1;">
+                    <label for="raid-top" style="font-size: 11px;">Top</label>
+                    <input type="text" id="raid-top" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                  </div>
+                  <div class="form-group" style="flex: 1;">
+                    <label for="raid-bottom" style="font-size: 11px;">Bottom</label>
+                    <input type="text" id="raid-bottom" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                  </div>
                 </div>
               </div>
 
@@ -819,7 +817,7 @@
                 
                 <!-- LEFT: Screen Preview Box (16:9 Aspect Ratio) -->
                 <div style="flex: 1; min-width: 0;">
-                  <div id="layout-screen-preview" style="position: relative; width: 100%; aspect-ratio: 16/9; background: #0b0f19; border: 2px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: inset 0 0 20px rgba(0,0,0,0.8);">
+                  <div id="layout-screen-preview" style="position: relative; width: 100%; max-width: 720px; aspect-ratio: 16 / 9; background: #0b0f19; border: 2px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: inset 0 0 20px rgba(0,0,0,0.8);">
                     <!-- Grid Lines Backdrop -->
                     <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px); background-size: 20px 20px; pointer-events: none;"></div>
                     
