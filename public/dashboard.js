@@ -247,11 +247,7 @@ setupCustomPosToggle(raidPositionSelect, raidCustomPosRow);
 
 if (battleTypeSelect) {
   battleTypeSelect.addEventListener('change', () => {
-    if (battleTypeSelect.value === 'persistent_hp') {
-      if (persistentHpSettingsGroup) persistentHpSettingsGroup.style.display = 'block';
-    } else {
-      if (persistentHpSettingsGroup) persistentHpSettingsGroup.style.display = 'none';
-    }
+    if (persistentHpSettingsGroup) persistentHpSettingsGroup.style.display = 'none';
   });
 }
 
@@ -302,12 +298,7 @@ function populateConfig(config) {
   showBattleArenaInput.checked = config.showBattleArena !== false;
   if (battleTypeSelect) {
     battleTypeSelect.value = config.battleType || 'normal';
-    // Trigger show/hide for persistent HP options container
-    if (battleTypeSelect.value === 'persistent_hp') {
-      if (persistentHpSettingsGroup) persistentHpSettingsGroup.style.display = 'block';
-    } else {
-      if (persistentHpSettingsGroup) persistentHpSettingsGroup.style.display = 'none';
-    }
+    if (persistentHpSettingsGroup) persistentHpSettingsGroup.style.display = 'none';
   }
   if (fullHealTimeMinutesInput) fullHealTimeMinutesInput.value = config.fullHealTimeMinutes !== undefined ? config.fullHealTimeMinutes : 60;
   if (healCostCoinsInput) healCostCoinsInput.value = config.healCostCoins !== undefined ? config.healCostCoins : 50;

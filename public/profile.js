@@ -1,3 +1,19 @@
+function formatHealingTime(minutesRemaining) {
+  if (minutesRemaining <= 0) return 'Ready';
+  const totalMinutes = Math.ceil(minutesRemaining);
+  const days = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
+  const mins = totalMinutes % 60;
+  
+  if (days > 0) {
+    return `⏳ Healing: ${days}d ${hours}h left`;
+  } else if (hours > 0) {
+    return `⏳ Healing: ${hours}h ${mins}m left`;
+  } else {
+    return `⏳ Healing: ${mins}m left`;
+  }
+}
+
 let cachedUserData = null;
 let globalPokemonList = [];
 let activeRegion = 'all';
@@ -281,13 +297,11 @@ function renderTrainerProfile(user) {
       let timerText = '';
       if (currentHp < maxHp && poke.lastBattleTime > 0) {
         const elapsedMinutes = (Date.now() - poke.lastBattleTime) / (1000 * 60);
-        const healMinutes = user.fullHealTimeMinutes || 60;
-        const ratePerMinute = maxHp / healMinutes;
-        const minutesRemaining = Math.max(0, (maxHp - currentHp) / ratePerMinute - elapsedMinutes);
+        const minutesRemaining = Math.max(0, 2880 - elapsedMinutes);
         
         if (minutesRemaining > 0) {
-          const mins = Math.ceil(minutesRemaining);
-          timerText = `<div class="hp-timer" style="font-size: 11px; font-weight: 700; color: #fbbf24; margin-top: 3px; display: flex; align-items: center; justify-content: center; gap: 4px;">⏳ Healing: ${mins}m left</div>`;
+          const timeStr = formatHealingTime(minutesRemaining);
+          timerText = `<div class="hp-timer" style="font-size: 11px; font-weight: 700; color: #fbbf24; margin-top: 3px; display: flex; align-items: center; justify-content: center; gap: 4px;">${timeStr}</div>`;
         }
       }
       
@@ -692,21 +706,19 @@ function refreshTrainerData(channel, username, apiBase) {
         const hpTimer = card.querySelector('.hp-timer');
         if (currentHp < maxHp && poke.lastBattleTime > 0) {
           const elapsedMinutes = (Date.now() - poke.lastBattleTime) / (1000 * 60);
-          const healMinutes = data.fullHealTimeMinutes || 60;
-          const ratePerMinute = maxHp / healMinutes;
-          const minutesRemaining = Math.max(0, (maxHp - currentHp) / ratePerMinute - elapsedMinutes);
+          const minutesRemaining = Math.max(0, 2880 - elapsedMinutes);
           
           if (minutesRemaining > 0) {
-            const mins = Math.ceil(minutesRemaining);
+            const timeStr = formatHealingTime(minutesRemaining);
             if (hpTimer) {
-              hpTimer.innerHTML = `⏳ Healing: ${mins}m left`;
+              hpTimer.innerHTML = timeStr;
             } else {
               const hpSection = card.querySelector('.hp-bar-section');
               if (hpSection) {
                 const timerDiv = document.createElement('div');
                 timerDiv.className = 'hp-timer';
                 timerDiv.style.cssText = 'font-size: 11px; font-weight: 700; color: #fbbf24; margin-top: 3px; display: flex; align-items: center; justify-content: center; gap: 4px;';
-                timerDiv.innerHTML = `⏳ Healing: ${mins}m left`;
+                timerDiv.innerHTML = timeStr;
                 hpSection.appendChild(timerDiv);
               }
             }

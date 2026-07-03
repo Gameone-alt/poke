@@ -1416,7 +1416,7 @@ async function processCommand(channelId, username, displayName, messageText, bas
       return msg;
     }
     
-    const healCost = session.config.healCostCoins !== undefined ? session.config.healCostCoins : 50;
+    const healCost = 1000;
     if (user.coins < healCost) {
       const msg = `❌ @${displayName}, you need 🪙 ${healCost} coins to fully heal ${targetPoke.name}! You only have 🪙 ${user.coins} coins.`;
       io.to(channelId).emit('command_feedback', { username, text: msg });

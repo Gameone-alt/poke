@@ -427,12 +427,7 @@ async function ensureChannelPlayerExists(streamerId, username, displayName) {
 }
 
 async function getFullHealTime(streamerId) {
-  try {
-    const config = await getStreamerConfig(streamerId);
-    return config.fullHealTimeMinutes || 60;
-  } catch (err) {
-    return 60;
-  }
+  return 2880; // Hardcoded to exactly 2 days (48 hours = 2880 minutes)
 }
 
 async function healPokemon(streamerId, username, targetPokemonName) {
@@ -554,17 +549,14 @@ async function getUser(streamerId, username, displayName = null) {
       
       if (currentHp < baseHp && lastBattleTime > 0) {
         const elapsedMinutes = (Date.now() - lastBattleTime) / (1000 * 60);
-        const healed = Math.floor(elapsedMinutes * (baseHp / healMinutes));
-        if (healed > 0) {
-          const finalHp = Math.min(baseHp, currentHp + healed);
-          poke.currentHp = finalHp;
-          poke.lastBattleTime = finalHp >= baseHp ? 0 : lastBattleTime + Math.floor(healed / (baseHp / healMinutes) * 60 * 1000);
+        if (elapsedMinutes >= 2880) { // snap heal after 2 days (2880 mins)
+          poke.currentHp = baseHp;
+          poke.lastBattleTime = 0;
           
-          // Write back to the actual localUsers object
           const dbPoke = localUsers[compositeKey].inventory.find(p => p.instanceId === poke.instanceId);
           if (dbPoke) {
-            dbPoke.currentHp = poke.currentHp;
-            dbPoke.lastBattleTime = poke.lastBattleTime;
+            dbPoke.currentHp = baseHp;
+            dbPoke.lastBattleTime = 0;
           }
           updatedLocal = true;
         }
@@ -676,16 +668,11 @@ async function getUser(streamerId, username, displayName = null) {
     
     if (currentHp < baseHp && lastBattleTime > 0) {
       const elapsedMinutes = (Date.now() - lastBattleTime) / (1000 * 60);
-      const healed = Math.floor(elapsedMinutes * (baseHp / healMinutes));
-      if (healed > 0) {
-        const finalHp = Math.min(baseHp, currentHp + healed);
-        currentHp = finalHp;
-        const newBattleTime = finalHp >= baseHp ? 0 : lastBattleTime + Math.floor(healed / (baseHp / healMinutes) * 60 * 1000);
-        
-        // Update PostgreSQL database in background
+      if (elapsedMinutes >= 2880) { // snap heal after 2 days (2880 mins)
+        currentHp = baseHp;
         await query(
           'UPDATE inventories SET current_hp = $1, last_battle_time = $2 WHERE streamer_id = $3 AND username = $4 AND instance_id = $5',
-          [currentHp, newBattleTime, 'global', key, p.instance_id]
+          [currentHp, 0, 'global', key, p.instance_id]
         );
       }
     }
