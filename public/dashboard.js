@@ -871,6 +871,16 @@ socket.on('leaderboard_update', (leaderboard) => {
   updateLeaderboardUI(leaderboard);
 });
 
+socket.on('player_updated', (data) => {
+  if (!data || !data.username) return;
+  const invModal = document.getElementById('manage-inventory-modal');
+  const targetUsernameEl = document.getElementById('inventory-target-username');
+  if (invModal && invModal.style.display === 'flex' && targetUsernameEl && targetUsernameEl.value.toLowerCase() === data.username.toLowerCase()) {
+    const activeBtn = Array.from(document.querySelectorAll('.btn-manage-inventory')).find(btn => btn.getAttribute('data-user').toLowerCase() === data.username.toLowerCase());
+    if (activeBtn) activeBtn.click();
+  }
+});
+
 function updateLeaderboardUI(leaderboard) {
   if (!leaderboard || leaderboard.length === 0) {
     leaderboardBody.innerHTML = `

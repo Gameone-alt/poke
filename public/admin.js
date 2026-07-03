@@ -137,6 +137,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  socket.on('player_updated', (data) => {
+    if (data && data.username && data.username.toLowerCase() === username.toLowerCase()) {
+      loadTrainerData();
+    }
+  });
+
   // Load Trainer Data & Pokémon List
   async function loadTrainerData() {
     try {

@@ -945,6 +945,11 @@ async function runBattle(channelId, playerA, playerB, onComplete) {
     session.activeBattle = null;
     session.activeChallenge = null;
     
+    io.to(channelId).emit('player_updated', { username: playerA.username });
+    if (!isWildBattle) {
+      io.to(channelId).emit('player_updated', { username: playerB.username });
+    }
+
     io.to(channelId).emit('leaderboard_update', await db.getLeaderboard(channelId));
     if (onComplete) onComplete(resultMessage);
   }, 20000);
@@ -1425,6 +1430,7 @@ async function processCommand(channelId, username, displayName, messageText, bas
     
     const msg = `💖 @${displayName} spent 🪙 ${healCost} coins to fully heal their ${targetPoke.name}! HP restored to ${maxHp}/${maxHp}.`;
     sendGameLog(channelId, 'system', msg);
+    io.to(channelId).emit('player_updated', { username });
     io.to(channelId).emit('leaderboard_update', await db.getLeaderboard(channelId));
     return msg;
   }
@@ -1973,6 +1979,14 @@ async function processCommand(channelId, username, displayName, messageText, bas
     }
     
     if (activePoke) {
+      if (session.config.battleType === 'persistent_hp') {
+        const currentHp = activePoke.currentHp !== undefined && activePoke.currentHp !== null ? activePoke.currentHp : activePoke.baseStats.hp;
+        if (currentHp <= 0) {
+          const msg = `❌ @${displayName}, your active Pokémon ${activePoke.name} is fainted (0 HP)! Type '!heal' to restore it first.`;
+          io.to(channelId).emit('command_feedback', { username, text: msg });
+          return msg;
+        }
+      }
       pokemonName = activePoke.name;
       const baseAtk = activePoke.baseStats.attack || 50;
       const levelMult = 1 + (user.level * 0.05);
@@ -2342,6 +2356,7 @@ io.on('connection', async (socket) => {
       
       // Notify client of success and refresh data
       socket.emit('command_feedback', { text: `✅ Granted ${isShiny ? '✨ Shiny ' : ''}${pokeData.name} successfully!` });
+      io.to(channelId).emit('player_updated', { username: targetUsername });
       const players = await db.getAllPlayers(channelId);
       socket.emit('all_players_data', players);
       
@@ -2404,6 +2419,7 @@ io.on('connection', async (socket) => {
         await db.saveUser(channelId, user);
         
         // Notify all clients of update
+        io.to(channelId).emit('player_updated', { username: playerUsername });
         io.to(channelId).emit('leaderboard_update', await db.getLeaderboard(channelId));
         // Refresh player list for dashboard
         const list = await db.getAllPlayers(channelId);
@@ -2458,6 +2474,7 @@ io.on('connection', async (socket) => {
       }
       
       // Notify all clients of update
+      usernames.forEach(uname => io.to(channelId).emit('player_updated', { username: uname }));
       io.to(channelId).emit('leaderboard_update', await db.getLeaderboard(channelId));
       
       // Refresh player list for dashboard
@@ -2504,6 +2521,7 @@ io.on('connection', async (socket) => {
       await db.deletePokemon(channelId, playerUsername, instanceId);
       
       // Notify all clients of update (in case they were on leaderboard or active pokemon changed)
+      io.to(channelId).emit('player_updated', { username: playerUsername });
       io.to(channelId).emit('leaderboard_update', await db.getLeaderboard(channelId));
       
       // Refresh player list for dashboard

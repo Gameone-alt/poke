@@ -161,6 +161,21 @@ function migrateLocalConfig(c) {
   if (c.raidRewardXp === undefined) c.raidRewardXp = 150;
   if (c.raidDropStoneChance === undefined) c.raidDropStoneChance = 0.15;
   if (c.inventoryBaseUrl === undefined) c.inventoryBaseUrl = '';
+  if (c.battleScale === undefined) c.battleScale = 1.0;
+  if (c.tickerScale === undefined) c.tickerScale = 1.0;
+  if (c.feedScale === undefined) c.feedScale = 1.0;
+  if (c.battleAcceptTimeoutSeconds === undefined) c.battleAcceptTimeoutSeconds = 30;
+  if (c.streamDelaySeconds === undefined) c.streamDelaySeconds = 0;
+  if (c.hideSpawnDetails === undefined) c.hideSpawnDetails = false;
+  if (c.raidScale === undefined) c.raidScale = 1.0;
+  if (c.raidPosition === undefined) c.raidPosition = 'center';
+  if (c.raidLeft === undefined) c.raidLeft = '';
+  if (c.raidRight === undefined) c.raidRight = '';
+  if (c.raidTop === undefined) c.raidTop = '';
+  if (c.raidBottom === undefined) c.raidBottom = '';
+  if (c.battleType === undefined) c.battleType = 'normal';
+  if (c.fullHealTimeMinutes === undefined) c.fullHealTimeMinutes = 60;
+  if (c.healCostCoins === undefined) c.healCostCoins = 50;
   return c;
 }
 
@@ -1539,6 +1554,7 @@ async function saveStreamerConfig(streamerId, config) {
       streamer
     ]
   );
+}
 /**
  * Resets a streamer's database records.
  */

@@ -51,66 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Start dynamic countdown updates for healing Pokémon
       if (window.healingIntervalId) clearInterval(window.healingIntervalId);
       window.healingIntervalId = setInterval(() => {
-        if (!cachedUserData || cachedUserData.battleType !== 'persistent_hp') return;
-        
-        document.querySelectorAll('.pokemon-card').forEach(card => {
-          const instanceId = card.dataset.instanceId;
-          const poke = cachedUserData.inventory.find(p => p.instanceId === instanceId);
-          if (!poke) return;
-          
-          const maxHp = poke.baseStats.hp || 50;
-          let currentHp = poke.currentHp !== undefined && poke.currentHp !== null ? poke.currentHp : maxHp;
-          const lastBattleTime = Number(poke.lastBattleTime || 0);
-          
-          if (currentHp < maxHp && lastBattleTime > 0) {
-            const elapsedMinutes = (Date.now() - lastBattleTime) / (1000 * 60);
-            const healMinutes = cachedUserData.fullHealTimeMinutes || 60;
-            const ratePerMinute = maxHp / healMinutes;
-            const healed = Math.floor(elapsedMinutes * ratePerMinute);
-            
-            const finalHp = Math.min(maxHp, currentHp + healed);
-            const hpPct = Math.max(0, Math.min(100, (finalHp / maxHp) * 100));
-            
-            const hpLabel = card.querySelector('.hp-label');
-            if (hpLabel) hpLabel.textContent = `HP: ${finalHp}/${maxHp}`;
-            
-            const hpFillBar = card.querySelector('.hp-fill-bar');
-            if (hpFillBar) {
-              hpFillBar.style.width = `${hpPct}%`;
-              let hpColor = '#10b981';
-              if (hpPct < 30) hpColor = '#ef4444';
-              else if (hpPct < 60) hpColor = '#f59e0b';
-              hpFillBar.style.backgroundColor = hpColor;
-            }
-            
-            const hpTimer = card.querySelector('.hp-timer');
-            const minutesRemaining = Math.max(0, (maxHp - currentHp) / ratePerMinute - elapsedMinutes);
-            
-            if (minutesRemaining > 0 && finalHp < maxHp) {
-              const mins = Math.ceil(minutesRemaining);
-              if (hpTimer) {
-                hpTimer.innerHTML = `⏳ Healing: ${mins}m left`;
-              } else {
-                // If the element doesn't exist, create it!
-                const hpSection = card.querySelector('.hp-bar-section');
-                if (hpSection) {
-                  const timerDiv = document.createElement('div');
-                  timerDiv.className = 'hp-timer';
-                  timerDiv.style.cssText = 'font-size: 11px; font-weight: 700; color: #fbbf24; margin-top: 3px; display: flex; align-items: center; justify-content: center; gap: 4px;';
-                  timerDiv.innerHTML = `⏳ Healing: ${mins}m left`;
-                  hpSection.appendChild(timerDiv);
-                }
-              }
-            } else {
-              if (hpTimer) hpTimer.remove();
-              if (hpLabel) hpLabel.textContent = `HP: ${maxHp}/${maxHp}`;
-              if (hpFillBar) {
-                hpFillBar.style.width = '100%';
-                hpFillBar.style.backgroundColor = '#10b981';
-              }
-            }
-          }
-        });
+        refreshTrainerData(channel, username, apiBase);
       }, 15000);
     })
     .catch(err => {
@@ -651,4 +592,131 @@ function renderPokedexRegion(user, region) {
 
     grid.appendChild(card);
   });
+}
+
+function refreshTrainerData(channel, username, apiBase) {
+  fetch(`${apiBase}/api/trainer/${channel}/${username}`)
+    .then(res => {
+      if (res.ok) return res.json();
+    })
+    .then(data => {
+      if (!data) return;
+      
+      const oldLen = cachedUserData && cachedUserData.inventory ? cachedUserData.inventory.length : 0;
+      const newLen = data.inventory ? data.inventory.length : 0;
+      
+      cachedUserData = data;
+      
+      if (oldLen !== newLen) {
+        if (activeRegion === 'all') {
+          renderTrainerProfile(data);
+        } else {
+          renderPokedexRegion(data, activeRegion);
+        }
+        updateRegionStats(data);
+        return;
+      }
+      
+      const xpNeeded = data.level * 100;
+      const xpPercent = Math.min(100, Math.max(0, (data.xp / xpNeeded) * 100));
+      
+      const lvlBadge = document.getElementById('level-badge');
+      if (lvlBadge) lvlBadge.textContent = `Trainer Level ${data.level}`;
+      
+      const xpRatio = document.getElementById('xp-ratio');
+      if (xpRatio) xpRatio.textContent = `${data.xp} / ${xpNeeded} XP`;
+      
+      const xpFill = document.getElementById('xp-fill');
+      if (xpFill) xpFill.style.width = `${xpPercent}%`;
+      
+      const coinsVal = document.getElementById('coins-value');
+      if (coinsVal) coinsVal.textContent = `🪙 ${data.coins}`;
+      
+      const caughtVal = document.getElementById('caught-value');
+      if (caughtVal) caughtVal.textContent = newLen;
+      
+      if (data.balls) {
+        const bp = document.getElementById('balls-poke');
+        if (bp) bp.textContent = data.balls.pokeball || 0;
+        const bg = document.getElementById('balls-great');
+        if (bg) bg.textContent = data.balls.greatball || 0;
+        const bu = document.getElementById('balls-ultra');
+        if (bu) bu.textContent = data.balls.ultraball || 0;
+        const bm = document.getElementById('balls-master');
+        if (bm) bm.textContent = data.balls.masterball || 0;
+      }
+      
+      if (data.items) {
+        const sf = document.getElementById('stone-fire');
+        if (sf) sf.textContent = data.items.fire_stone || 0;
+        const sw = document.getElementById('stone-water');
+        if (sw) sw.textContent = data.items.water_stone || 0;
+        const st = document.getElementById('stone-thunder');
+        if (st) st.textContent = data.items.thunder_stone || 0;
+        const sl = document.getElementById('stone-leaf');
+        if (sl) sl.textContent = data.items.leaf_stone || 0;
+        const sm = document.getElementById('stone-moon');
+        if (sm) sm.textContent = data.items.moon_stone || 0;
+      }
+      
+      document.querySelectorAll('.pokemon-card').forEach(card => {
+        const instanceId = card.dataset.instanceId;
+        if (!instanceId) return;
+        const poke = data.inventory.find(p => p.instanceId === instanceId);
+        if (!poke) return;
+        
+        const winsEl = card.querySelector('.pokemon-wins');
+        if (winsEl) winsEl.textContent = `🏆 Wins: ${poke.wins || 0}`;
+        
+        const isLegendary = poke.isLegendary || (poke.catchRate !== undefined && poke.catchRate <= 0.1);
+        const cpVal = calculateCP(poke.baseStats, poke.wins, isLegendary, poke.fusionCount);
+        const cpEl = card.querySelector('.pokemon-cp');
+        if (cpEl) cpEl.textContent = `CP ${cpVal}`;
+        
+        const maxHp = poke.baseStats.hp || 50;
+        const currentHp = poke.currentHp !== undefined && poke.currentHp !== null ? poke.currentHp : maxHp;
+        const hpPct = Math.max(0, Math.min(100, (currentHp / maxHp) * 100));
+        
+        const hpLabel = card.querySelector('.hp-label');
+        if (hpLabel) hpLabel.textContent = `HP: ${currentHp}/${maxHp}`;
+        
+        const hpFillBar = card.querySelector('.hp-fill-bar');
+        if (hpFillBar) {
+          hpFillBar.style.width = `${hpPct}%`;
+          let hpColor = '#10b981';
+          if (hpPct < 30) hpColor = '#ef4444';
+          else if (hpPct < 60) hpColor = '#f59e0b';
+          hpFillBar.style.backgroundColor = hpColor;
+        }
+        
+        const hpTimer = card.querySelector('.hp-timer');
+        if (currentHp < maxHp && poke.lastBattleTime > 0) {
+          const elapsedMinutes = (Date.now() - poke.lastBattleTime) / (1000 * 60);
+          const healMinutes = data.fullHealTimeMinutes || 60;
+          const ratePerMinute = maxHp / healMinutes;
+          const minutesRemaining = Math.max(0, (maxHp - currentHp) / ratePerMinute - elapsedMinutes);
+          
+          if (minutesRemaining > 0) {
+            const mins = Math.ceil(minutesRemaining);
+            if (hpTimer) {
+              hpTimer.innerHTML = `⏳ Healing: ${mins}m left`;
+            } else {
+              const hpSection = card.querySelector('.hp-bar-section');
+              if (hpSection) {
+                const timerDiv = document.createElement('div');
+                timerDiv.className = 'hp-timer';
+                timerDiv.style.cssText = 'font-size: 11px; font-weight: 700; color: #fbbf24; margin-top: 3px; display: flex; align-items: center; justify-content: center; gap: 4px;';
+                timerDiv.innerHTML = `⏳ Healing: ${mins}m left`;
+                hpSection.appendChild(timerDiv);
+              }
+            }
+          } else {
+            if (hpTimer) hpTimer.remove();
+          }
+        } else {
+          if (hpTimer) hpTimer.remove();
+        }
+      });
+    })
+    .catch(err => console.error('Error refreshing trainer profile:', err));
 }
