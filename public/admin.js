@@ -295,7 +295,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-
+  if (legendaryCheckbox) {
+    legendaryCheckbox.addEventListener('change', () => {
+      legendaryOnly = legendaryCheckbox.checked;
+      if (cachedUserData) {
+        renderTrainerProfile(cachedUserData);
+      }
     });
   }
 
