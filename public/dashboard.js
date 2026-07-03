@@ -414,6 +414,10 @@ function populateConfig(config) {
   document.getElementById('lbl-scale-battle').textContent = (config.battleScale !== undefined ? config.battleScale : 1.0).toFixed(2);
   document.getElementById('lbl-scale-ticker').textContent = (config.tickerScale !== undefined ? config.tickerScale : 1.0).toFixed(2);
   document.getElementById('lbl-scale-feed').textContent = (config.feedScale !== undefined ? config.feedScale : 1.0).toFixed(2);
+  document.getElementById('lbl-scale-raid').textContent = (config.raidScale !== undefined ? config.raidScale : 1.0).toFixed(2);
+  document.getElementById('lbl-scale-pack').textContent = (config.packScale !== undefined ? config.packScale : 1.0).toFixed(2);
+  document.getElementById('lbl-scale-levelup').textContent = (config.levelUpScale !== undefined ? config.levelUpScale : 1.0).toFixed(2);
+
 
   // Initialize drag & drop layout editor settings
   setupLayoutEditor(config);
@@ -594,6 +598,22 @@ function compileConfigObject() {
     tickerScale: parseFloat(document.getElementById('lbl-scale-ticker').textContent) || 1.0,
     feedScale: parseFloat(document.getElementById('lbl-scale-feed').textContent) || 1.0,
     raidScale: parseFloat(document.getElementById('lbl-scale-raid').textContent) || 1.0,
+
+    showPackOpening: widgetSidebarState['drag-pack'] ? widgetSidebarState['drag-pack'].show : true,
+    packPosition: widgetSidebarState['drag-pack'] ? widgetSidebarState['drag-pack'].position : 'center',
+    packLeft: widgetSidebarState['drag-pack'] ? widgetSidebarState['drag-pack'].left : '',
+    packRight: widgetSidebarState['drag-pack'] ? widgetSidebarState['drag-pack'].right : '',
+    packTop: widgetSidebarState['drag-pack'] ? widgetSidebarState['drag-pack'].top : '',
+    packBottom: widgetSidebarState['drag-pack'] ? widgetSidebarState['drag-pack'].bottom : '',
+    packScale: widgetSidebarState['drag-pack'] ? widgetSidebarState['drag-pack'].scale : 1.0,
+
+    showLevelUp: widgetSidebarState['drag-levelup'] ? widgetSidebarState['drag-levelup'].show : true,
+    levelUpPosition: widgetSidebarState['drag-levelup'] ? widgetSidebarState['drag-levelup'].position : 'center',
+    levelUpLeft: widgetSidebarState['drag-levelup'] ? widgetSidebarState['drag-levelup'].left : '',
+    levelUpRight: widgetSidebarState['drag-levelup'] ? widgetSidebarState['drag-levelup'].right : '',
+    levelUpTop: widgetSidebarState['drag-levelup'] ? widgetSidebarState['drag-levelup'].top : '',
+    levelUpBottom: widgetSidebarState['drag-levelup'] ? widgetSidebarState['drag-levelup'].bottom : '',
+    levelUpScale: widgetSidebarState['drag-levelup'] ? widgetSidebarState['drag-levelup'].scale : 1.0,
 
     spawnTarget: spawnTargetInput.value.trim()
   };
@@ -1450,72 +1470,204 @@ if (viewerSearch) {
 // Visual Layout Editor controller
 let selectedWidget = null;
 
+// Widget metadata registry — maps each draggable widget to its config keys
+const WIDGET_REGISTRY = {
+  'drag-spawn-card': {
+    type: 'spawn', icon: '🦖', label: 'Wild Spawn Card',
+    scaleKey: 'spawnCardScale', posKey: 'spawnCardPosition',
+    topKey: 'spawnCardTop', bottomKey: 'spawnCardBottom', leftKey: 'spawnCardLeft', rightKey: 'spawnCardRight',
+    scaleLabelId: 'lbl-scale-spawn',
+    defaultTop: '75%', defaultLeft: '5%',
+    hasVisibility: false
+  },
+  'drag-ticker': {
+    type: 'ticker', icon: '👑', label: 'Ticker Bar',
+    scaleKey: 'tickerScale', posKey: 'tickerPosition',
+    topKey: 'tickerTop', bottomKey: 'tickerBottom', leftKey: 'tickerLeft', rightKey: 'tickerRight',
+    scaleLabelId: 'lbl-scale-ticker',
+    defaultTop: '5%', defaultLeft: '5%',
+    hasVisibility: false
+  },
+  'drag-feed': {
+    type: 'feed', icon: '📰', label: 'Live Feed',
+    scaleKey: 'feedScale', posKey: 'feedPosition',
+    topKey: 'feedTop', bottomKey: 'feedBottom', leftKey: 'feedLeft', rightKey: 'feedRight',
+    scaleLabelId: 'lbl-scale-feed',
+    defaultTop: '5%', defaultLeft: '70%',
+    hasVisibility: false
+  },
+  'drag-battle': {
+    type: 'battle', icon: '⚔️', label: 'Battle Arena',
+    scaleKey: 'battleScale', posKey: 'battlePosition',
+    topKey: 'battleTop', bottomKey: 'battleBottom', leftKey: 'battleLeft', rightKey: 'battleRight',
+    scaleLabelId: 'lbl-scale-battle',
+    defaultTop: '40%', defaultLeft: '40%',
+    hasVisibility: false
+  },
+  'drag-raid': {
+    type: 'raid', icon: '🦖', label: 'Raid Boss',
+    scaleKey: 'raidScale', posKey: 'raidPosition',
+    topKey: 'raidTop', bottomKey: 'raidBottom', leftKey: 'raidLeft', rightKey: 'raidRight',
+    scaleLabelId: 'lbl-scale-raid',
+    defaultTop: '35%', defaultLeft: '35%',
+    hasVisibility: false
+  },
+  'drag-pack': {
+    type: 'pack', icon: '🎒', label: 'Pack Opening',
+    scaleKey: 'packScale', posKey: 'packPosition',
+    topKey: 'packTop', bottomKey: 'packBottom', leftKey: 'packLeft', rightKey: 'packRight',
+    scaleLabelId: 'lbl-scale-pack',
+    defaultTop: '30%', defaultLeft: '35%',
+    hasVisibility: true, showKey: 'showPackOpening'
+  },
+  'drag-levelup': {
+    type: 'levelup', icon: '🏆', label: 'Level Up',
+    scaleKey: 'levelUpScale', posKey: 'levelUpPosition',
+    topKey: 'levelUpTop', bottomKey: 'levelUpBottom', leftKey: 'levelUpLeft', rightKey: 'levelUpRight',
+    scaleLabelId: 'lbl-scale-levelup',
+    defaultTop: '30%', defaultLeft: '35%',
+    hasVisibility: true, showKey: 'showLevelUp'
+  }
+};
+
+// Sidebar element refs
+const sidebarNoSelection = document.getElementById('sidebar-no-selection');
+const sidebarEditor = document.getElementById('sidebar-widget-editor');
+const sidebarWidgetIcon = document.getElementById('sidebar-widget-icon');
+const sidebarWidgetName = document.getElementById('sidebar-widget-name');
+const sidebarVisibilityRow = document.getElementById('sidebar-visibility-row');
+const sidebarShowToggle = document.getElementById('sidebar-show-toggle');
+const sidebarPositionPreset = document.getElementById('sidebar-position-preset');
+const sidebarCustomCoords = document.getElementById('sidebar-custom-coords');
+const sidebarCoordLeft = document.getElementById('sidebar-coord-left');
+const sidebarCoordRight = document.getElementById('sidebar-coord-right');
+const sidebarCoordTop = document.getElementById('sidebar-coord-top');
+const sidebarCoordBottom = document.getElementById('sidebar-coord-bottom');
+const sidebarScaleSlider = document.getElementById('sidebar-scale-slider');
+const sidebarScaleDisplay = document.getElementById('sidebar-scale-display');
+const sidebarResetWidget = document.getElementById('sidebar-reset-widget');
+
+// Internal cache for each widget's sidebar-editable state (persisted to config on save)
+const widgetSidebarState = {};
+
+function initWidgetSidebarState(config) {
+  Object.keys(WIDGET_REGISTRY).forEach(wId => {
+    const w = WIDGET_REGISTRY[wId];
+    widgetSidebarState[wId] = {
+      show: w.hasVisibility ? (config[w.showKey] !== false) : true,
+      position: config[w.posKey] || 'center',
+      left: config[w.leftKey] || '',
+      right: config[w.rightKey] || '',
+      top: config[w.topKey] || '',
+      bottom: config[w.bottomKey] || '',
+      scale: config[w.scaleKey] !== undefined ? Number(config[w.scaleKey]) : 1.0
+    };
+  });
+}
+
+function selectWidget(widgetId) {
+  const w = WIDGET_REGISTRY[widgetId];
+  if (!w) return;
+  selectedWidget = { id: widgetId, ...w };
+
+  // Highlight selected widget
+  document.querySelectorAll('.draggable-widget').forEach(node => {
+    node.classList.toggle('widget-selected', node.id === widgetId);
+  });
+
+  // Show editor
+  if (sidebarNoSelection) sidebarNoSelection.style.display = 'none';
+  if (sidebarEditor) sidebarEditor.style.display = 'block';
+
+  // Populate sidebar from cached state
+  const state = widgetSidebarState[widgetId];
+  if (sidebarWidgetIcon) sidebarWidgetIcon.textContent = w.icon;
+  if (sidebarWidgetName) sidebarWidgetName.textContent = w.label;
+
+  // Visibility toggle (only for pack/levelup)
+  if (sidebarVisibilityRow) {
+    sidebarVisibilityRow.style.display = w.hasVisibility ? 'flex' : 'none';
+  }
+  if (sidebarShowToggle) sidebarShowToggle.checked = state.show;
+
+  // Position preset
+  if (sidebarPositionPreset) sidebarPositionPreset.value = state.position || 'center';
+
+  // Custom coords visibility
+  if (sidebarCustomCoords) {
+    sidebarCustomCoords.style.display = state.position === 'custom' ? 'block' : 'none';
+  }
+  if (sidebarCoordLeft) sidebarCoordLeft.value = state.left || '';
+  if (sidebarCoordRight) sidebarCoordRight.value = state.right || '';
+  if (sidebarCoordTop) sidebarCoordTop.value = state.top || '';
+  if (sidebarCoordBottom) sidebarCoordBottom.value = state.bottom || '';
+
+  // Scale
+  if (sidebarScaleSlider) sidebarScaleSlider.value = state.scale;
+  if (sidebarScaleDisplay) sidebarScaleDisplay.textContent = `${state.scale.toFixed(2)}x`;
+}
+
+function positionWidgetOnCanvas(widgetId) {
+  const el = document.getElementById(widgetId);
+  const w = WIDGET_REGISTRY[widgetId];
+  if (!el || !w) return;
+  const state = widgetSidebarState[widgetId];
+
+  const scale = state.scale;
+  el.querySelector('.widget-scale-val').textContent = scale.toFixed(2);
+  el.style.transform = `scale(${scale})`;
+
+  let topVal = w.defaultTop;
+  let leftVal = w.defaultLeft;
+
+  const pos = state.position || '';
+  if (pos === 'custom' || state.left || state.top) {
+    if (state.left) leftVal = state.left;
+    if (state.top) topVal = state.top;
+  } else if (pos) {
+    if (pos === 'top-left') { topVal = '5%'; leftVal = '5%'; }
+    else if (pos === 'top-right') { topVal = '5%'; leftVal = '70%'; }
+    else if (pos === 'bottom-left') { topVal = '75%'; leftVal = '5%'; }
+    else if (pos === 'bottom-right') { topVal = '75%'; leftVal = '70%'; }
+    else if (pos === 'center') { topVal = '40%'; leftVal = '40%'; }
+    else if (pos === 'top') { topVal = '5%'; leftVal = '40%'; }
+    else if (pos === 'bottom') { topVal = '75%'; leftVal = '40%'; }
+  }
+
+  el.style.top = topVal;
+  el.style.left = leftVal;
+  el.style.right = 'auto';
+  el.style.bottom = 'auto';
+
+  // Dim if not visible
+  if (w.hasVisibility) {
+    el.style.opacity = state.show ? '1' : '0.35';
+  }
+}
+
 function setupLayoutEditor(config) {
   currentConfigRef = config;
   const container = document.getElementById('layout-screen-preview');
   if (!container) return;
-  
-  const widgets = [
-    { id: 'drag-spawn-card', type: 'spawn', scaleKey: 'spawnCardScale', posKey: 'spawnCardPosition', topKey: 'spawnCardTop', leftKey: 'spawnCardLeft', defaultTop: '75%', defaultLeft: '5%' },
-    { id: 'drag-ticker', type: 'ticker', scaleKey: 'tickerScale', posKey: 'tickerPosition', topKey: 'tickerTop', leftKey: 'tickerLeft', defaultTop: '5%', defaultLeft: '5%' },
-    { id: 'drag-feed', type: 'feed', scaleKey: 'feedScale', posKey: 'feedPosition', topKey: 'feedTop', leftKey: 'feedLeft', defaultTop: '5%', defaultLeft: '70%' },
-    { id: 'drag-battle', type: 'battle', scaleKey: 'battleScale', posKey: 'battlePosition', topKey: 'battleTop', leftKey: 'battleLeft', defaultTop: '40%', defaultLeft: '40%' },
-    { id: 'drag-raid', type: 'raid', scaleKey: 'raidScale', posKey: 'raidPosition', topKey: 'raidTop', leftKey: 'raidLeft', defaultTop: '35%', defaultLeft: '35%' }
-  ];
-  
-  const scaleSlider = document.getElementById('layout-scale-slider');
-  const scaleDisplay = document.getElementById('layout-scale-display');
-  
-  widgets.forEach(w => {
-    const el = document.getElementById(w.id);
+
+  initWidgetSidebarState(config);
+
+  Object.keys(WIDGET_REGISTRY).forEach(wId => {
+    const el = document.getElementById(wId);
     if (!el) return;
-    
-    // 1. Initial Scale display
-    const scale = config[w.scaleKey] !== undefined ? config[w.scaleKey] : 1.0;
-    el.querySelector('.widget-scale-val').textContent = scale.toFixed(2);
-    el.style.transform = `scale(${scale})`;
-    
-    // 2. Initial Position placement
-    let topVal = w.defaultTop;
-    let leftVal = w.defaultLeft;
-    
-    const pos = config[w.posKey] || '';
-    if (pos === 'custom' || config[w.leftKey] || config[w.topKey]) {
-      if (config[w.leftKey]) leftVal = config[w.leftKey];
-      if (config[w.topKey]) topVal = config[w.topKey];
-    } else if (pos) {
-      if (pos === 'top-left') { topVal = '5%'; leftVal = '5%'; }
-      else if (pos === 'top-right') { topVal = '5%'; leftVal = '70%'; }
-      else if (pos === 'bottom-left') { topVal = '75%'; leftVal = '5%'; }
-      else if (pos === 'bottom-right') { topVal = '75%'; leftVal = '70%'; }
-      else if (pos === 'center') { topVal = '40%'; leftVal = '40%'; }
-      else if (pos === 'top') { topVal = '5%'; leftVal = '40%'; }
-      else if (pos === 'bottom') { topVal = '75%'; leftVal = '40%'; }
-    }
-    
-    el.style.top = topVal;
-    el.style.left = leftVal;
-    el.style.right = 'auto';
-    el.style.bottom = 'auto';
-    
-    // 3. Selection Event
-    el.addEventListener('mousedown', (e) => {
-      document.querySelectorAll('.draggable-widget').forEach(node => {
-        node.style.borderColor = el.id === node.id ? 'var(--color-primary)' : 'rgba(255,255,255,0.2)';
-        node.style.boxShadow = el.id === node.id ? '0 0 15px var(--color-primary)' : '';
-      });
-      
-      selectedWidget = w;
-      const currentScale = parseFloat(el.querySelector('.widget-scale-val').textContent) || 1.0;
-      scaleSlider.value = currentScale;
-      scaleDisplay.textContent = `${currentScale.toFixed(2)}x`;
+
+    positionWidgetOnCanvas(wId);
+
+    // Click-to-select
+    el.addEventListener('click', () => {
+      selectWidget(wId);
     });
-    
-    // 4. Drag Logic
+
+    // Drag Logic
     let isDragging = false;
     let startX = 0, startY = 0;
     let initialLeft = 0, initialTop = 0;
-    
+
     el.addEventListener('mousedown', (e) => {
       isDragging = true;
       startX = e.clientX;
@@ -1524,105 +1676,188 @@ function setupLayoutEditor(config) {
       initialTop = el.offsetTop;
       e.preventDefault();
     });
-    
+
     document.addEventListener('mousemove', (e) => {
       if (!isDragging) return;
-      
+
       const dx = e.clientX - startX;
       const dy = e.clientY - startY;
-      
+
       let newLeft = initialLeft + dx;
       let newTop = initialTop + dy;
-      
+
       const maxLeft = container.clientWidth - el.offsetWidth;
       const maxTop = container.clientHeight - el.offsetHeight;
-      
+
       newLeft = Math.max(0, Math.min(newLeft, maxLeft));
       newTop = Math.max(0, Math.min(newTop, maxTop));
-      
+
       const pctLeft = ((newLeft / container.clientWidth) * 100).toFixed(1) + '%';
       const pctTop = ((newTop / container.clientHeight) * 100).toFixed(1) + '%';
-      
+
       el.style.left = pctLeft;
       el.style.top = pctTop;
-      
-      if (w.type === 'spawn') {
-        spawnCardPositionSelect.value = 'custom';
-        spawnCardLeftInput.value = pctLeft;
-        spawnCardTopInput.value = pctTop;
-        spawnCardRightInput.value = 'auto';
-        spawnCardBottomInput.value = 'auto';
-      } else if (w.type === 'ticker') {
-        tickerPositionSelect.value = 'custom';
-        tickerLeftInput.value = pctLeft;
-        tickerTopInput.value = pctTop;
-        tickerRightInput.value = 'auto';
-        tickerBottomInput.value = 'auto';
-      } else if (w.type === 'feed') {
-        feedPositionSelect.value = 'custom';
-        feedLeftInput.value = pctLeft;
-        feedTopInput.value = pctTop;
-        feedRightInput.value = 'auto';
-        feedBottomInput.value = 'auto';
-      } else if (w.type === 'battle') {
-        battlePositionSelect.value = 'custom';
-        battleLeftInput.value = pctLeft;
-        battleTopInput.value = pctTop;
-        battleRightInput.value = 'auto';
-        battleBottomInput.value = 'auto';
-      } else if (w.type === 'raid') {
-        raidPositionSelect.value = 'custom';
-        raidLeftInput.value = pctLeft;
-        raidTopInput.value = pctTop;
-        raidRightInput.value = 'auto';
-        raidBottomInput.value = 'auto';
+
+      // Update sidebar state
+      const state = widgetSidebarState[wId];
+      state.position = 'custom';
+      state.left = pctLeft;
+      state.top = pctTop;
+      state.right = 'auto';
+      state.bottom = 'auto';
+
+      // Also sync the existing hidden form fields for spawn/ticker/feed/battle/raid
+      syncWidgetToFormFields(wId, pctLeft, pctTop);
+
+      // If this widget is selected in the sidebar, update sidebar fields too
+      if (selectedWidget && selectedWidget.id === wId) {
+        if (sidebarPositionPreset) sidebarPositionPreset.value = 'custom';
+        if (sidebarCustomCoords) sidebarCustomCoords.style.display = 'block';
+        if (sidebarCoordLeft) sidebarCoordLeft.value = pctLeft;
+        if (sidebarCoordTop) sidebarCoordTop.value = pctTop;
+        if (sidebarCoordRight) sidebarCoordRight.value = 'auto';
+        if (sidebarCoordBottom) sidebarCoordBottom.value = 'auto';
       }
     });
-    
+
     document.addEventListener('mouseup', () => {
       isDragging = false;
     });
   });
-  
-  // Select default
-  const defaultSpawnEl = document.getElementById('drag-spawn-card');
-  if (defaultSpawnEl) {
-    defaultSpawnEl.dispatchEvent(new Event('mousedown'));
+}
+
+// Sync drag position to existing hidden form inputs (for save compatibility)
+function syncWidgetToFormFields(wId, pctLeft, pctTop) {
+  if (wId === 'drag-spawn-card') {
+    if (spawnCardPositionSelect) spawnCardPositionSelect.value = 'custom';
+    if (spawnCardLeftInput) spawnCardLeftInput.value = pctLeft;
+    if (spawnCardTopInput) spawnCardTopInput.value = pctTop;
+    if (spawnCardRightInput) spawnCardRightInput.value = 'auto';
+    if (spawnCardBottomInput) spawnCardBottomInput.value = 'auto';
+  } else if (wId === 'drag-ticker') {
+    if (tickerPositionSelect) tickerPositionSelect.value = 'custom';
+    if (tickerLeftInput) tickerLeftInput.value = pctLeft;
+    if (tickerTopInput) tickerTopInput.value = pctTop;
+    if (tickerRightInput) tickerRightInput.value = 'auto';
+    if (tickerBottomInput) tickerBottomInput.value = 'auto';
+  } else if (wId === 'drag-feed') {
+    if (feedPositionSelect) feedPositionSelect.value = 'custom';
+    if (feedLeftInput) feedLeftInput.value = pctLeft;
+    if (feedTopInput) feedTopInput.value = pctTop;
+    if (feedRightInput) feedRightInput.value = 'auto';
+    if (feedBottomInput) feedBottomInput.value = 'auto';
+  } else if (wId === 'drag-battle') {
+    if (battlePositionSelect) battlePositionSelect.value = 'custom';
+    if (battleLeftInput) battleLeftInput.value = pctLeft;
+    if (battleTopInput) battleTopInput.value = pctTop;
+    if (battleRightInput) battleRightInput.value = 'auto';
+    if (battleBottomInput) battleBottomInput.value = 'auto';
+  } else if (wId === 'drag-raid') {
+    if (raidPositionSelect) raidPositionSelect.value = 'custom';
+    if (raidLeftInput) raidLeftInput.value = pctLeft;
+    if (raidTopInput) raidTopInput.value = pctTop;
+    if (raidRightInput) raidRightInput.value = 'auto';
+    if (raidBottomInput) raidBottomInput.value = 'auto';
   }
 }
 
-// Bind scale slider inputs
-const layoutScaleSlider = document.getElementById('layout-scale-slider');
-const layoutScaleDisplay = document.getElementById('layout-scale-display');
-if (layoutScaleSlider && layoutScaleDisplay) {
-  layoutScaleSlider.addEventListener('input', () => {
+// Sidebar control bindings
+if (sidebarPositionPreset) {
+  sidebarPositionPreset.addEventListener('change', () => {
     if (!selectedWidget) return;
-    const val = parseFloat(layoutScaleSlider.value);
-    layoutScaleDisplay.textContent = `${val.toFixed(2)}x`;
-    
+    const state = widgetSidebarState[selectedWidget.id];
+    state.position = sidebarPositionPreset.value;
+    if (sidebarCustomCoords) {
+      sidebarCustomCoords.style.display = state.position === 'custom' ? 'block' : 'none';
+    }
+    if (state.position !== 'custom') {
+      state.left = ''; state.right = ''; state.top = ''; state.bottom = '';
+    }
+    positionWidgetOnCanvas(selectedWidget.id);
+    syncWidgetToFormFields(selectedWidget.id, state.left, state.top);
+    // Also update hidden form field for position
+    if (selectedWidget.type === 'spawn' && spawnCardPositionSelect) spawnCardPositionSelect.value = state.position;
+    if (selectedWidget.type === 'ticker' && tickerPositionSelect) tickerPositionSelect.value = state.position;
+    if (selectedWidget.type === 'feed' && feedPositionSelect) feedPositionSelect.value = state.position;
+    if (selectedWidget.type === 'battle' && battlePositionSelect) battlePositionSelect.value = state.position;
+    if (selectedWidget.type === 'raid' && raidPositionSelect) raidPositionSelect.value = state.position;
+  });
+}
+
+if (sidebarScaleSlider) {
+  sidebarScaleSlider.addEventListener('input', () => {
+    if (!selectedWidget) return;
+    const val = parseFloat(sidebarScaleSlider.value);
+    if (sidebarScaleDisplay) sidebarScaleDisplay.textContent = `${val.toFixed(2)}x`;
+
+    const state = widgetSidebarState[selectedWidget.id];
+    state.scale = val;
+
     const el = document.getElementById(selectedWidget.id);
     if (el) {
       el.style.transform = `scale(${val})`;
       el.querySelector('.widget-scale-val').textContent = val.toFixed(2);
     }
-    
-    if (selectedWidget.type === 'spawn') {
-      spawnCardScaleInput.value = val;
+
+    // Sync to existing hidden form for spawn scale
+    if (selectedWidget.type === 'spawn' && spawnCardScaleInput) spawnCardScaleInput.value = val;
+  });
+}
+
+if (sidebarShowToggle) {
+  sidebarShowToggle.addEventListener('change', () => {
+    if (!selectedWidget) return;
+    const state = widgetSidebarState[selectedWidget.id];
+    state.show = sidebarShowToggle.checked;
+    const el = document.getElementById(selectedWidget.id);
+    if (el && WIDGET_REGISTRY[selectedWidget.id].hasVisibility) {
+      el.style.opacity = state.show ? '1' : '0.35';
     }
   });
 }
 
-// Reset Layout
+// Custom coord inputs
+[sidebarCoordLeft, sidebarCoordRight, sidebarCoordTop, sidebarCoordBottom].forEach(input => {
+  if (!input) return;
+  input.addEventListener('input', () => {
+    if (!selectedWidget) return;
+    const state = widgetSidebarState[selectedWidget.id];
+    state.left = sidebarCoordLeft.value.trim();
+    state.right = sidebarCoordRight.value.trim();
+    state.top = sidebarCoordTop.value.trim();
+    state.bottom = sidebarCoordBottom.value.trim();
+    positionWidgetOnCanvas(selectedWidget.id);
+  });
+});
+
+// Reset individual widget
+if (sidebarResetWidget) {
+  sidebarResetWidget.addEventListener('click', () => {
+    if (!selectedWidget) return;
+    const w = WIDGET_REGISTRY[selectedWidget.id];
+    const state = widgetSidebarState[selectedWidget.id];
+    state.position = 'center';
+    state.left = ''; state.right = ''; state.top = ''; state.bottom = '';
+    state.scale = 1.0;
+    if (w.hasVisibility) state.show = true;
+    positionWidgetOnCanvas(selectedWidget.id);
+    selectWidget(selectedWidget.id); // refresh sidebar
+  });
+}
+
+// Reset Layout (all widgets)
 const layoutResetBtn = document.getElementById('btn-reset-layout');
 if (layoutResetBtn) {
   layoutResetBtn.addEventListener('click', () => {
     if (!confirm('Are you sure you want to reset all positions to presets?')) return;
-    spawnCardPositionSelect.value = 'bottom-left';
-    tickerPositionSelect.value = 'top-left';
-    feedPositionSelect.value = 'top-right';
-    battlePositionSelect.value = 'center';
-    raidPositionSelect.value = 'center';
-    
+
+    // Reset existing form fields
+    if (spawnCardPositionSelect) spawnCardPositionSelect.value = 'bottom-left';
+    if (tickerPositionSelect) tickerPositionSelect.value = 'top-left';
+    if (feedPositionSelect) feedPositionSelect.value = 'top-right';
+    if (battlePositionSelect) battlePositionSelect.value = 'center';
+    if (raidPositionSelect) raidPositionSelect.value = 'center';
+
     [spawnCardLeftInput, spawnCardTopInput, spawnCardRightInput, spawnCardBottomInput,
      tickerLeftInput, tickerTopInput, tickerRightInput, tickerBottomInput,
      feedLeftInput, feedTopInput, feedRightInput, feedBottomInput,
@@ -1630,16 +1865,28 @@ if (layoutResetBtn) {
      raidLeftInput, raidTopInput, raidRightInput, raidBottomInput].forEach(inp => {
        if (inp) inp.value = '';
      });
-     
+
     [spawnCardPositionSelect, tickerPositionSelect, feedPositionSelect, battlePositionSelect, raidPositionSelect].forEach(select => {
       if (select) select.dispatchEvent(new Event('change'));
     });
-    
-    if (currentConfigRef) {
-      setupLayoutEditor(currentConfigRef);
-    }
+
+    // Reset all widget sidebar states
+    Object.keys(WIDGET_REGISTRY).forEach(wId => {
+      widgetSidebarState[wId] = {
+        show: true,
+        position: 'center',
+        left: '', right: '', top: '', bottom: '',
+        scale: 1.0
+      };
+      positionWidgetOnCanvas(wId);
+    });
+
+    if (selectedWidget) selectWidget(selectedWidget.id);
   });
 }
+
+
+
 
 // ──────────────────────────────────────────────────────────────────────────
 // MODALS CONTROLLERS (RENAME & GIVE POKEMON)

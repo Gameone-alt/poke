@@ -176,6 +176,20 @@ function migrateLocalConfig(c) {
   if (c.battleType === undefined) c.battleType = 'normal';
   if (c.fullHealTimeMinutes === undefined) c.fullHealTimeMinutes = 60;
   if (c.healCostCoins === undefined) c.healCostCoins = 50;
+  if (c.showPackOpening === undefined) c.showPackOpening = true;
+  if (c.packPosition === undefined) c.packPosition = 'center';
+  if (c.packLeft === undefined) c.packLeft = '';
+  if (c.packRight === undefined) c.packRight = '';
+  if (c.packTop === undefined) c.packTop = '';
+  if (c.packBottom === undefined) c.packBottom = '';
+  if (c.packScale === undefined) c.packScale = 1.0;
+  if (c.showLevelUp === undefined) c.showLevelUp = true;
+  if (c.levelUpPosition === undefined) c.levelUpPosition = 'center';
+  if (c.levelUpLeft === undefined) c.levelUpLeft = '';
+  if (c.levelUpRight === undefined) c.levelUpRight = '';
+  if (c.levelUpTop === undefined) c.levelUpTop = '';
+  if (c.levelUpBottom === undefined) c.levelUpBottom = '';
+  if (c.levelUpScale === undefined) c.levelUpScale = 1.0;
   return c;
 }
 
@@ -280,7 +294,21 @@ async function runAutoMigrations() {
       ADD COLUMN IF NOT EXISTS raid_bottom VARCHAR(20) DEFAULT '',
       ADD COLUMN IF NOT EXISTS battle_type VARCHAR(20) DEFAULT 'normal',
       ADD COLUMN IF NOT EXISTS full_heal_time_minutes INTEGER DEFAULT 60,
-      ADD COLUMN IF NOT EXISTS heal_cost_coins INTEGER DEFAULT 50;
+      ADD COLUMN IF NOT EXISTS heal_cost_coins INTEGER DEFAULT 50,
+      ADD COLUMN IF NOT EXISTS show_pack_opening BOOLEAN DEFAULT TRUE,
+      ADD COLUMN IF NOT EXISTS pack_position VARCHAR(20) DEFAULT 'center',
+      ADD COLUMN IF NOT EXISTS pack_left VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS pack_right VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS pack_top VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS pack_bottom VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS pack_scale NUMERIC DEFAULT 1.0,
+      ADD COLUMN IF NOT EXISTS show_level_up BOOLEAN DEFAULT TRUE,
+      ADD COLUMN IF NOT EXISTS level_up_position VARCHAR(20) DEFAULT 'center',
+      ADD COLUMN IF NOT EXISTS level_up_left VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS level_up_right VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS level_up_top VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS level_up_bottom VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS level_up_scale NUMERIC DEFAULT 1.0;
     `);
 
     // Add columns to inventories table
@@ -555,23 +583,38 @@ async function getUser(streamerId, username, displayName = null) {
   );
   
   if (res.rows.length === 0) {
-    // Check if they have an existing channel-specific player record (e.g. from 'sam' or another streamer)
+    // Check if they have ANY existing channel-specific player records
     const existingRes = await query(
-      "SELECT * FROM players WHERE streamer_id != 'global' AND username = $1 LIMIT 1",
+      "SELECT * FROM players WHERE streamer_id != 'global' AND username = $1 ORDER BY level DESC, xp DESC",
       [key]
     );
     if (existingRes.rows.length > 0) {
-      const p = existingRes.rows[0];
-      // copy stats to global
+      // Pick the best record (highest level/XP) as the source for stats
+      const best = existingRes.rows[0];
+      // Aggregate coins, balls, etc. from ALL records for a fair merge
+      let totalCoins = 0, totalPokeballs = 0, totalGreatballs = 0, totalUltraballs = 0, totalMasterballs = 0;
+      let bestLevel = 0, bestXp = 0;
+      for (const p of existingRes.rows) {
+        totalCoins += Number(p.coins || 0);
+        totalPokeballs += Number(p.pokeballs || 0);
+        totalGreatballs += Number(p.greatballs || 0);
+        totalUltraballs += Number(p.ultraballs || 0);
+        totalMasterballs += Number(p.masterballs || 0);
+        if (Number(p.level) > bestLevel || (Number(p.level) === bestLevel && Number(p.xp) > bestXp)) {
+          bestLevel = Number(p.level);
+          bestXp = Number(p.xp);
+        }
+      }
+      // Create global player with merged stats
       await query(
         `INSERT INTO players (streamer_id, username, display_name, pokeballs, greatballs, ultraballs, masterballs, coins, xp, level, last_daily, last_catch_attempt, active_pokemon_id, buddy_instance_id, items, gym_badges)
          VALUES ('global', $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
-        [key, p.display_name, p.pokeballs, p.greatballs, p.ultraballs, p.masterballs || 0, p.coins, p.xp, p.level, p.last_daily, p.last_catch_attempt, p.active_pokemon_id, p.buddy_instance_id, p.items, p.gym_badges]
+        [key, best.display_name, totalPokeballs, totalGreatballs, totalUltraballs, totalMasterballs, totalCoins, bestXp, bestLevel, best.last_daily, best.last_catch_attempt, best.active_pokemon_id, best.buddy_instance_id, best.items, best.gym_badges]
       );
-      // Migrate caught pokemon to global
+      // Migrate ALL caught pokemon from ALL channels to global
       await query(
-        "UPDATE inventories SET streamer_id = 'global' WHERE streamer_id = $1 AND username = $2",
-        [p.streamer_id, key]
+        "UPDATE inventories SET streamer_id = 'global' WHERE streamer_id != 'global' AND username = $1",
+        [key]
       );
     } else {
       const defaultBalls = { pokeball: 10, greatball: 3, ultraball: 1, masterball: 0 };
@@ -592,6 +635,13 @@ async function getUser(streamerId, username, displayName = null) {
     );
     res.rows[0].display_name = displayName;
   }
+
+  // Always sweep any remaining non-global inventories into global
+  // (handles users who already have a global record but still have orphaned channel inventories)
+  await query(
+    "UPDATE inventories SET streamer_id = 'global' WHERE streamer_id != 'global' AND username = $1",
+    [key]
+  );
   
   const invRes = await query(
     'SELECT * FROM inventories WHERE streamer_id = $1 AND username = $2 ORDER BY caught_at ASC',
@@ -1396,7 +1446,21 @@ async function getStreamerConfig(streamerId) {
     raidBottom: row.raid_bottom || '',
     battleType: row.battle_type || 'normal',
     fullHealTimeMinutes: row.full_heal_time_minutes !== null && row.full_heal_time_minutes !== undefined ? Number(row.full_heal_time_minutes) : 60,
-    healCostCoins: row.heal_cost_coins !== null && row.heal_cost_coins !== undefined ? Number(row.heal_cost_coins) : 50
+    healCostCoins: row.heal_cost_coins !== null && row.heal_cost_coins !== undefined ? Number(row.heal_cost_coins) : 50,
+    showPackOpening: row.show_pack_opening !== false,
+    packPosition: row.pack_position || 'center',
+    packLeft: row.pack_left || '',
+    packRight: row.pack_right || '',
+    packTop: row.pack_top || '',
+    packBottom: row.pack_bottom || '',
+    packScale: row.pack_scale !== null && row.pack_scale !== undefined ? Number(row.pack_scale) : 1.0,
+    showLevelUp: row.show_level_up !== false,
+    levelUpPosition: row.level_up_position || 'center',
+    levelUpLeft: row.level_up_left || '',
+    levelUpRight: row.level_up_right || '',
+    levelUpTop: row.level_up_top || '',
+    levelUpBottom: row.level_up_bottom || '',
+    levelUpScale: row.level_up_scale !== null && row.level_up_scale !== undefined ? Number(row.level_up_scale) : 1.0
   };
 }
 
@@ -1448,8 +1512,14 @@ async function saveStreamerConfig(streamerId, config) {
          raid_top = $96, raid_bottom = $97,
          battle_type = $98,
          full_heal_time_minutes = $99,
-         heal_cost_coins = $100
-     WHERE channel_id = $101`,
+         heal_cost_coins = $100,
+         show_pack_opening = $101, pack_position = $102,
+         pack_left = $103, pack_right = $104, pack_top = $105, pack_bottom = $106,
+         pack_scale = $107,
+         show_level_up = $108, level_up_position = $109,
+         level_up_left = $110, level_up_right = $111, level_up_top = $112, level_up_bottom = $113,
+         level_up_scale = $114
+     WHERE channel_id = $115`,
     [
       config.videoId || '',
       config.spawnIntervalMs,
@@ -1551,6 +1621,20 @@ async function saveStreamerConfig(streamerId, config) {
       config.battleType || 'normal',
       config.fullHealTimeMinutes !== undefined ? config.fullHealTimeMinutes : 60,
       config.healCostCoins !== undefined ? config.healCostCoins : 50,
+      config.showPackOpening !== undefined ? config.showPackOpening : true,
+      config.packPosition || 'center',
+      config.packLeft || '',
+      config.packRight || '',
+      config.packTop || '',
+      config.packBottom || '',
+      config.packScale !== undefined ? config.packScale : 1.0,
+      config.showLevelUp !== undefined ? config.showLevelUp : true,
+      config.levelUpPosition || 'center',
+      config.levelUpLeft || '',
+      config.levelUpRight || '',
+      config.levelUpTop || '',
+      config.levelUpBottom || '',
+      config.levelUpScale !== undefined ? config.levelUpScale : 1.0,
       streamer
     ]
   );

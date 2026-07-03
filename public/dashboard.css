@@ -730,3 +730,34 @@ select:focus {
   margin-bottom: 5px;
 }
 
+/* Layout Editor: Widget selection highlight */
+.draggable-widget.widget-selected {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.7), 0 0 20px rgba(99, 102, 241, 0.3);
+  z-index: 50 !important;
+}
+
+/* Layout Editor: Toggle switch */
+.switch-toggle input:checked + span {
+  background: var(--color-primary) !important;
+}
+.switch-toggle input:checked + span span {
+  transform: translateX(18px);
+}
+
+/* Layout Sidebar scrollbar */
+#layout-sidebar-config::-webkit-scrollbar {
+  width: 5px;
+}
+#layout-sidebar-config::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.15);
+  border-radius: 4px;
+}
+#layout-sidebar-config::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Sidebar select dropdown style */
+#sidebar-position-preset option {
+  background: #1e293b;
+  color: #fff;
+}

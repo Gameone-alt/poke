@@ -421,6 +421,98 @@ function applyConfig(config) {
     document.head.appendChild(styleTag);
   }
   styleTag.textContent = config.customCss || '';
+
+  // Helper helper to position overlay components
+  function positionInnerWidget(el, pos, scale, left, right, top, bottom, defaultTop, defaultLeft) {
+    if (!el) return;
+    el.style.position = 'absolute';
+    el.style.top = '';
+    el.style.bottom = '';
+    el.style.left = '';
+    el.style.right = '';
+    el.style.transform = '';
+    el.style.transformOrigin = 'center center';
+    
+    const s = scale !== undefined ? scale : 1.0;
+    
+    if (pos === 'custom') {
+      el.style.top = top || defaultTop;
+      el.style.bottom = bottom || 'auto';
+      el.style.left = left || defaultLeft;
+      el.style.right = right || 'auto';
+      if (left && left !== 'auto' && top && top !== 'auto') {
+        el.style.transform = `translate(-50%, -50%) scale(${s})`;
+      } else {
+        el.style.transform = `scale(${s})`;
+      }
+    } else {
+      if (pos === 'center' || !pos) {
+        el.style.top = '50%';
+        el.style.left = '50%';
+        el.style.transform = `translate(-50%, -50%) scale(${s})`;
+      } else if (pos === 'top') {
+        el.style.top = '15px';
+        el.style.left = '50%';
+        el.style.transform = `translateX(-50%) scale(${s})`;
+      } else if (pos === 'bottom') {
+        el.style.bottom = '15px';
+        el.style.left = '50%';
+        el.style.transform = `translateX(-50%) scale(${s})`;
+      } else if (pos === 'top-left') {
+        el.style.top = '15px';
+        el.style.left = '15px';
+        el.style.transform = `scale(${s})`;
+        el.style.transformOrigin = 'top left';
+      } else if (pos === 'top-right') {
+        el.style.top = '15px';
+        el.style.right = '15px';
+        el.style.transform = `scale(${s})`;
+        el.style.transformOrigin = 'top right';
+      } else if (pos === 'bottom-left') {
+        el.style.bottom = '15px';
+        el.style.left = '15px';
+        el.style.transform = `scale(${s})`;
+        el.style.transformOrigin = 'bottom left';
+      } else if (pos === 'bottom-right') {
+        el.style.bottom = '15px';
+        el.style.right = '15px';
+        el.style.transform = `scale(${s})`;
+        el.style.transformOrigin = 'bottom right';
+      }
+    }
+  }
+
+  // 7. Booster Pack Overlay Position/Scale
+  const gachaOverlayElement = document.querySelector('#gacha-overlay .gacha-pack-wrapper');
+  if (gachaOverlayElement) {
+    positionInnerWidget(
+      gachaOverlayElement,
+      config.packPosition,
+      config.packScale,
+      config.packLeft,
+      config.packRight,
+      config.packTop,
+      config.packBottom,
+      '30%',
+      '35%'
+    );
+  }
+
+  // 8. Level Up Overlay Position/Scale
+  const levelupCardElement = document.querySelector('#levelup-overlay .lvl-card');
+  if (levelupCardElement) {
+    positionInnerWidget(
+      levelupCardElement,
+      config.levelUpPosition,
+      config.levelUpScale,
+      config.levelUpLeft,
+      config.levelUpRight,
+      config.levelUpTop,
+      config.levelUpBottom,
+      '30%',
+      '35%'
+    );
+  }
 }
 
 // Render Pokemon Type Badges
@@ -1513,6 +1605,9 @@ function triggerEvoSparkles() {
 
 // Level Up Event Listener
 socket.on('player_level_up', (data) => {
+  if (currentOverlayConfig && currentOverlayConfig.showLevelUp === false) {
+    return; // Streamer has disabled showing level up alert animations
+  }
   playSound(sfxEvolve); // Play retro jingle
   
   const infoText = document.getElementById('lvl-info-text');
@@ -1549,6 +1644,9 @@ socket.on('player_level_up', (data) => {
 
 // Gacha Pack Opening Socket Event
 socket.on('gacha_pack_opened', (data) => {
+  if (currentOverlayConfig && currentOverlayConfig.showPackOpening === false) {
+    return; // Streamer has disabled showing pack opening animations
+  }
   playSound(sfxSpawn);
   const overlay = document.getElementById('gacha-overlay');
   const pack = document.getElementById('gacha-pack-element');
