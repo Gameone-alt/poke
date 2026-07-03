@@ -87,6 +87,9 @@ socket.on('password_verified', (data) => {
     securityOverlay.classList.add('hidden');
     passFeedback.textContent = '';
     adminPassInput.value = '';
+    
+    // Automatically load the player database once unlocked
+    socket.emit('get_all_players', { password: adminPassword });
   } else {
     passFeedback.textContent = message || 'Invalid credentials!';
     localStorage.removeItem('admin_password_' + channelId);
