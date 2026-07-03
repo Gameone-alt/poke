@@ -708,6 +708,78 @@
       width: 16px;
       height: 16px;
     }
+
+    /* Type Filter Bar Styles */
+    .type-filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+      padding: 12px 15px;
+      background: rgba(30, 41, 59, 0.4);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      align-items: center;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .type-filter-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-muted);
+      margin-right: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .type-pills-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .type-pill {
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 20px;
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.05);
+      transition: all 0.2s ease;
+      color: #94a3b8;
+      background: rgba(255,255,255,0.03);
+      user-select: none;
+      text-transform: uppercase;
+    }
+    .type-pill:hover {
+      transform: translateY(-1px);
+      border-color: rgba(255,255,255,0.2);
+      color: #fff;
+    }
+    .type-pill.active {
+      border-color: #fff;
+      box-shadow: 0 0 10px rgba(255,255,255,0.15);
+      color: #fff;
+    }
+    .type-pill.active.type-all { background: #64748b; }
+    .type-pill.active.type-normal { background: #a8a77a; }
+    .type-pill.active.type-fire { background: #ee8130; box-shadow: 0 0 10px rgba(238, 129, 48, 0.4); }
+    .type-pill.active.type-water { background: #6390f0; box-shadow: 0 0 10px rgba(99, 144, 240, 0.4); }
+    .type-pill.active.type-electric { background: #f7d02c; color: #000; box-shadow: 0 0 10px rgba(247, 208, 44, 0.4); }
+    .type-pill.active.type-grass { background: #7ac74c; box-shadow: 0 0 10px rgba(122, 199, 76, 0.4); }
+    .type-pill.active.type-ice { background: #96d9d6; color: #000; }
+    .type-pill.active.type-fighting { background: #c22e28; }
+    .type-pill.active.type-poison { background: #a33ea1; }
+    .type-pill.active.type-ground { background: #e2bf65; }
+    .type-pill.active.type-flying { background: #a98ff3; }
+    .type-pill.active.type-psychic { background: #f95587; }
+    .type-pill.active.type-bug { background: #a6b91a; }
+    .type-pill.active.type-rock { background: #b6a136; }
+    .type-pill.active.type-ghost { background: #735797; }
+    .type-pill.active.type-dragon { background: #6f35fc; }
+    .type-pill.active.type-steel { background: #b7b7ce; }
+    .type-pill.active.type-fairy { background: #d685ad; }
+    .type-pill.active.type-dark { background: #705746; }
+    
+    .type-dark { background: #705746; }
   </style>
 </head>
 <body>
@@ -879,6 +951,32 @@
           <label class="filter-checkbox-group">
             <input type="checkbox" id="poke-legendary-filter"> 👑 Legendary Only
           </label>
+        </div>
+      </div>
+      
+      <!-- Type Filter Bar -->
+      <div class="type-filter-bar">
+        <span class="type-filter-label">Filter by Type:</span>
+        <div class="type-pills-container" id="type-filter-bar">
+          <div class="type-pill active type-all" data-type="all">All</div>
+          <div class="type-pill" data-type="normal">Normal</div>
+          <div class="type-pill" data-type="fire">Fire</div>
+          <div class="type-pill" data-type="water">Water</div>
+          <div class="type-pill" data-type="electric">Electric</div>
+          <div class="type-pill" data-type="grass">Grass</div>
+          <div class="type-pill" data-type="ice">Ice</div>
+          <div class="type-pill" data-type="fighting">Fighting</div>
+          <div class="type-pill" data-type="poison">Poison</div>
+          <div class="type-pill" data-type="ground">Ground</div>
+          <div class="type-pill" data-type="flying">Flying</div>
+          <div class="type-pill" data-type="psychic">Psychic</div>
+          <div class="type-pill" data-type="bug">Bug</div>
+          <div class="type-pill" data-type="rock">Rock</div>
+          <div class="type-pill" data-type="ghost">Ghost</div>
+          <div class="type-pill" data-type="dragon">Dragon</div>
+          <div class="type-pill" data-type="steel">Steel</div>
+          <div class="type-pill" data-type="fairy">Fairy</div>
+          <div class="type-pill" data-type="dark">Dark</div>
         </div>
       </div>
       

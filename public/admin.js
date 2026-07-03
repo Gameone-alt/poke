@@ -1,6 +1,7 @@
 let cachedUserData = null;
 let globalPokemonList = [];
 let activeRegion = 'all';
+let activeType = 'all';
 let adminPassword = '';
 
 // Filtering and sorting state variables
@@ -295,14 +296,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  if (legendaryCheckbox) {
-    legendaryCheckbox.addEventListener('change', () => {
-      legendaryOnly = legendaryCheckbox.checked;
+    });
+  }
+
+  // Hook type filter pills
+  const typePills = document.querySelectorAll('#type-filter-bar .type-pill');
+  typePills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      typePills.forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      activeType = pill.getAttribute('data-type') || 'all';
       if (cachedUserData) {
         renderTrainerProfile(cachedUserData);
       }
     });
-  }
+  });
 });
 
 // Render UI functions
@@ -352,6 +360,13 @@ function renderTrainerProfile(user) {
   // 4. Filter by Legendary
   if (legendaryOnly) {
     filtered = filtered.filter(poke => poke.isLegendary || (poke.catchRate !== undefined && poke.catchRate <= 0.1));
+  }
+
+  // 5. Filter by Type
+  if (activeType !== 'all') {
+    filtered = filtered.filter(poke => 
+      poke.types && poke.types.some(t => t.toLowerCase() === activeType.toLowerCase())
+    );
   }
 
   if (filtered.length === 0) {

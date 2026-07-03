@@ -1,6 +1,7 @@
 let cachedUserData = null;
 let globalPokemonList = [];
 let activeRegion = 'all';
+let activeType = 'all';
 
 // Filtering and sorting state variables
 let searchTerm = '';
@@ -105,6 +106,23 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // Hook type filter pills
+  const typePills = document.querySelectorAll('#type-filter-bar .type-pill');
+  typePills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      typePills.forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      activeType = pill.getAttribute('data-type') || 'all';
+      if (cachedUserData) {
+        if (activeRegion === 'all') {
+          renderTrainerProfile(cachedUserData);
+        } else {
+          renderPokedexRegion(cachedUserData, activeRegion);
+        }
+      }
+    });
+  });
 });
 
 function renderTrainerProfile(user) {
@@ -164,6 +182,12 @@ function renderTrainerProfile(user) {
 
   if (legendaryOnly) {
     filtered = filtered.filter(poke => poke.isLegendary || (poke.catchRate !== undefined && poke.catchRate <= 0.1));
+  }
+
+  if (activeType !== 'all') {
+    filtered = filtered.filter(poke => 
+      poke.types && poke.types.some(t => t.toLowerCase() === activeType.toLowerCase())
+    );
   }
 
   if (filtered.length === 0) {
@@ -475,6 +499,12 @@ function renderPokedexRegion(user, region) {
       const poke = caughtMap.get(p.id);
       return (poke && poke.isLegendary) || (p.catchRate !== undefined && p.catchRate <= 0.1);
     });
+  }
+
+  if (activeType !== 'all') {
+    regionPokes = regionPokes.filter(p => 
+      p.types && p.types.some(t => t.toLowerCase() === activeType.toLowerCase())
+    );
   }
 
   if (regionPokes.length === 0) {
