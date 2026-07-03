@@ -388,11 +388,11 @@ function renderTrainerProfile(user) {
     if (sortBy === 'cp') {
       const isLegendaryA = a.isLegendary || (a.catchRate !== undefined && a.catchRate <= 0.1);
       const isLegendaryB = b.isLegendary || (b.catchRate !== undefined && b.catchRate <= 0.1);
-      return calculateCP(b.baseStats, b.wins, isLegendaryB) - calculateCP(a.baseStats, a.wins, isLegendaryA);
+      return calculateCP(b.baseStats, b.wins, isLegendaryB, b.fusionCount) - calculateCP(a.baseStats, a.wins, isLegendaryA, a.fusionCount);
     } else if (sortBy === 'cp-asc') {
       const isLegendaryA = a.isLegendary || (a.catchRate !== undefined && a.catchRate <= 0.1);
       const isLegendaryB = b.isLegendary || (b.catchRate !== undefined && b.catchRate <= 0.1);
-      return calculateCP(a.baseStats, a.wins, isLegendaryA) - calculateCP(b.baseStats, b.wins, isLegendaryB);
+      return calculateCP(a.baseStats, a.wins, isLegendaryA, a.fusionCount) - calculateCP(b.baseStats, b.wins, isLegendaryB, b.fusionCount);
     } else if (sortBy === 'hp') {
       return (b.baseStats.hp || 0) - (a.baseStats.hp || 0);
     } else if (sortBy === 'attack') {
@@ -420,7 +420,7 @@ function renderTrainerProfile(user) {
     const isBuddy = poke.instanceId === user.buddyInstanceId;
     const buddyTag = isBuddy ? '<div class="buddy-badge">★ BUDDY</div>' : '';
     const shinySpark = poke.shiny ? '<span class="shiny-sparkle">✨</span>' : '';
-    const cp = calculateCP(poke.baseStats, poke.wins, isLegendary);
+    const cp = calculateCP(poke.baseStats, poke.wins, isLegendary, poke.fusionCount);
 
     const starSuffix = poke.fusionCount && poke.fusionCount > 0 ? ` <span class="fusion-stars" style="color: #fbbf24; font-weight: bold;">★${poke.fusionCount}</span>` : '';
 
@@ -536,7 +536,7 @@ function getSafeSprite(spriteUrl, fallbackUrl, pokemonId, isShiny) {
   return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png';
 }
 
-function calculateCP(baseStats, wins, isLegendary) {
+function calculateCP(baseStats, wins, isLegendary, fusionCount = 0) {
   const hp = baseStats ? (baseStats.hp || 50) : 50;
   const attack = baseStats ? (baseStats.attack || 50) : 50;
   const defense = baseStats ? (baseStats.defense || 50) : 50;
@@ -546,7 +546,7 @@ function calculateCP(baseStats, wins, isLegendary) {
   if (isLegendary) {
     baseCP *= 1.8;
   }
-  let finalCP = baseCP * (1 + (wins || 0) * 0.02);
+  let finalCP = baseCP * (1 + (wins || 0) * 0.02 + (fusionCount || 0) * 0.05);
   return Math.max(10, Math.floor(finalCP));
 }
 

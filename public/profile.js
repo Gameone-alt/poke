@@ -47,6 +47,71 @@ document.addEventListener('DOMContentLoaded', () => {
       cachedUserData = data;
       renderTrainerProfile(data);
       updateRegionStats(data);
+      
+      // Start dynamic countdown updates for healing Pokémon
+      if (window.healingIntervalId) clearInterval(window.healingIntervalId);
+      window.healingIntervalId = setInterval(() => {
+        if (!cachedUserData || cachedUserData.battleType !== 'persistent_hp') return;
+        
+        document.querySelectorAll('.pokemon-card').forEach(card => {
+          const instanceId = card.dataset.instanceId;
+          const poke = cachedUserData.inventory.find(p => p.instanceId === instanceId);
+          if (!poke) return;
+          
+          const maxHp = poke.baseStats.hp || 50;
+          let currentHp = poke.currentHp !== undefined && poke.currentHp !== null ? poke.currentHp : maxHp;
+          const lastBattleTime = Number(poke.lastBattleTime || 0);
+          
+          if (currentHp < maxHp && lastBattleTime > 0) {
+            const elapsedMinutes = (Date.now() - lastBattleTime) / (1000 * 60);
+            const healMinutes = cachedUserData.fullHealTimeMinutes || 60;
+            const ratePerMinute = maxHp / healMinutes;
+            const healed = Math.floor(elapsedMinutes * ratePerMinute);
+            
+            const finalHp = Math.min(maxHp, currentHp + healed);
+            const hpPct = Math.max(0, Math.min(100, (finalHp / maxHp) * 100));
+            
+            const hpLabel = card.querySelector('.hp-label');
+            if (hpLabel) hpLabel.textContent = `HP: ${finalHp}/${maxHp}`;
+            
+            const hpFillBar = card.querySelector('.hp-fill-bar');
+            if (hpFillBar) {
+              hpFillBar.style.width = `${hpPct}%`;
+              let hpColor = '#10b981';
+              if (hpPct < 30) hpColor = '#ef4444';
+              else if (hpPct < 60) hpColor = '#f59e0b';
+              hpFillBar.style.backgroundColor = hpColor;
+            }
+            
+            const hpTimer = card.querySelector('.hp-timer');
+            const minutesRemaining = Math.max(0, (maxHp - currentHp) / ratePerMinute - elapsedMinutes);
+            
+            if (minutesRemaining > 0 && finalHp < maxHp) {
+              const mins = Math.ceil(minutesRemaining);
+              if (hpTimer) {
+                hpTimer.innerHTML = `⏳ Healing: ${mins}m left`;
+              } else {
+                // If the element doesn't exist, create it!
+                const hpSection = card.querySelector('.hp-bar-section');
+                if (hpSection) {
+                  const timerDiv = document.createElement('div');
+                  timerDiv.className = 'hp-timer';
+                  timerDiv.style.cssText = 'font-size: 11px; font-weight: 700; color: #fbbf24; margin-top: 3px; display: flex; align-items: center; justify-content: center; gap: 4px;';
+                  timerDiv.innerHTML = `⏳ Healing: ${mins}m left`;
+                  hpSection.appendChild(timerDiv);
+                }
+              }
+            } else {
+              if (hpTimer) hpTimer.remove();
+              if (hpLabel) hpLabel.textContent = `HP: ${maxHp}/${maxHp}`;
+              if (hpFillBar) {
+                hpFillBar.style.width = '100%';
+                hpFillBar.style.backgroundColor = '#10b981';
+              }
+            }
+          }
+        });
+      }, 15000);
     })
     .catch(err => {
       console.error(err);
@@ -204,11 +269,11 @@ function renderTrainerProfile(user) {
     if (sortBy === 'cp') {
       const isLegendaryA = a.isLegendary || (a.catchRate !== undefined && a.catchRate <= 0.1);
       const isLegendaryB = b.isLegendary || (b.catchRate !== undefined && b.catchRate <= 0.1);
-      return calculateCP(b.baseStats, b.wins, isLegendaryB) - calculateCP(a.baseStats, a.wins, isLegendaryA);
+      return calculateCP(b.baseStats, b.wins, isLegendaryB, b.fusionCount) - calculateCP(a.baseStats, a.wins, isLegendaryA, a.fusionCount);
     } else if (sortBy === 'cp-asc') {
       const isLegendaryA = a.isLegendary || (a.catchRate !== undefined && a.catchRate <= 0.1);
       const isLegendaryB = b.isLegendary || (b.catchRate !== undefined && b.catchRate <= 0.1);
-      return calculateCP(a.baseStats, a.wins, isLegendaryA) - calculateCP(b.baseStats, b.wins, isLegendaryB);
+      return calculateCP(a.baseStats, a.wins, isLegendaryA, a.fusionCount) - calculateCP(b.baseStats, b.wins, isLegendaryB, b.fusionCount);
     } else if (sortBy === 'hp') {
       return (b.baseStats.hp || 0) - (a.baseStats.hp || 0);
     } else if (sortBy === 'attack') {
@@ -225,6 +290,7 @@ function renderTrainerProfile(user) {
   sortedInventory.forEach(poke => {
     const card = document.createElement('div');
     card.className = 'pokemon-card';
+    card.dataset.instanceId = poke.instanceId;
     
     // Add legendary glow style if legendary
     const isLegendary = poke.isLegendary || (poke.catchRate !== undefined && poke.catchRate <= 0.1);
@@ -251,7 +317,7 @@ function renderTrainerProfile(user) {
     const shinySpark = poke.shiny ? '<span class="shiny-sparkle">✨</span>' : '';
 
     // Calculate dynamic CP
-    const cp = calculateCP(poke.baseStats, poke.wins, isLegendary);
+    const cp = calculateCP(poke.baseStats, poke.wins, isLegendary, poke.fusionCount);
 
     // Calculate dynamic weight & height matching the overlay stats
     const statsSum = (poke.baseStats.hp || 50) + (poke.baseStats.attack || 50) + (poke.baseStats.defense || 50) + (poke.baseStats.speed || 50);
@@ -260,6 +326,40 @@ function renderTrainerProfile(user) {
     const mockHeight = ((statsSum * 0.0028) + (seed % 8) * 0.1 + 0.3).toFixed(2);
 
     const starSuffix = poke.fusionCount && poke.fusionCount > 0 ? ` <span class="fusion-stars" style="color: #fbbf24; font-weight: bold; margin-left: 2px;">★${poke.fusionCount}</span>` : '';
+
+    let hpBarHtml = '';
+    if (user.battleType === 'persistent_hp') {
+      const maxHp = poke.baseStats.hp || 50;
+      const currentHp = poke.currentHp !== undefined && poke.currentHp !== null ? poke.currentHp : maxHp;
+      const hpPct = Math.max(0, Math.min(100, (currentHp / maxHp) * 100));
+      
+      let hpColor = '#10b981'; // green
+      if (hpPct < 30) hpColor = '#ef4444'; // red
+      else if (hpPct < 60) hpColor = '#f59e0b'; // amber
+      
+      let timerText = '';
+      if (currentHp < maxHp && poke.lastBattleTime > 0) {
+        const elapsedMinutes = (Date.now() - poke.lastBattleTime) / (1000 * 60);
+        const healMinutes = user.fullHealTimeMinutes || 60;
+        const ratePerMinute = maxHp / healMinutes;
+        const minutesRemaining = Math.max(0, (maxHp - currentHp) / ratePerMinute - elapsedMinutes);
+        
+        if (minutesRemaining > 0) {
+          const mins = Math.ceil(minutesRemaining);
+          timerText = `<div class="hp-timer" style="font-size: 11px; font-weight: 700; color: #fbbf24; margin-top: 3px; display: flex; align-items: center; justify-content: center; gap: 4px;">⏳ Healing: ${mins}m left</div>`;
+        }
+      }
+      
+      hpBarHtml = `
+        <div class="hp-bar-section" style="margin: 6px 0 4px 0; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px;">
+          <div class="hp-label" style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 2px;">HP: ${currentHp}/${maxHp}</div>
+          <div class="hp-bar-outer" style="width: 80%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin: 0 auto; overflow: hidden;">
+            <div class="hp-fill-bar" style="width: ${hpPct}%; height: 100%; background: ${hpColor}; border-radius: 3px; transition: width 0.3s ease;"></div>
+          </div>
+          ${timerText}
+        </div>
+      `;
+    }
 
     card.innerHTML = `
       ${buddyTag}
@@ -274,6 +374,7 @@ function renderTrainerProfile(user) {
         <div class="stat-row"><span>DEF:</span> <strong>${poke.baseStats.defense}</strong></div>
       </div>
       <div class="pokemon-wins">🏆 Wins: ${poke.wins || 0}</div>
+      ${hpBarHtml}
     `;
 
     card.style.cursor = 'pointer';
@@ -301,7 +402,7 @@ function getSafeSprite(spriteUrl, fallbackUrl, pokemonId, isShiny) {
   return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png'; // default fallback icon
 }
 
-function calculateCP(baseStats, wins, isLegendary) {
+function calculateCP(baseStats, wins, isLegendary, fusionCount = 0) {
   const hp = baseStats ? (baseStats.hp || 50) : 50;
   const attack = baseStats ? (baseStats.attack || 50) : 50;
   const defense = baseStats ? (baseStats.defense || 50) : 50;
@@ -311,7 +412,7 @@ function calculateCP(baseStats, wins, isLegendary) {
   if (isLegendary) {
     baseCP *= 1.8;
   }
-  let finalCP = baseCP * (1 + (wins || 0) * 0.02);
+  let finalCP = baseCP * (1 + (wins || 0) * 0.02 + (fusionCount || 0) * 0.05);
   return Math.max(10, Math.floor(finalCP));
 }
 

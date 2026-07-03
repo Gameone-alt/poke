@@ -77,6 +77,15 @@ app.get('/api/trainer/:channel/:username', async (req, res) => {
         };
       });
     }
+    
+    // Attach streamer configs for persistent HP survival mode
+    const config = await db.getStreamerConfig(channel);
+    if (user) {
+      user.fullHealTimeMinutes = config.fullHealTimeMinutes || 60;
+      user.healCostCoins = config.healCostCoins || 50;
+      user.battleType = config.battleType || 'normal';
+    }
+    
     res.status(200).json(user);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -756,7 +765,11 @@ async function runBattle(channelId, playerA, playerB, onComplete) {
     fallbackB = pokeB.shiny ? lookupB?.fallbackShinySpriteUrl : lookupB?.fallbackSpriteUrl;
   }
 
-  const getBasePower = (p) => (p.baseStats.hp * 0.2) + (p.baseStats.attack * 0.4) + (p.baseStats.defense * 0.3) + (p.baseStats.speed * 0.1);
+  const getBasePower = (p) => {
+    const base = (p.baseStats.hp * 0.2) + (p.baseStats.attack * 0.4) + (p.baseStats.defense * 0.3) + (p.baseStats.speed * 0.1);
+    const fusionBonus = 1 + (p.fusionCount || 0) * 0.05;
+    return base * fusionBonus;
+  };
   const powerA = getBasePower(pokeA);
   const powerB = getBasePower(pokeB);
 
@@ -771,6 +784,11 @@ async function runBattle(channelId, playerA, playerB, onComplete) {
 
   const winner = finalPowerA >= finalPowerB ? 'challenger' : 'opponent';
 
+  // Support persistent HP health starting values
+  const isPersistentHp = session.config.battleType === 'persistent_hp';
+  const startHpA = isPersistentHp ? (pokeA.currentHp !== undefined && pokeA.currentHp !== null ? pokeA.currentHp : pokeA.baseStats.hp) : pokeA.baseStats.hp;
+  const startHpB = isPersistentHp && !isWildBattle ? (pokeB.currentHp !== undefined && pokeB.currentHp !== null ? pokeB.currentHp : pokeB.baseStats.hp) : pokeB.baseStats.hp;
+
   // Trigger battle overlay
   io.to(channelId).emit('battle_start', {
     challenger: playerA.displayName,
@@ -784,8 +802,10 @@ async function runBattle(channelId, playerA, playerB, onComplete) {
     challengerPoke: pokeA.name,
     opponentPoke: pokeB.name,
     winner: winner,
-    challengerHp: pokeA.baseStats.hp || 100,
-    opponentHp: pokeB.baseStats.hp || 100,
+    challengerHp: startHpA || 100,
+    challengerMaxHp: pokeA.baseStats.hp || 100,
+    opponentHp: isWildBattle ? (pokeB.baseStats.hp || 100) : (startHpB || 100),
+    opponentMaxHp: pokeB.baseStats.hp || 100,
     challengerPower: Math.round(finalPowerA),
     opponentPower: Math.round(finalPowerB),
     challengerMultiplier: multA,
@@ -880,6 +900,45 @@ async function runBattle(channelId, playerA, playerB, onComplete) {
       } else {
         io.to(channelId).emit('battle_end', { winner: 'opponent', evolved: false });
         sendGameLog(channelId, 'battle', resultMessage);
+      }
+    }
+
+    // Apply persistent HP depletion in Survival Mode
+    if (session.config.battleType === 'persistent_hp') {
+      const finalHpA = winner === 'challenger' ? Math.max(1, Math.round(startHpA * (0.4 + Math.random() * 0.2))) : 0;
+      
+      if (db.useLocalFallback) {
+        const freshUserA = await db.getUser(channelId, playerA.username);
+        const dbPokeA = freshUserA.inventory.find(p => p.instanceId === pokeA.instanceId);
+        if (dbPokeA) {
+          dbPokeA.currentHp = finalHpA;
+          dbPokeA.lastBattleTime = Date.now();
+          await db.saveUser(channelId, freshUserA);
+        }
+      } else {
+        await db.query(
+          'UPDATE inventories SET current_hp = $1, last_battle_time = $2 WHERE streamer_id = $3 AND username = $4 AND instance_id = $5',
+          [finalHpA, Date.now(), 'global', playerA.username.toLowerCase(), pokeA.instanceId]
+        );
+      }
+      
+      if (!isWildBattle) {
+        const finalHpB = winner === 'opponent' ? Math.max(1, Math.round(startHpB * (0.4 + Math.random() * 0.2))) : 0;
+        
+        if (db.useLocalFallback) {
+          const freshUserB = await db.getUser(channelId, playerB.username);
+          const dbPokeB = freshUserB.inventory.find(p => p.instanceId === pokeB.instanceId);
+          if (dbPokeB) {
+            dbPokeB.currentHp = finalHpB;
+            dbPokeB.lastBattleTime = Date.now();
+            await db.saveUser(channelId, freshUserB);
+          }
+        } else {
+          await db.query(
+            'UPDATE inventories SET current_hp = $1, last_battle_time = $2 WHERE streamer_id = $3 AND username = $4 AND instance_id = $5',
+            [finalHpB, Date.now(), 'global', playerB.username.toLowerCase(), pokeB.instanceId]
+          );
+        }
       }
     }
 
@@ -1182,6 +1241,15 @@ async function processCommand(channelId, username, displayName, messageText, bas
       return msg;
     }
 
+    if (session.config.battleType === 'persistent_hp') {
+      const currentHpA = foundPokeA.currentHp !== undefined && foundPokeA.currentHp !== null ? foundPokeA.currentHp : foundPokeA.baseStats.hp;
+      if (currentHpA <= 0) {
+        const msg = `❌ @${displayName}, your ${foundPokeA.name} is fainted (0 HP)! Type '!heal ${foundPokeA.name}' to heal it first.`;
+        io.to(channelId).emit('command_feedback', { username, text: msg });
+        return msg;
+      }
+    }
+
     // Handle fight wild
     if (rawTarget === 'wild') {
       if (!session.activeWildPokemon) {
@@ -1282,6 +1350,15 @@ async function processCommand(channelId, username, displayName, messageText, bas
       return msg;
     }
 
+    if (session.config.battleType === 'persistent_hp') {
+      const currentHpB = foundPokeB.currentHp !== undefined && foundPokeB.currentHp !== null ? foundPokeB.currentHp : foundPokeB.baseStats.hp;
+      if (currentHpB <= 0) {
+        const msg = `❌ @${displayName}, your ${foundPokeB.name} is fainted (0 HP)! Type '!heal ${foundPokeB.name}' to heal it first.`;
+        io.to(channelId).emit('command_feedback', { username, text: msg });
+        return msg;
+      }
+    }
+
     clearTimeout(session.activeChallenge.timeoutId);
     
     const challenger = session.activeChallenge.challenger;
@@ -1294,6 +1371,62 @@ async function processCommand(channelId, username, displayName, messageText, bas
       runBattle(channelId, challenger, opponent, resolve);
     });
     return resultMessage;
+  }
+
+  // 6.5. !heal command
+  if (cleanMsg.startsWith('!heal') || cleanMsg === 'heal') {
+    const parts = messageText.trim().split(/\s+/);
+    const user = await db.getUser(channelId, username, displayName);
+    
+    let targetPoke = null;
+    if (parts.length < 2) {
+      if (user.activePokemonId) {
+        targetPoke = user.inventory.find(p => p.instanceId === user.activePokemonId);
+      }
+      if (!targetPoke) {
+        const msg = `❌ @${displayName}, specify which Pokémon to heal! Syntax: !heal [pokemon_name]`;
+        io.to(channelId).emit('command_feedback', { username, text: msg });
+        return msg;
+      }
+    } else {
+      const queryPoke = parts.slice(1).join(' ').toLowerCase().trim();
+      targetPoke = user.inventory.find(p => 
+        p.name.toLowerCase().replace('✨ shiny ', '') === queryPoke || 
+        p.originalName.toLowerCase() === queryPoke
+      );
+    }
+    
+    if (!targetPoke) {
+      const msg = `❌ @${displayName}, could not find that Pokémon in your inventory!`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    
+    const maxHp = targetPoke.baseStats.hp;
+    const currentHp = targetPoke.currentHp !== undefined && targetPoke.currentHp !== null ? targetPoke.currentHp : maxHp;
+    
+    if (currentHp >= maxHp) {
+      const msg = `❤️ @${displayName}, your ${targetPoke.name} is already at full HP!`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    
+    const healCost = session.config.healCostCoins !== undefined ? session.config.healCostCoins : 50;
+    if (user.coins < healCost) {
+      const msg = `❌ @${displayName}, you need 🪙 ${healCost} coins to fully heal ${targetPoke.name}! You only have 🪙 ${user.coins} coins.`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    
+    await db.healPokemon(channelId, username, targetPoke.name);
+    
+    user.coins -= healCost;
+    await db.saveUser(channelId, user);
+    
+    const msg = `💖 @${displayName} spent 🪙 ${healCost} coins to fully heal their ${targetPoke.name}! HP restored to ${maxHp}/${maxHp}.`;
+    sendGameLog(channelId, 'system', msg);
+    io.to(channelId).emit('leaderboard_update', await db.getLeaderboard(channelId));
+    return msg;
   }
 
   // 7. !shop / !store command
@@ -2016,7 +2149,7 @@ async function processCommand(channelId, username, displayName, messageText, bas
 
   // 11. !help / !commands command
   if (cleanMsg === '!help' || cleanMsg === 'help' || cleanMsg === '!commands' || cleanMsg === 'commands') {
-    return `🎮 Pokémon Game: !daily | !inventory | !coins | !shop | !buy [ball/stone] [amt] | !buddy [name] | !select [name] | !catch [ball_type] | !fight [@user/wild] [your_poke] | !trade @user [my_poke] [their_poke] | !use [stone] [poke] | !fuse [name] | !attack`;
+    return `🎮 Pokémon Game: !daily | !inventory | !coins | !shop | !buy [ball/stone] [amt] | !buddy [name] | !select [name] | !catch [ball_type] | !fight [@user/wild] [your_poke] | !trade @user [my_poke] [their_poke] | !use [stone] [poke] | !fuse [name] | !heal [name] | !attack`;
   }
 
   return null;

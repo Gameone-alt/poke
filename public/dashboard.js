@@ -130,6 +130,9 @@ const primaryColorTextInput = document.getElementById('primary-color-text');
 const sfxVolumeInput = document.getElementById('sfx-volume');
 const showBattleArenaInput = document.getElementById('show-battle-arena');
 const battleTypeSelect = document.getElementById('battle-type');
+const fullHealTimeMinutesInput = document.getElementById('full-heal-time-minutes');
+const healCostCoinsInput = document.getElementById('heal-cost-coins');
+const persistentHpSettingsGroup = document.getElementById('persistent-hp-settings');
 const showLeaderboardInput = document.getElementById('show-leaderboard');
 const showLiveFeedInput = document.getElementById('show-live-feed');
 const liveFeedTitleInput = document.getElementById('live-feed-title');
@@ -242,6 +245,16 @@ setupCustomPosToggle(feedPositionSelect, feedCustomPosRow);
 setupCustomPosToggle(battlePositionSelect, battleCustomPosRow);
 setupCustomPosToggle(raidPositionSelect, raidCustomPosRow);
 
+if (battleTypeSelect) {
+  battleTypeSelect.addEventListener('change', () => {
+    if (battleTypeSelect.value === 'persistent_hp') {
+      if (persistentHpSettingsGroup) persistentHpSettingsGroup.style.display = 'block';
+    } else {
+      if (persistentHpSettingsGroup) persistentHpSettingsGroup.style.display = 'none';
+    }
+  });
+}
+
 // Specific Spawn Target
 const spawnTargetInput = document.getElementById('spawn-target');
 const btnSaveTarget = document.getElementById('btn-save-target');
@@ -287,7 +300,18 @@ function populateConfig(config) {
   primaryColorTextInput.value = config.primaryColor || '#3b82f6';
   sfxVolumeInput.value = config.sfxVolume !== undefined ? config.sfxVolume : 50;
   showBattleArenaInput.checked = config.showBattleArena !== false;
-  if (battleTypeSelect) battleTypeSelect.value = config.battleType || 'normal';
+  if (battleTypeSelect) {
+    battleTypeSelect.value = config.battleType || 'normal';
+    // Trigger show/hide for persistent HP options container
+    if (battleTypeSelect.value === 'persistent_hp') {
+      if (persistentHpSettingsGroup) persistentHpSettingsGroup.style.display = 'block';
+    } else {
+      if (persistentHpSettingsGroup) persistentHpSettingsGroup.style.display = 'none';
+    }
+  }
+  if (fullHealTimeMinutesInput) fullHealTimeMinutesInput.value = config.fullHealTimeMinutes !== undefined ? config.fullHealTimeMinutes : 60;
+  if (healCostCoinsInput) healCostCoinsInput.value = config.healCostCoins !== undefined ? config.healCostCoins : 50;
+
   showLeaderboardInput.checked = config.showLeaderboard !== false;
   showLiveFeedInput.checked = config.showLiveFeed !== false;
   liveFeedTitleInput.value = config.liveFeedTitle || 'LIVE GAME FEED';
@@ -480,6 +504,8 @@ function compileConfigObject() {
     sfxVolume: parseInt(sfxVolumeInput.value),
     showBattleArena: showBattleArenaInput.checked,
     battleType: battleTypeSelect ? battleTypeSelect.value : 'normal',
+    fullHealTimeMinutes: fullHealTimeMinutesInput ? parseInt(fullHealTimeMinutesInput.value, 10) : 60,
+    healCostCoins: healCostCoinsInput ? parseInt(healCostCoinsInput.value, 10) : 50,
     showLeaderboard: showLeaderboardInput.checked,
     
     // Custom Economy & Game Rewards
@@ -1155,7 +1181,7 @@ function renderViewersTable(players) {
           return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png';
         };
 
-        const calculateCP = (baseStats, wins, isLegendary) => {
+        const calculateCP = (baseStats, wins, isLegendary, fusionCount = 0) => {
           const hp = baseStats ? (baseStats.hp || 50) : 50;
           const attack = baseStats ? (baseStats.attack || 50) : 50;
           const defense = baseStats ? (baseStats.defense || 50) : 50;
@@ -1165,7 +1191,7 @@ function renderViewersTable(players) {
           if (isLegendary) {
             baseCP *= 1.8;
           }
-          let finalCP = baseCP * (1 + (wins || 0) * 0.02);
+          let finalCP = baseCP * (1 + (wins || 0) * 0.02 + (fusionCount || 0) * 0.05);
           return Math.max(10, Math.floor(finalCP));
         };
 
@@ -1191,10 +1217,42 @@ function renderViewersTable(players) {
           if (poke.shiny) card.classList.add('shiny');
           
           const buddyTag = isBuddy ? '<div class="buddy-badge">★ BUDDY</div>' : '';
-          const cp = calculateCP(poke.baseStats, poke.wins, isLegendary);
+          const cp = calculateCP(poke.baseStats, poke.wins, isLegendary, poke.fusionCount);
           const spriteUrl = getSafeSprite(poke.spriteUrl, poke.fallbackSpriteUrl, poke.pokemonId, poke.shiny);
           const typeBadges = poke.types ? poke.types.map(t => `<span class="type-badge type-${t.toLowerCase()}">${t}</span>`).join(' ') : '';
           
+          let hpBarHtml = '';
+          if (currentConfigRef && currentConfigRef.battleType === 'persistent_hp') {
+            const maxHp = poke.baseStats ? (poke.baseStats.hp || 50) : 50;
+            const currentHp = poke.currentHp !== undefined && poke.currentHp !== null ? poke.currentHp : maxHp;
+            const hpPct = Math.max(0, Math.min(100, (currentHp / maxHp) * 100));
+            
+            let hpColor = '#10b981';
+            if (hpPct < 30) hpColor = '#ef4444';
+            else if (hpPct < 60) hpColor = '#f59e0b';
+            
+            let timerText = '';
+            if (currentHp < maxHp && poke.lastBattleTime > 0) {
+              const elapsedMinutes = (Date.now() - poke.lastBattleTime) / (1000 * 60);
+              const healMinutes = currentConfigRef.fullHealTimeMinutes || 60;
+              const ratePerMinute = maxHp / healMinutes;
+              const minutesRemaining = Math.max(0, (maxHp - currentHp) / ratePerMinute - elapsedMinutes);
+              if (minutesRemaining > 0) {
+                timerText = `<div style="font-size: 10px; font-weight: bold; color: #fbbf24; margin-top: 2px;">⏳ Healing: ${Math.ceil(minutesRemaining)}m left</div>`;
+              }
+            }
+            
+            hpBarHtml = `
+              <div style="margin: 4px 0; border-top: 1px dashed rgba(255,255,255,0.08); padding-top: 4px;">
+                <div style="font-size: 10px; font-weight: bold; color: var(--text-muted); margin-bottom: 2px;">HP: ${currentHp}/${maxHp}</div>
+                <div style="width: 80%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin: 0 auto; overflow: hidden;">
+                  <div style="width: ${hpPct}%; height: 100%; background: ${hpColor}; border-radius: 2px;"></div>
+                </div>
+                ${timerText}
+              </div>
+            `;
+          }
+
           card.innerHTML = `
             ${buddyTag}
             <div class="pokemon-cp">CP ${cp}</div>
@@ -1207,6 +1265,7 @@ function renderViewersTable(players) {
               <div class="stat-row"><span>DEF:</span> <strong>${poke.baseStats ? (poke.baseStats.defense || 50) : 50}</strong></div>
             </div>
             <div class="pokemon-wins">🏆 Wins: ${poke.wins || 0}</div>
+            ${hpBarHtml}
             <button type="button" class="btn-release">🗑️ Release</button>
           `;
           

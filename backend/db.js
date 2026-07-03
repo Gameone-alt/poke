@@ -263,13 +263,17 @@ async function runAutoMigrations() {
       ADD COLUMN IF NOT EXISTS raid_right VARCHAR(20) DEFAULT '',
       ADD COLUMN IF NOT EXISTS raid_top VARCHAR(20) DEFAULT '',
       ADD COLUMN IF NOT EXISTS raid_bottom VARCHAR(20) DEFAULT '',
-      ADD COLUMN IF NOT EXISTS battle_type VARCHAR(20) DEFAULT 'normal';
+      ADD COLUMN IF NOT EXISTS battle_type VARCHAR(20) DEFAULT 'normal',
+      ADD COLUMN IF NOT EXISTS full_heal_time_minutes INTEGER DEFAULT 60,
+      ADD COLUMN IF NOT EXISTS heal_cost_coins INTEGER DEFAULT 50;
     `);
 
     // Add columns to inventories table
     await client.query(`
       ALTER TABLE inventories
-      ADD COLUMN IF NOT EXISTS fusion_count INTEGER DEFAULT 0;
+      ADD COLUMN IF NOT EXISTS fusion_count INTEGER DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS current_hp INTEGER DEFAULT NULL,
+      ADD COLUMN IF NOT EXISTS last_battle_time BIGINT DEFAULT 0;
     `);
 
     client.release();
@@ -377,6 +381,52 @@ async function ensureChannelPlayerExists(streamerId, username, displayName) {
   }
 }
 
+async function getFullHealTime(streamerId) {
+  try {
+    const config = await getStreamerConfig(streamerId);
+    return config.fullHealTimeMinutes || 60;
+  } catch (err) {
+    return 60;
+  }
+}
+
+async function healPokemon(streamerId, username, targetPokemonName) {
+  const streamer = 'global';
+  const key = username.toLowerCase().trim();
+  const searchName = targetPokemonName.toLowerCase().replace('✨ shiny ', '').trim();
+  
+  if (useLocalFallback) {
+    const compositeKey = `${streamer}_${key}`;
+    const user = localUsers[compositeKey];
+    if (user && user.inventory) {
+      const poke = user.inventory.find(p => p.name.toLowerCase().replace('✨ shiny ', '').trim() === searchName || p.originalName.toLowerCase() === searchName);
+      if (poke) {
+        poke.currentHp = poke.baseStats.hp;
+        poke.lastBattleTime = 0;
+        saveLocalUsers();
+        return poke;
+      }
+    }
+    throw new Error(`Could not find Pokémon '${targetPokemonName}' in inventory.`);
+  }
+  
+  // PostgreSQL version
+  const user = await getUser(streamerId, username);
+  const poke = user.inventory.find(p => p.name.toLowerCase().replace('✨ shiny ', '').trim() === searchName || p.originalName.toLowerCase() === searchName);
+  if (!poke) {
+    throw new Error(`Could not find Pokémon '${targetPokemonName}' in inventory.`);
+  }
+  
+  await query(
+    'UPDATE inventories SET current_hp = base_hp, last_battle_time = 0 WHERE streamer_id = $1 AND username = $2 AND instance_id = $3',
+    ['global', key, poke.instanceId]
+  );
+  
+  poke.currentHp = poke.baseStats.hp;
+  poke.lastBattleTime = 0;
+  return poke;
+}
+
 /**
  * Gets a user by username or initializes a new one.
  */
@@ -441,7 +491,46 @@ async function getUser(streamerId, username, displayName = null) {
         saveLocalUsers();
       }
     }
-    return JSON.parse(JSON.stringify(localUsers[compositeKey]));
+    
+    // Compute dynamic auto-heal on load
+    const userCopy = JSON.parse(JSON.stringify(localUsers[compositeKey]));
+    const healMinutes = await getFullHealTime(cleanStreamerId);
+    let updatedLocal = false;
+    
+    userCopy.inventory.forEach(poke => {
+      let currentHp = poke.currentHp;
+      const baseHp = poke.baseStats.hp;
+      const lastBattleTime = Number(poke.lastBattleTime || 0);
+      
+      if (currentHp === undefined || currentHp === null) {
+        poke.currentHp = baseHp;
+        currentHp = baseHp;
+      }
+      
+      if (currentHp < baseHp && lastBattleTime > 0) {
+        const elapsedMinutes = (Date.now() - lastBattleTime) / (1000 * 60);
+        const healed = Math.floor(elapsedMinutes * (baseHp / healMinutes));
+        if (healed > 0) {
+          const finalHp = Math.min(baseHp, currentHp + healed);
+          poke.currentHp = finalHp;
+          poke.lastBattleTime = finalHp >= baseHp ? 0 : lastBattleTime + Math.floor(healed / (baseHp / healMinutes) * 60 * 1000);
+          
+          // Write back to the actual localUsers object
+          const dbPoke = localUsers[compositeKey].inventory.find(p => p.instanceId === poke.instanceId);
+          if (dbPoke) {
+            dbPoke.currentHp = poke.currentHp;
+            dbPoke.lastBattleTime = poke.lastBattleTime;
+          }
+          updatedLocal = true;
+        }
+      }
+    });
+    
+    if (updatedLocal) {
+      saveLocalUsers();
+    }
+    
+    return userCopy;
   }
   
   // PostgreSQL version
@@ -495,6 +584,66 @@ async function getUser(streamerId, username, displayName = null) {
   );
   
   const dbUser = res.rows[0];
+  const healMinutes = await getFullHealTime(cleanStreamerId);
+  const inventory = [];
+  
+  for (const p of invRes.rows) {
+    const staticPoke = staticPokemonDb[p.pokemon_id.toString()] || {};
+    const baseName = staticPoke.name || p.pokemon_name || 'Unknown';
+    const name = p.shiny ? `✨ Shiny ${baseName}` : baseName;
+    const types = staticPoke.types || p.types || [];
+    const baseStats = staticPoke.stats || {
+      hp: p.base_hp || 50,
+      attack: p.base_atk || 50,
+      defense: p.base_def || 50,
+      speed: p.base_spd || 50
+    };
+    
+    const baseHp = p.base_hp || baseStats.hp || 50;
+    let currentHp = p.current_hp;
+    const lastBattleTime = Number(p.last_battle_time || 0);
+    
+    if (currentHp === null || currentHp === undefined) {
+      currentHp = baseHp;
+    }
+    
+    if (currentHp < baseHp && lastBattleTime > 0) {
+      const elapsedMinutes = (Date.now() - lastBattleTime) / (1000 * 60);
+      const healed = Math.floor(elapsedMinutes * (baseHp / healMinutes));
+      if (healed > 0) {
+        const finalHp = Math.min(baseHp, currentHp + healed);
+        currentHp = finalHp;
+        const newBattleTime = finalHp >= baseHp ? 0 : lastBattleTime + Math.floor(healed / (baseHp / healMinutes) * 60 * 1000);
+        
+        // Update PostgreSQL database in background
+        await query(
+          'UPDATE inventories SET current_hp = $1, last_battle_time = $2 WHERE streamer_id = $3 AND username = $4 AND instance_id = $5',
+          [currentHp, newBattleTime, 'global', key, p.instance_id]
+        );
+      }
+    }
+    
+    inventory.push({
+      instanceId: p.instance_id,
+      pokemonId: p.pokemon_id,
+      name: name,
+      originalName: baseName,
+      types: types,
+      baseStats: {
+        hp: baseStats.hp,
+        attack: baseStats.attack,
+        defense: baseStats.defense,
+        speed: baseStats.speed
+      },
+      currentHp: currentHp,
+      lastBattleTime: lastBattleTime,
+      shiny: p.shiny,
+      wins: p.wins,
+      currentStage: p.current_stage,
+      caughtAt: Number(p.caught_at),
+      fusionCount: p.fusion_count || 0
+    });
+  }
   
   return {
     username: dbUser.username,
@@ -509,37 +658,7 @@ async function getUser(streamerId, username, displayName = null) {
     xp: dbUser.xp || 0,
     level: dbUser.level || 1,
     buddyInstanceId: dbUser.buddy_instance_id || null,
-    inventory: invRes.rows.map(p => {
-      const staticPoke = staticPokemonDb[p.pokemon_id.toString()] || {};
-      const baseName = staticPoke.name || p.pokemon_name || 'Unknown';
-      const name = p.shiny ? `✨ Shiny ${baseName}` : baseName;
-      const types = staticPoke.types || p.types || [];
-      const baseStats = staticPoke.stats || {
-        hp: p.base_hp || 50,
-        attack: p.base_atk || 50,
-        defense: p.base_def || 50,
-        speed: p.base_spd || 50
-      };
-      
-      return {
-        instanceId: p.instance_id,
-        pokemonId: p.pokemon_id,
-        name: name,
-        originalName: baseName,
-        types: types,
-        baseStats: {
-          hp: baseStats.hp,
-          attack: baseStats.attack,
-          defense: baseStats.defense,
-          speed: baseStats.speed
-        },
-        shiny: p.shiny,
-        wins: p.wins,
-        currentStage: p.current_stage,
-        caughtAt: Number(p.caught_at),
-        fusionCount: p.fusion_count || 0
-      };
-    }),
+    inventory: inventory,
     activePokemonId: dbUser.active_pokemon_id,
     items: dbUser.items || {},
     gymBadges: dbUser.gym_badges || [],
@@ -1015,7 +1134,9 @@ async function getStreamerConfig(streamerId) {
         battleAcceptTimeoutSeconds: 30,
         streamDelaySeconds: 0,
         hideSpawnDetails: false,
-        battleType: 'normal'
+        battleType: 'normal',
+        fullHealTimeMinutes: 60,
+        healCostCoins: 50
       };
       saveLocalConfigs();
     } else {
@@ -1258,7 +1379,9 @@ async function getStreamerConfig(streamerId) {
     raidRight: row.raid_right || '',
     raidTop: row.raid_top || '',
     raidBottom: row.raid_bottom || '',
-    battleType: row.battle_type || 'normal'
+    battleType: row.battle_type || 'normal',
+    fullHealTimeMinutes: row.full_heal_time_minutes !== null && row.full_heal_time_minutes !== undefined ? Number(row.full_heal_time_minutes) : 60,
+    healCostCoins: row.heal_cost_coins !== null && row.heal_cost_coins !== undefined ? Number(row.heal_cost_coins) : 50
   };
 }
 
@@ -1308,8 +1431,10 @@ async function saveStreamerConfig(streamerId, config) {
          raid_scale = $92, raid_position = $93,
          raid_left = $94, raid_right = $95,
          raid_top = $96, raid_bottom = $97,
-         battle_type = $98
-     WHERE channel_id = $99`,
+         battle_type = $98,
+         full_heal_time_minutes = $99,
+         heal_cost_coins = $100
+     WHERE channel_id = $101`,
     [
       config.videoId || '',
       config.spawnIntervalMs,
@@ -1409,11 +1534,11 @@ async function saveStreamerConfig(streamerId, config) {
       config.raidTop || '',
       config.raidBottom || '',
       config.battleType || 'normal',
+      config.fullHealTimeMinutes !== undefined ? config.fullHealTimeMinutes : 60,
+      config.healCostCoins !== undefined ? config.healCostCoins : 50,
       streamer
     ]
   );
-}
-
 /**
  * Resets a streamer's database records.
  */
@@ -1664,10 +1789,10 @@ async function fusePokemon(streamerId, username, targetName) {
   let addedWins = 0;
 
   for (const sac of sacrifices) {
-    newHp = Math.max(newHp, sac.baseStats.hp) + 5;
-    newAtk = Math.max(newAtk, sac.baseStats.attack) + 5;
-    newDef = Math.max(newDef, sac.baseStats.defense) + 5;
-    newSpd = Math.max(newSpd, sac.baseStats.speed) + 5;
+    newHp = Math.max(newHp, sac.baseStats.hp) + 10;
+    newAtk = Math.max(newAtk, sac.baseStats.attack) + 10;
+    newDef = Math.max(newDef, sac.baseStats.defense) + 10;
+    newSpd = Math.max(newSpd, sac.baseStats.speed) + 10;
     addedWins += sac.wins || 0;
   }
 
@@ -1681,6 +1806,8 @@ async function fusePokemon(streamerId, username, targetName) {
     mappedSurvivor.baseStats = { hp: newHp, attack: newAtk, defense: newDef, speed: newSpd };
     mappedSurvivor.wins = finalWins;
     mappedSurvivor.fusionCount = finalFusionCount;
+    mappedSurvivor.currentHp = newHp;
+    mappedSurvivor.lastBattleTime = 0;
 
     // Delete sacrifices
     const sacIds = sacrifices.map(s => s.instanceId);
@@ -1693,10 +1820,10 @@ async function fusePokemon(streamerId, username, targetName) {
     await saveUser(streamerId, freshUser);
   } else {
     // PostgreSQL database update
-    // Update survivor
+    // Update survivor and fully heal them
     await query(
       `UPDATE inventories 
-       SET base_hp = $1, base_atk = $2, base_def = $3, base_spd = $4, wins = $5, fusion_count = $6
+       SET base_hp = $1, base_atk = $2, base_def = $3, base_spd = $4, wins = $5, fusion_count = $6, current_hp = $1, last_battle_time = 0
        WHERE streamer_id = $7 AND username = $8 AND instance_id = $9`,
       [newHp, newAtk, newDef, newSpd, finalWins, finalFusionCount, streamer, key, survivor.instanceId]
     );
@@ -1948,5 +2075,6 @@ module.exports = {
   stealPokemon,
   deletePlayer,
   deletePokemon,
-  findPlayerByNickname
+  findPlayerByNickname,
+  healPokemon
 };

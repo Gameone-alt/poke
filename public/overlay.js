@@ -434,7 +434,7 @@ function renderTypes(typesContainer, types) {
   });
 }
 
-function calculateCP(baseStats, wins, isLegendary) {
+function calculateCP(baseStats, wins, isLegendary, fusionCount = 0) {
   const hp = baseStats ? (baseStats.hp || 50) : 50;
   const attack = baseStats ? (baseStats.attack || 50) : 50;
   const defense = baseStats ? (baseStats.defense || 50) : 50;
@@ -444,7 +444,7 @@ function calculateCP(baseStats, wins, isLegendary) {
   if (isLegendary) {
     baseCP *= 1.8;
   }
-  let finalCP = baseCP * (1 + (wins || 0) * 0.02);
+  let finalCP = baseCP * (1 + (wins || 0) * 0.02 + (fusionCount || 0) * 0.05);
   return Math.max(10, Math.floor(finalCP));
 }
 

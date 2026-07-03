@@ -696,7 +696,24 @@
                   <select id="battle-type" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
                     <option value="normal">🛡️ Normal Battle (Standard Play)</option>
                     <option value="steal">⚔️ Steal Battle (Winner steals loser's defeated Pokémon!)</option>
+                    <option value="persistent_hp">❤️ Persistent HP Battle (Survival Mode - health depletion & healing)</option>
                   </select>
+                </div>
+              </div>
+
+              <!-- Persistent HP Settings Group -->
+              <div id="persistent-hp-settings" style="display: none; margin-top: 15px; border-left: 2px solid var(--primary-color); padding-left: 12px; margin-left: 4px;">
+                <div class="form-row" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                  <div class="form-group" style="flex: 1; min-width: 200px; margin-bottom: 10px;">
+                    <label for="full-heal-time-minutes">Full Passive Heal Duration (minutes)</label>
+                    <input type="number" id="full-heal-time-minutes" min="1" max="1440" value="60" style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); color: #fff; padding: 8px 12px; border-radius: 6px; width: 100%;">
+                    <small>Minutes a fainted Pokémon takes to recover 100% HP passively.</small>
+                  </div>
+                  <div class="form-group" style="flex: 1; min-width: 200px;">
+                    <label for="heal-cost-coins">Instant Full Heal Coin Cost</label>
+                    <input type="number" id="heal-cost-coins" min="0" max="10000" value="50" style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); color: #fff; padding: 8px 12px; border-radius: 6px; width: 100%;">
+                    <small>Coins viewers pay to instantly restore full HP via chat.</small>
+                  </div>
                 </div>
               </div>
 
