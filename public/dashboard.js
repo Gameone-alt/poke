@@ -959,6 +959,10 @@ socket.on('all_players_data', (players) => {
   renderViewersTable(players);
 });
 
+socket.on('admin_error', (msg) => {
+  alert('Admin Error: ' + msg);
+});
+
 let selectedViewerUsernames = new Set();
 
 // Render table entries
@@ -971,12 +975,38 @@ function renderViewersTable(players) {
   if (checkAllHeader) checkAllHeader.checked = false;
   updateBulkActionPanel();
   
+  const term = viewerSearch ? viewerSearch.value.toLowerCase().trim() : '';
+  
   if (!players || players.length === 0) {
-    viewerDbBody.innerHTML = `
-      <tr>
-        <td colspan="8" class="text-center muted" style="padding:30px;">No players registered. Sim a catch to start!</td>
-      </tr>
-    `;
+    if (term) {
+      viewerDbBody.innerHTML = `
+        <tr>
+          <td colspan="8" class="text-center" style="padding:40px; color: var(--text-muted);">
+            <div style="font-size: 14px; margin-bottom: 12px;">No viewer named <strong style="color: #fff;">"${term}"</strong> found in your channel list.</div>
+            <button id="btn-register-search-term" class="btn btn-preset" style="background: var(--color-primary); border: none; color: #fff; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-family: inherit; font-size: 13px;">
+              ➕ Register "@${term}" to Channel List
+            </button>
+          </td>
+        </tr>
+      `;
+      const btnRegister = document.getElementById('btn-register-search-term');
+      if (btnRegister) {
+        btnRegister.addEventListener('click', () => {
+          socket.emit('admin_register_player', {
+            password: adminPassword,
+            playerUsername: term
+          });
+        });
+      }
+    } else {
+      viewerDbBody.innerHTML = `
+        <tr>
+          <td colspan="8" class="text-center muted" style="padding:35px; color: var(--text-muted);">
+            No viewers registered. Simulate active chats or search a username above to register them!
+          </td>
+        </tr>
+      `;
+    }
     return;
   }
   

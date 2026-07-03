@@ -2232,6 +2232,23 @@ io.on('connection', async (socket) => {
     }
   });
 
+  // Request register/add player association to this channel (so they show up on dashboard)
+  socket.on('admin_register_player', async (data) => {
+    const { password, playerUsername } = data || {};
+    if (!isAuthorizedAdmin(password, socket)) return;
+    try {
+      const cleanUsername = playerUsername.toLowerCase().replace(/^@/, '').trim();
+      console.log(`[Admin] [${channelId}] Registering player ${cleanUsername} to channel...`);
+      // Calling getUser ensures the player is registered under this channelId
+      await db.getUser(channelId, cleanUsername);
+      const list = await db.getAllPlayers(channelId);
+      socket.emit('all_players_data', list);
+    } catch (err) {
+      console.error(`[Sockets] [${channelId}] Failed to register player ${playerUsername}:`, err.message);
+      socket.emit('admin_error', err.message);
+    }
+  });
+
   // Admin edit player details (from dashboard viewer management actions)
   socket.on('admin_update_player', async (data) => {
     const { password, playerUsername, updatedFields } = data;
