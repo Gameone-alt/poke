@@ -832,49 +832,49 @@
                 
                 <!-- LEFT: Screen Preview Box (16:9 Aspect Ratio) -->
                 <div style="flex: 1; min-width: 0;">
-                  <div id="layout-screen-preview" style="position: relative; width: 100%; max-width: 720px; aspect-ratio: 16 / 9; background: #0b0f19; border: 2px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: inset 0 0 20px rgba(0,0,0,0.8);">
+                  <div id="layout-screen-preview" style="position: relative; width: 720px; height: 405px; background: #0b0f19; border: 2px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); flex-shrink: 0;">
                     <!-- Grid Lines Backdrop -->
                     <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px); background-size: 20px 20px; pointer-events: none;"></div>
                     
                     <!-- Draggable components -->
-                    <!-- 1. Wild Spawn Card (Vertical card shape) -->
-                    <div id="drag-spawn-card" class="draggable-widget" style="position: absolute; width: 100px; height: 150px; background: rgba(59, 130, 246, 0.25); border: 2px dashed #3b82f6; color: #fff; cursor: move; border-radius: 8px; font-weight: bold; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 5px; user-select: none; z-index: 10;">
+                    <!-- 1. Wild Spawn Card (Vertical card shape, mathematically proportional to 220px on 1920px width) -->
+                    <div id="drag-spawn-card" class="draggable-widget" style="position: absolute; width: 83px; height: 124px; background: rgba(59, 130, 246, 0.25); border: 2px dashed #3b82f6; color: #fff; cursor: move; border-radius: 8px; font-weight: bold; font-size: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 5px; user-select: none; z-index: 10;">
                       <span>🦖 Wild Spawn Card</span>
                       <div style="font-size: 9px; opacity: 0.8; margin-top: 6px;">Scale: <span class="widget-scale-val" id="lbl-scale-spawn">1.0</span>x</div>
                     </div>
 
-                    <!-- 2. Leaderboard Ticker -->
-                    <div id="drag-ticker" class="draggable-widget" style="position: absolute; width: 240px; height: 35px; background: rgba(16, 185, 129, 0.25); border: 2px dashed #10b981; color: #fff; cursor: move; border-radius: 8px; font-weight: bold; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; z-index: 10;">
+                    <!-- 2. Leaderboard Ticker (width: 180px, height: 22px) -->
+                    <div id="drag-ticker" class="draggable-widget" style="position: absolute; width: 180px; height: 22px; background: rgba(16, 185, 129, 0.25); border: 2px dashed #10b981; color: #fff; cursor: move; border-radius: 8px; font-weight: bold; font-size: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; z-index: 10;">
                       <span>👑 Ticker Bar</span>
-                      <div style="font-size: 9px; opacity: 0.8; margin-top: 2px;">Scale: <span class="widget-scale-val" id="lbl-scale-ticker">1.0</span>x</div>
+                      <div style="font-size: 8px; opacity: 0.8; margin-top: 1px; display: none;">Scale: <span class="widget-scale-val" id="lbl-scale-ticker">1.0</span>x</div>
                     </div>
 
-                    <!-- 3. Live Game Feed -->
-                    <div id="drag-feed" class="draggable-widget" style="position: absolute; width: 150px; height: 120px; background: rgba(245, 158, 11, 0.25); border: 2px dashed #f59e0b; color: #fff; cursor: move; border-radius: 8px; font-weight: bold; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; z-index: 10;">
+                    <!-- 3. Live Game Feed (width: 105px, height: 90px) -->
+                    <div id="drag-feed" class="draggable-widget" style="position: absolute; width: 105px; height: 90px; background: rgba(245, 158, 11, 0.25); border: 2px dashed #f59e0b; color: #fff; cursor: move; border-radius: 8px; font-weight: bold; font-size: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; z-index: 10;">
                       <span>📰 Live Feed</span>
                       <div style="font-size: 9px; opacity: 0.8; margin-top: 4px;">Scale: <span class="widget-scale-val" id="lbl-scale-feed">1.0</span>x</div>
                     </div>
 
-                    <!-- 4. Battle Arena -->
-                    <div id="drag-battle" class="draggable-widget" style="position: absolute; width: 250px; height: 130px; background: rgba(239, 68, 68, 0.25); border: 2px dashed #ef4444; color: #fff; cursor: move; border-radius: 8px; font-weight: bold; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; z-index: 10;">
+                    <!-- 4. Battle Arena (width: 285px, height: 143px) -->
+                    <div id="drag-battle" class="draggable-widget" style="position: absolute; width: 285px; height: 143px; background: rgba(239, 68, 68, 0.25); border: 2px dashed #ef4444; color: #fff; cursor: move; border-radius: 8px; font-weight: bold; font-size: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; z-index: 10;">
                       <span>⚔️ Battle Arena</span>
                       <div style="font-size: 9px; opacity: 0.8; margin-top: 4px;">Scale: <span class="widget-scale-val" id="lbl-scale-battle">1.0</span>x</div>
                     </div>
 
-                    <!-- 5. Raid Boss -->
-                    <div id="drag-raid" class="draggable-widget" style="position: absolute; width: 220px; height: 120px; background: rgba(244, 63, 94, 0.25); border: 2px dashed #f43f5e; color: #fff; cursor: move; border-radius: 8px; font-weight: bold; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; z-index: 10;">
+                    <!-- 5. Raid Boss (width: 255px, height: 135px) -->
+                    <div id="drag-raid" class="draggable-widget" style="position: absolute; width: 255px; height: 135px; background: rgba(244, 63, 94, 0.25); border: 2px dashed #f43f5e; color: #fff; cursor: move; border-radius: 8px; font-weight: bold; font-size: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; z-index: 10;">
                       <span>🦖 Raid Boss</span>
                       <div style="font-size: 9px; opacity: 0.8; margin-top: 4px;">Scale: <span class="widget-scale-val" id="lbl-scale-raid">1.0</span>x</div>
                     </div>
 
-                    <!-- 6. Pack Opening -->
-                    <div id="drag-pack" class="draggable-widget" style="position: absolute; width: 160px; height: 100px; background: rgba(168, 85, 247, 0.25); border: 2px dashed #a855f7; color: #fff; cursor: move; border-radius: 8px; font-weight: bold; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; z-index: 10;">
+                    <!-- 6. Pack Opening (width: 94px, height: 131px) -->
+                    <div id="drag-pack" class="draggable-widget" style="position: absolute; width: 94px; height: 131px; background: rgba(168, 85, 247, 0.25); border: 2px dashed #a855f7; color: #fff; cursor: move; border-radius: 8px; font-weight: bold; font-size: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; z-index: 10;">
                       <span>🎒 Pack Opening</span>
                       <div style="font-size: 9px; opacity: 0.8; margin-top: 4px;">Scale: <span class="widget-scale-val" id="lbl-scale-pack">1.0</span>x</div>
                     </div>
 
-                    <!-- 7. Level Up -->
-                    <div id="drag-levelup" class="draggable-widget" style="position: absolute; width: 150px; height: 90px; background: rgba(234, 179, 8, 0.25); border: 2px dashed #eab308; color: #fff; cursor: move; border-radius: 8px; font-weight: bold; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; z-index: 10;">
+                    <!-- 7. Level Up (width: 165px, height: 113px) -->
+                    <div id="drag-levelup" class="draggable-widget" style="position: absolute; width: 165px; height: 113px; background: rgba(234, 179, 8, 0.25); border: 2px dashed #eab308; color: #fff; cursor: move; border-radius: 8px; font-weight: bold; font-size: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; z-index: 10;">
                       <span>🏆 Level Up</span>
                       <div style="font-size: 9px; opacity: 0.8; margin-top: 4px;">Scale: <span class="widget-scale-val" id="lbl-scale-levelup">1.0</span>x</div>
                     </div>
