@@ -2084,7 +2084,8 @@ async function processCommand(channelId, username, displayName, messageText, bas
       targetDisplayName: resolvedTarget ? resolvedTarget.displayName : targetMention,
       initiatorPoke: foundPoke,
       targetPoke: null,
-      status: 'pending_accept'
+      status: 'pending_accept',
+      createdAt: Date.now()
     };
 
     const msg = `🤝 @${displayName} wants to trade their ${foundPoke.name} with @${resolvedTarget ? resolvedTarget.displayName : targetMention}! @${resolvedTarget ? resolvedTarget.displayName : targetMention}, type '!accepttrade [your_pokemon]' to offer a Pokémon in return.`;
@@ -2107,6 +2108,16 @@ async function processCommand(channelId, username, displayName, messageText, bas
 
     if (!trade) {
       const msg = `❌ @${displayName}, you don't have any pending trade requests waiting for your acceptance!`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+
+    // Verify trade expiration
+    const timeoutSeconds = session.config.tradeTimeoutSeconds !== undefined ? Number(session.config.tradeTimeoutSeconds) : 60;
+    const elapsed = (Date.now() - trade.createdAt) / 1000;
+    if (elapsed > timeoutSeconds) {
+      delete session.activeTrades[trade.initiator];
+      const msg = `❌ @${displayName}, the trade offer from @${trade.initiatorDisplayName} has expired (expired after ${timeoutSeconds}s)!`;
       io.to(channelId).emit('command_feedback', { username, text: msg });
       return msg;
     }
@@ -2138,6 +2149,16 @@ async function processCommand(channelId, username, displayName, messageText, bas
 
     if (!trade) {
       const msg = `❌ @${displayName}, you don't have any trade offers waiting for your confirmation!`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+
+    // Verify trade expiration
+    const timeoutSeconds = session.config.tradeTimeoutSeconds !== undefined ? Number(session.config.tradeTimeoutSeconds) : 60;
+    const elapsed = (Date.now() - trade.createdAt) / 1000;
+    if (elapsed > timeoutSeconds) {
+      delete session.activeTrades[trade.initiator];
+      const msg = `❌ @${displayName}, your trade offer has expired (expired after ${timeoutSeconds}s)!`;
       io.to(channelId).emit('command_feedback', { username, text: msg });
       return msg;
     }
