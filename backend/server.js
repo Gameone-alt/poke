@@ -210,9 +210,13 @@ app.post('/api/trigger-raid', async (req, res) => {
 
 // HTTP POST endpoint for external chat relays (like Streamer.bot C# actions)
 app.post('/api/chat', async (req, res) => {
-  const { channelId, username, displayName, messageText } = req.body;
+  const channelId = req.body.channelId || req.body.channel;
+  const username = req.body.username || req.body.user;
+  const displayName = req.body.displayName || req.body.userName || req.body.name || username;
+  const messageText = req.body.messageText || req.body.message || req.body.msg;
+  
   if (!channelId || !username || !messageText) {
-    return res.status(400).json({ error: 'Missing required fields' });
+    return res.status(200).json({ success: true, reply: '' });
   }
   
   try {
@@ -230,28 +234,33 @@ app.post('/api/chat', async (req, res) => {
         try {
           console.log(`[API Chat Relay Delayed ${delaySeconds}s] [${cleanChannelId}] ${displayName || username}: ${messageText}`);
           const reply = await processCommand(cleanChannelId, username, displayName || username, messageText, baseUrl);
-          res.status(200).json({ success: true, reply });
+          res.status(200).json({ success: true, reply: reply || '' });
         } catch (err) {
           console.error('[API Chat Relay Delayed] Error:', err.message);
-          res.status(500).json({ error: err.message });
+          res.status(200).json({ success: true, reply: '' });
         }
       }, delayMs);
     } else {
       console.log(`[API Chat Relay] [${cleanChannelId}] ${displayName || username}: ${messageText}`);
       const reply = await processCommand(cleanChannelId, username, displayName || username, messageText, baseUrl);
-      res.status(200).json({ success: true, reply });
+      res.status(200).json({ success: true, reply: reply || '' });
     }
   } catch (err) {
     console.error('[API Chat Relay] Error processing command:', err.message);
-    res.status(500).json({ error: err.message });
+    res.status(200).json({ success: true, reply: '' });
   }
 });
 
 // HTTP GET endpoint for simple web requests (like Streamer.bot Fetch URL)
 app.get('/api/chat', async (req, res) => {
-  const { channelId, username, displayName, messageText } = req.query;
+  const channelId = req.query.channelId || req.query.channel;
+  const username = req.query.username || req.query.user;
+  const displayName = req.query.displayName || req.query.userName || req.query.name || username;
+  const messageText = req.query.messageText || req.query.message || req.query.msg;
+  
   if (!channelId || !username || !messageText) {
-    return res.status(400).send('Missing required fields (channelId, username, messageText)');
+    console.warn(`[API Chat Relay GET] Warning: Missing parameters in request query:`, req.query);
+    return res.status(200).send('');
   }
   
   try {
@@ -269,20 +278,20 @@ app.get('/api/chat', async (req, res) => {
         try {
           console.log(`[API Chat Relay GET Delayed ${delaySeconds}s] [${cleanChannelId}] ${displayName || username}: ${messageText}`);
           const reply = await processCommand(cleanChannelId, username, displayName || username, messageText, baseUrl);
-          res.status(200).send(reply);
+          res.status(200).send(reply || '');
         } catch (err) {
           console.error('[API Chat Relay GET Delayed] Error:', err.message);
-          res.status(500).send('Error: ' + err.message);
+          res.status(200).send('');
         }
       }, delayMs);
     } else {
       console.log(`[API Chat Relay GET] [${cleanChannelId}] ${displayName || username}: ${messageText}`);
       const reply = await processCommand(cleanChannelId, username, displayName || username, messageText, baseUrl);
-      res.status(200).send(reply);
+      res.status(200).send(reply || '');
     }
   } catch (err) {
     console.error('[API Chat Relay GET] Error processing command:', err.message);
-    res.status(500).send('Error: ' + err.message);
+    res.status(200).send('');
   }
 });
 
