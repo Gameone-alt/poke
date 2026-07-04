@@ -58,6 +58,9 @@ public class CPHInline
                 string reply = ExtractJsonValue(response, "reply");
                 if (!string.IsNullOrEmpty(reply))
                 {
+                    CPH.SetArgument("PokimonResponce", reply);
+                    CPH.SetArgument("PokimonResponse", reply);
+
                     if (platform == "youtube")
                     {
                         if (useBotAccount)
@@ -80,12 +83,22 @@ public class CPHInline
                             CPH.SendChatMessage(reply);
                         }
                     }
+                    return true;
+                }
+                else
+                {
+                    CPH.SetArgument("PokimonResponce", "");
+                    CPH.SetArgument("PokimonResponse", "");
+                    return false; // Stop further sub-actions to prevent sending empty messages
                 }
             }
         }
         catch (Exception ex)
         {
             CPH.LogWarn("[Pokemon Overlay] Error: " + ex.Message);
+            CPH.SetArgument("PokimonResponce", "");
+            CPH.SetArgument("PokimonResponse", "");
+            return false;
         }
 
         return true;
