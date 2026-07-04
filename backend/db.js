@@ -758,8 +758,7 @@ async function saveUser(streamerId, user) {
   
   // PostgreSQL version
   await query(
-    `ALTER TABLE players ADD COLUMN IF NOT EXISTS loyalty_active_minutes INTEGER DEFAULT 0;
-     UPDATE players 
+    `UPDATE players 
      SET display_name = $1, pokeballs = $2, greatballs = $3, ultraballs = $4, masterballs = $5,
          coins = $6, xp = $7, level = $8, buddy_instance_id = $9,
          active_pokemon_id = $10, last_daily = $11, last_catch_attempt = $12,
@@ -1509,8 +1508,7 @@ async function saveStreamerConfig(streamerId, config) {
   
   // PostgreSQL version
   await query(
-    `ALTER TABLE streamer_configs ADD COLUMN IF NOT EXISTS show_raid BOOLEAN DEFAULT TRUE;
-     UPDATE streamer_configs 
+    `UPDATE streamer_configs 
      SET video_id = $1, spawn_interval_ms = $2, wild_despawn_timeout_ms = $3, 
          catch_cooldown_ms = $4, shiny_chance = $5, admin_password = $6, youtube_channel_id = $7,
          theme = $8, sfx_volume = $9, show_live_feed = $10, live_feed_title = $11,
