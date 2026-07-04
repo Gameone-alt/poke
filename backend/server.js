@@ -2003,7 +2003,6 @@ async function processCommand(channelId, username, displayName, messageText, bas
     // Prepare sorted list of contributors
     const sortedContributors = Object.entries(boss.participants)
       .map(([uname, dmg]) => {
-        // Fetch display name if available in memory sessions, or fall back to username
         return { username: uname, damage: dmg };
       })
       .sort((a, b) => b.damage - a.damage);
@@ -2012,6 +2011,10 @@ async function processCommand(channelId, username, displayName, messageText, bas
       username,
       displayName,
       pokemonName,
+      pokemonId: activePoke ? activePoke.pokemonId : null,
+      shiny: activePoke ? activePoke.shiny : false,
+      spriteUrl: activePoke ? (activePoke.shiny ? pokemonDb[activePoke.pokemonId]?.shinySpriteUrl : pokemonDb[activePoke.pokemonId]?.spriteUrl) : null,
+      fallbackSpriteUrl: activePoke ? (activePoke.shiny ? pokemonDb[activePoke.pokemonId]?.fallbackShinySpriteUrl : pokemonDb[activePoke.pokemonId]?.fallbackSpriteUrl) : null,
       damage: attackPower,
       currentHp: boss.currentHp,
       maxHp: boss.maxHp,
@@ -2019,7 +2022,8 @@ async function processCommand(channelId, username, displayName, messageText, bas
       contributors: sortedContributors
     });
     
-    let reply = `@${displayName}'s ${pokemonName} hit ${boss.name} for 💥 ${attackPower} damage! (${boss.currentHp}/${boss.maxHp} HP left)`;
+    // Return null to mute raid hit spam in chat. Chat notifications will only be posted on defeat.
+    let reply = null;
     
     if (boss.currentHp <= 0) {
       clearTimeout(session.wildDespawnTimer);
@@ -2027,6 +2031,8 @@ async function processCommand(channelId, username, displayName, messageText, bas
       const baseXP = session.config.raidRewardXp !== undefined ? Number(session.config.raidRewardXp) : 150;
       
       const winners = Object.keys(boss.participants);
+      const winnersRewards = [];
+
       for (const winnerUsername of winners) {
         const winnerDmg = boss.participants[winnerUsername];
         const shareRatio = winnerDmg / boss.maxHp;
@@ -2059,6 +2065,16 @@ async function processCommand(channelId, username, displayName, messageText, bas
         }
         
         await db.saveUser(channelId, winUser);
+
+        // Track reward info for victory screen
+        winnersRewards.push({
+          username: winnerUsername,
+          displayName: winUser.displayName,
+          damage: winnerDmg,
+          coins: rewardCoins,
+          xp: rewardXP,
+          stone: stoneItem
+        });
         
         if (leveledUp) {
           io.to(channelId).emit('player_level_up', {
@@ -2074,6 +2090,11 @@ async function processCommand(channelId, username, displayName, messageText, bas
         io.to(channelId).emit('balls_updated', { username: winnerUsername, balls: winUser.balls });
       }
 
+      // Sort and take top 3 contributors
+      const topWinners = winnersRewards
+        .sort((a, b) => b.damage - a.damage)
+        .slice(0, 3);
+ 
       // 🏆 Award Raid Boss Pokémon to the participant with the highest damage
       const topContributor = sortedContributors[0];
       let caughtMsg = "";
@@ -2091,17 +2112,22 @@ async function processCommand(channelId, username, displayName, messageText, bas
         }
       }
       
-      const raidEndMsg = `🏆 The Raid Boss ${boss.name} has been defeated! Rewards distributed. ${caughtMsg}`;
+      const top3Text = topWinners.map((w, idx) => `${idx+1}. @${w.displayName} (💥 ${w.damage} dmg) -> 🪙 ${w.coins} coins, ✨ ${w.xp} XP${w.stone ? `, 🪨 ${w.stone.replace('_', ' ')}` : ''}`).join(' | ');
+      const raidEndMsg = `🏆 The Raid Boss ${boss.name} has been defeated! Top Attackers: ${top3Text}. ${caughtMsg}`;
+      
       io.to(channelId).emit('raid_end', {
         victory: true,
         message: raidEndMsg,
-        participants: boss.participants
+        topWinners: topWinners,
+        bossName: boss.name,
+        bossSprite: boss.shiny ? pokemonDb[boss.id]?.shinySpriteUrl : pokemonDb[boss.id]?.spriteUrl,
+        fallbackBossSprite: boss.shiny ? pokemonDb[boss.id]?.fallbackShinySpriteUrl : pokemonDb[boss.id]?.fallbackSpriteUrl
       });
       
       sendGameLog(channelId, 'system', `🏆 The Raid Boss ${boss.name} was defeated! Participants rewarded.`);
       session.activeRaidBoss = null;
       
-      // Override reply with complete raid end results for chat feedback
+      // Send single non-spammy defeat chat message
       reply = `@${displayName}'s ${pokemonName} hit ${boss.name} for 💥 ${attackPower} damage and DEFEATED IT! ${raidEndMsg}`;
     }
     

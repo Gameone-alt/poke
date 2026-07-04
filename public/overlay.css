@@ -2099,3 +2099,40 @@ body.raid-mode-active #battle-overlay {
   font-size: 10px;
   font-family: 'Press Start 2P', monospace;
 }
+
+/* Boss Raid Attacking Buddy Pokemon Sprites styles */
+.raid-attacker-sprite-container {
+  position: absolute;
+  width: 65px;
+  height: 65px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 15;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+}
+.raid-attacker-sprite-container img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  animation: floatBounceAttacker 1.5s ease-in-out infinite;
+}
+.raid-attacker-label {
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  padding: 2px 5px;
+  color: #fbbf24;
+  font-size: 8px;
+  font-weight: 800;
+  white-space: nowrap;
+  margin-top: -3px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+@keyframes floatBounceAttacker {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}

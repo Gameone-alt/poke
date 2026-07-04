@@ -1846,6 +1846,62 @@ socket.on('raid_hit', (data) => {
     // Particle explosion
     createHitParticles(endX, endY, '#f43f5e');
 
+    // Spawn attacking buddy Pokemon around the boss sprite
+    if (data.spriteUrl) {
+      const spriteWrapper = document.querySelector('.raid-sprite-wrapper');
+      if (spriteWrapper) {
+        const attackerContainer = document.createElement('div');
+        attackerContainer.className = 'raid-attacker-sprite-container';
+        
+        const theta = Math.random() * 2 * Math.PI;
+        const radius = 100 + Math.random() * 40;
+        const xOffset = Math.cos(theta) * radius;
+        const yOffset = Math.sin(theta) * radius;
+        
+        attackerContainer.style.left = `calc(50% + ${xOffset}px)`;
+        attackerContainer.style.top = `calc(50% + ${yOffset}px)`;
+        attackerContainer.style.transform = 'translate(-50%, -50%) scale(0)';
+        attackerContainer.style.transition = 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        
+        const attackerImg = document.createElement('img');
+        attackerImg.src = getSafeSprite(data.spriteUrl, data.fallbackSpriteUrl);
+        attackerImg.onerror = () => { attackerImg.src = data.fallbackSpriteUrl; };
+        attackerContainer.appendChild(attackerImg);
+        
+        const nameTag = document.createElement('div');
+        nameTag.className = 'raid-attacker-label';
+        nameTag.textContent = `@${data.displayName}`;
+        attackerContainer.appendChild(nameTag);
+        
+        spriteWrapper.appendChild(attackerContainer);
+        
+        // Pop in
+        setTimeout(() => {
+          attackerContainer.style.transform = 'translate(-50%, -50%) scale(1)';
+        }, 50);
+        
+        // Dash strike
+        setTimeout(() => {
+          attackerContainer.style.transform = `translate(calc(-50% - ${xOffset * 0.45}px), calc(-50% - ${yOffset * 0.45}px)) scale(1.15)`;
+        }, 500);
+        
+        // Return back
+        setTimeout(() => {
+          attackerContainer.style.transform = 'translate(-50%, -50%) scale(1)';
+        }, 700);
+        
+        // Pop out
+        setTimeout(() => {
+          attackerContainer.style.opacity = '0';
+          attackerContainer.style.transform = 'translate(-50%, -50%) scale(0)';
+        }, 2200);
+        
+        setTimeout(() => {
+          attackerContainer.remove();
+        }, 2750);
+      }
+    }
+
     // Update health bars
     if (hpFill && hpText) {
       const percent = (data.currentHp / data.maxHp) * 100;
@@ -1899,14 +1955,61 @@ socket.on('raid_end', (data) => {
     card.classList.remove('gigantamax-active');
   }
 
+  let dismissTimeout = 5000;
+
   if (data.victory) {
     playSound(sfxEvolve);
+    dismissTimeout = 12000; // Keep on screen longer for victory celebration & reward viewing
+    
     if (hpFill && hpText) {
       hpFill.style.width = '0%';
       hpText.textContent = 'DEFEATED!';
     }
-    if (list) {
-      list.innerHTML = `<div style="color: #10b981; font-weight: 800; font-size: 13px; text-align: center; padding: 10px; background: rgba(16, 185, 129, 0.1); border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.2);">🏆 Raid Defeated! Chat Wins!</div>`;
+    
+    // Render top 3 winners with rewards inside boss info block
+    if (data.topWinners) {
+      const bossInfo = document.querySelector('.raid-boss-info');
+      if (bossInfo) {
+        let winnersHtml = '';
+        data.topWinners.forEach((w, index) => {
+          let medal = '🥇';
+          if (index === 1) medal = '🥈';
+          if (index === 2) medal = '🥉';
+          
+          const rewardsList = [];
+          rewardsList.push(`🪙 ${w.coins}`);
+          rewardsList.push(`✨ ${w.xp} XP`);
+          if (w.stone) {
+            const stoneName = w.stone.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
+            rewardsList.push(`🪨 ${stoneName}`);
+          }
+          
+          winnersHtml += `
+            <div style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 6px 10px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: #fff;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 16px;">${medal}</span>
+                <div>
+                  <strong style="color: #fbbf24; font-size: 12px;">@${w.displayName}</strong>
+                  <div style="font-size: 9px; color: #94a3b8;">💥 ${w.damage} HP damage</div>
+                </div>
+              </div>
+              <div style="text-align: right; font-weight: 700; color: #10b981; display: flex; gap: 4px;">
+                ${rewardsList.map(r => `<span style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 1px 4px; border-radius: 4px; font-size: 9px; white-space: nowrap;">${r}</span>`).join('')}
+              </div>
+            </div>
+          `;
+        });
+        
+        bossInfo.innerHTML = `
+          <div style="text-align: center; animation: battlePopIn 0.5s ease-out; height: 100%; display: flex; flex-direction: column; justify-content: center;">
+            <h2 style="font-family: 'Press Start 2P', monospace; font-size: 14px; color: #10b981; text-shadow: 0 0 10px rgba(16,185,129,0.5); margin: 0 0 4px 0;">🏆 RAID VICTORY!</h2>
+            <div style="color: #94a3b8; font-size: 10px; margin-bottom: 8px;">The Boss has been defeated! Top Attackers & Rewards:</div>
+            <div style="text-align: left; overflow-y: auto; max-height: 180px;">
+              ${winnersHtml || '<div style="text-align: center; color: #94a3b8;">No contributors recorded.</div>'}
+            </div>
+          </div>
+        `;
+      }
     }
   } else {
     playSound(sfxCatchFail);
@@ -1921,7 +2024,7 @@ socket.on('raid_end', (data) => {
       raidOverlay.classList.add('hidden');
     }
     document.body.classList.remove('raid-mode-active');
-  }, 5000);
+  }, dismissTimeout);
 });
 
 // Helper: Spawn flying projectile for Boss Raid hit
