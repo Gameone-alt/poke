@@ -141,6 +141,8 @@ const spawnAlertTitleInput = document.getElementById('spawn-alert-title');
 const spawnCatchGuideInput = document.getElementById('spawn-catch-guide');
 const inventoryBaseUrlInput = document.getElementById('inventory-base-url');
 const customCssInput = document.getElementById('custom-css');
+const showBuddyOnChatInput = document.getElementById('show-buddy-on-chat');
+const buddyChatDurationInput = document.getElementById('buddy-chat-duration');
 
 // Custom Economy inputs
 const coinsCaptureNormalInput = document.getElementById('coins-capture-normal');
@@ -319,6 +321,8 @@ function populateConfig(config) {
   showCardTypesCheckbox.checked = config.showCardTypes !== false;
   showCardInstructionsCheckbox.checked = config.showCardInstructions !== false;
   hideSpawnDetailsCheckbox.checked = config.hideSpawnDetails || false;
+  showBuddyOnChatInput.checked = config.showBuddyOnChat !== false;
+  buddyChatDurationInput.value = config.buddyChatDuration !== undefined ? config.buddyChatDuration : 15;
 
   // Custom offsets
   spawnCardLeftInput.value = config.spawnCardLeft || '';
@@ -556,6 +560,8 @@ function compileConfigObject() {
     showCardTypes: showCardTypesCheckbox.checked,
     showCardInstructions: showCardInstructionsCheckbox.checked,
     hideSpawnDetails: hideSpawnDetailsCheckbox.checked,
+    showBuddyOnChat: showBuddyOnChatInput.checked,
+    buddyChatDuration: parseInt(buddyChatDurationInput.value, 10) || 15,
     
     // Custom positioning offsets
     spawnCardLeft: spawnCardLeftInput.value.trim(),

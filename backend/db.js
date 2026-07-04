@@ -191,6 +191,8 @@ function migrateLocalConfig(c) {
   if (c.levelUpBottom === undefined) c.levelUpBottom = '';
   if (c.levelUpScale === undefined) c.levelUpScale = 1.0;
   if (c.showRaid === undefined) c.showRaid = true;
+  if (c.showBuddyOnChat === undefined) c.showBuddyOnChat = true;
+  if (c.buddyChatDuration === undefined) c.buddyChatDuration = 15;
   return c;
 }
 
@@ -310,7 +312,9 @@ async function runAutoMigrations() {
       ADD COLUMN IF NOT EXISTS level_up_top VARCHAR(20) DEFAULT '',
       ADD COLUMN IF NOT EXISTS level_up_bottom VARCHAR(20) DEFAULT '',
       ADD COLUMN IF NOT EXISTS level_up_scale NUMERIC DEFAULT 1.0,
-      ADD COLUMN IF NOT EXISTS show_raid BOOLEAN DEFAULT TRUE;
+      ADD COLUMN IF NOT EXISTS show_raid BOOLEAN DEFAULT TRUE,
+      ADD COLUMN IF NOT EXISTS show_buddy_on_chat BOOLEAN DEFAULT TRUE,
+      ADD COLUMN IF NOT EXISTS buddy_chat_duration INTEGER DEFAULT 15;
     `);
 
     // Add columns to inventories table
@@ -1190,7 +1194,9 @@ async function getStreamerConfig(streamerId) {
         hideSpawnDetails: false,
         battleType: 'normal',
         fullHealTimeMinutes: 60,
-        healCostCoins: 50
+        healCostCoins: 50,
+        showBuddyOnChat: true,
+        buddyChatDuration: 15
       };
       saveLocalConfigs();
     } else {
@@ -1450,7 +1456,9 @@ async function getStreamerConfig(streamerId) {
     levelUpTop: row.level_up_top || '',
     levelUpBottom: row.level_up_bottom || '',
     levelUpScale: row.level_up_scale !== null && row.level_up_scale !== undefined ? Number(row.level_up_scale) : 1.0,
-    showRaid: row.show_raid !== false
+    showRaid: row.show_raid !== false,
+    showBuddyOnChat: row.show_buddy_on_chat !== false,
+    buddyChatDuration: row.buddy_chat_duration !== null && row.buddy_chat_duration !== undefined ? Number(row.buddy_chat_duration) : 15
   };
 }
 
@@ -1510,8 +1518,10 @@ async function saveStreamerConfig(streamerId, config) {
          show_level_up = $108, level_up_position = $109,
          level_up_left = $110, level_up_right = $111, level_up_top = $112, level_up_bottom = $113,
          level_up_scale = $114,
-         show_raid = $115
-     WHERE channel_id = $116`,
+         show_raid = $115,
+         show_buddy_on_chat = $116,
+         buddy_chat_duration = $117
+     WHERE channel_id = $118`,
     [
       config.videoId || '',
       config.spawnIntervalMs,
@@ -1628,6 +1638,8 @@ async function saveStreamerConfig(streamerId, config) {
       config.levelUpBottom || '',
       config.levelUpScale !== undefined ? config.levelUpScale : 1.0,
       config.showRaid !== false,
+      config.showBuddyOnChat !== undefined ? config.showBuddyOnChat : true,
+      config.buddyChatDuration !== undefined ? config.buddyChatDuration : 15,
       streamer
     ]
   );

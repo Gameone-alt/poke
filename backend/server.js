@@ -500,6 +500,46 @@ async function triggerBossRaid(channelId, customBossName = null) {
   }, 5 * 60 * 1000);
 }
 
+// In-memory set to prevent double starter awards under race conditions
+const startersAwarding = new Set();
+
+// Award starter Pokemon with a 0.1% Legendary chance
+async function awardStarterPokemon(channelId, username, displayName) {
+  const allPokes = Object.values(pokemonDb);
+  if (allPokes.length === 0) return null;
+  
+  const isLegendary = Math.random() < 0.001; // 0.1% legendary chance
+  let pool = [];
+  if (isLegendary) {
+    pool = allPokes.filter(p => p.catchRate <= 0.1);
+  }
+  if (pool.length === 0) {
+    pool = allPokes.filter(p => p.catchRate > 0.1);
+  }
+  if (pool.length === 0) {
+    pool = allPokes;
+  }
+  
+  const chosenPoke = pool[Math.floor(Math.random() * pool.length)];
+  const isShiny = Math.random() < 0.01; // 1% shiny chance for starters
+  
+  try {
+    await db.addPokemon(channelId, username, displayName, chosenPoke, isShiny);
+    const updatedUser = await db.getUser(channelId, username, displayName);
+    if (updatedUser.inventory.length > 0) {
+      const newPoke = updatedUser.inventory[updatedUser.inventory.length - 1];
+      updatedUser.activePokemonId = newPoke.instanceId;
+      updatedUser.buddyInstanceId = newPoke.instanceId;
+      await db.saveUser(channelId, updatedUser);
+    }
+    console.log(`[Starter Awarded] Gave @${displayName} their first Pokemon: ${chosenPoke.name} (Legendary: ${isLegendary})`);
+    return chosenPoke;
+  } catch (err) {
+    console.error('[Starter Award Error]:', err.message);
+    return null;
+  }
+}
+
 // Spawn Wild Pokémon for a specific session
 async function spawnWildPokemon(channelId) {
   const session = getOrCreateSession(channelId);
@@ -1017,6 +1057,63 @@ async function processCommand(channelId, username, displayName, messageText, bas
   const finalBaseUrl = baseUrl || process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000';
   const cleanMsg = messageText.toLowerCase().trim();
   const isBroadcaster = username.toLowerCase().trim() === channelId.toLowerCase().trim();
+  
+  // Handle Chat Buddy Roamer trigger on ANY chat message if enabled
+  if (session.config.showBuddyOnChat !== false) {
+    (async () => {
+      try {
+        let roamerUser = await db.getUser(channelId, username, displayName);
+        
+        // If player has NO Pokemon in their inventory, give them their first starter Pokemon
+        if (!roamerUser.inventory || roamerUser.inventory.length === 0) {
+          const awardKey = `${channelId}_${username.toLowerCase()}`;
+          if (!startersAwarding.has(awardKey)) {
+            startersAwarding.add(awardKey);
+            try {
+              await awardStarterPokemon(channelId, username, displayName);
+            } finally {
+              startersAwarding.delete(awardKey);
+            }
+          }
+          // Refetch user profile
+          roamerUser = await db.getUser(channelId, username, displayName);
+        }
+        
+        // Find buddy or random active Pokemon to roam
+        let roamPoke = null;
+        if (roamerUser.buddyInstanceId) {
+          roamPoke = roamerUser.inventory.find(p => p.instanceId === roamerUser.buddyInstanceId);
+        }
+        if (!roamPoke && roamerUser.activePokemonId) {
+          roamPoke = roamerUser.inventory.find(p => p.instanceId === roamerUser.activePokemonId);
+        }
+        if (!roamPoke && roamerUser.inventory && roamerUser.inventory.length > 0) {
+          roamPoke = roamerUser.inventory[Math.floor(Math.random() * roamerUser.inventory.length)];
+        }
+        
+        if (roamPoke) {
+          const basePoke = pokemonDb[roamPoke.pokemonId];
+          if (basePoke) {
+            const isShiny = roamPoke.shiny;
+            const spriteUrl = isShiny ? basePoke.shinySpriteUrl : basePoke.spriteUrl;
+            const fallbackSpriteUrl = isShiny ? basePoke.fallbackShinySpriteUrl : basePoke.fallbackSpriteUrl;
+            
+            io.to(channelId).emit('chat_buddy_roam', {
+              username,
+              displayName,
+              pokemonName: roamPoke.name,
+              spriteUrl,
+              fallbackSpriteUrl,
+              shiny: isShiny,
+              duration: session.config.buddyChatDuration || 15
+            });
+          }
+        }
+      } catch (err) {
+        console.error('[Roamer Trigger Error]:', err.message);
+      }
+    })();
+  }
   
   // Broadcaster-only Spawn command
   if (cleanMsg === '!spawn' || cleanMsg === 'spawn') {

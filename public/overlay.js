@@ -2144,3 +2144,77 @@ socket.on('leaderboard_update', (leaderboard) => {
 socket.on('config_updated', (config) => {
   applyConfig(config);
 });
+
+// Active roaming buddies map to prevent duplicate instances of the same player roaming simultaneously
+const activeRoamerElements = new Map();
+
+socket.on('chat_buddy_roam', (data) => {
+  const container = document.getElementById('chat-roamer-container');
+  if (!container) return;
+
+  if (activeRoamerElements.has(data.username)) {
+    const existing = activeRoamerElements.get(data.username);
+    gsap.to(existing, { scale: 1.2, duration: 0.2, yoyo: true, repeat: 1 });
+    return;
+  }
+
+  const roamer = document.createElement('div');
+  roamer.className = 'roaming-buddy-container';
+  
+  const spawnLeft = 5 + Math.random() * 80;
+  roamer.style.left = `${spawnLeft}%`;
+  
+  const img = document.createElement('img');
+  img.className = 'roaming-buddy-sprite walking';
+  img.src = getSafeSprite(data.spriteUrl, data.fallbackSpriteUrl);
+  img.onerror = () => { img.src = data.fallbackSpriteUrl; };
+  roamer.appendChild(img);
+  
+  const label = document.createElement('div');
+  label.className = 'roaming-buddy-label';
+  label.textContent = `${data.displayName}: ${data.pokemonName}`;
+  roamer.appendChild(label);
+  
+  container.appendChild(roamer);
+  activeRoamerElements.set(data.username, roamer);
+  
+  gsap.fromTo(roamer, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' });
+  
+  const tl = gsap.timeline({ defaults: { ease: 'power1.inOut' } });
+  const duration = data.duration || 15;
+  const steps = Math.floor(duration / 3);
+  
+  let currentPos = spawnLeft;
+  
+  for (let i = 0; i < steps; i++) {
+    const direction = Math.random() < 0.5 ? -1 : 1;
+    const distance = 5 + Math.random() * 15;
+    let nextPos = currentPos + direction * distance;
+    
+    if (nextPos < 5) {
+      nextPos = 5 + Math.random() * 10;
+    } else if (nextPos > 85) {
+      nextPos = 85 - Math.random() * 10;
+    }
+    
+    const walkDirection = nextPos > currentPos ? 1 : -1;
+    
+    tl.to(img, { scaleX: walkDirection, duration: 0.1 }, i * 3);
+    tl.to(roamer, { left: `${nextPos}%`, duration: 2.5 }, i * 3 + 0.1);
+    
+    currentPos = nextPos;
+  }
+  
+  setTimeout(() => {
+    gsap.to(roamer, {
+      scale: 0,
+      opacity: 0,
+      duration: 0.8,
+      ease: 'back.in(1.7)',
+      onComplete: () => {
+        roamer.remove();
+        activeRoamerElements.delete(data.username);
+      }
+    });
+  }, duration * 1000);
+});
