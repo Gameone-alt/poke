@@ -2145,16 +2145,72 @@ socket.on('config_updated', (config) => {
   applyConfig(config);
 });
 
-// Active roaming buddies map to prevent duplicate instances of the same player roaming simultaneously
+// Active roaming buddies maps to prevent duplicate instances and persist them while chatting
 const activeRoamerElements = new Map();
+const activeRoamerTimeouts = new Map();
+const activeRoamerTimelines = new Map();
 
 socket.on('chat_buddy_roam', (data) => {
   const container = document.getElementById('chat-roamer-container');
   if (!container) return;
 
+  const duration = data.duration || 15;
+
+  // If already roaming, reset their timers and start a new walk sequence
   if (activeRoamerElements.has(data.username)) {
     const existing = activeRoamerElements.get(data.username);
-    gsap.to(existing, { scale: 1.2, duration: 0.2, yoyo: true, repeat: 1 });
+    
+    // Pulse nudge to show activity
+    gsap.to(existing, { scale: 1.15, duration: 0.15, yoyo: true, repeat: 1 });
+    
+    // Clear old dismiss timer
+    const oldTimeout = activeRoamerTimeouts.get(data.username);
+    if (oldTimeout) clearTimeout(oldTimeout);
+    
+    // Kill old timeline
+    const oldTimeline = activeRoamerTimelines.get(data.username);
+    if (oldTimeline) oldTimeline.kill();
+    
+    // Setup a new walk sequence starting from their current position
+    const img = existing.querySelector('.roaming-buddy-sprite');
+    const steps = Math.floor(duration / 3);
+    const tl = gsap.timeline({ defaults: { ease: 'power1.inOut' } });
+    activeRoamerTimelines.set(data.username, tl);
+    
+    // Get current horizontal position (parse left style)
+    let currentPos = parseFloat(existing.style.left) || 50;
+    
+    for (let i = 0; i < steps; i++) {
+      const direction = Math.random() < 0.5 ? -1 : 1;
+      const distance = 5 + Math.random() * 15;
+      let nextPos = currentPos + direction * distance;
+      if (nextPos < 5) nextPos = 5 + Math.random() * 10;
+      else if (nextPos > 85) nextPos = 85 - Math.random() * 10;
+      
+      const walkDirection = nextPos > currentPos ? 1 : -1;
+      tl.to(img, { scaleX: walkDirection, duration: 0.1 }, i * 3);
+      tl.to(existing, { left: `${nextPos}%`, duration: 2.5 }, i * 3 + 0.1);
+      
+      currentPos = nextPos;
+    }
+    
+    // Schedule new dismiss timer
+    const newTimeout = setTimeout(() => {
+      gsap.to(existing, {
+        scale: 0,
+        opacity: 0,
+        duration: 0.8,
+        ease: 'back.in(1.7)',
+        onComplete: () => {
+          existing.remove();
+          activeRoamerElements.delete(data.username);
+          activeRoamerTimeouts.delete(data.username);
+          activeRoamerTimelines.delete(data.username);
+        }
+      });
+    }, duration * 1000);
+    
+    activeRoamerTimeouts.set(data.username, newTimeout);
     return;
   }
 
@@ -2181,7 +2237,7 @@ socket.on('chat_buddy_roam', (data) => {
   gsap.fromTo(roamer, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' });
   
   const tl = gsap.timeline({ defaults: { ease: 'power1.inOut' } });
-  const duration = data.duration || 15;
+  activeRoamerTimelines.set(data.username, tl);
   const steps = Math.floor(duration / 3);
   
   let currentPos = spawnLeft;
@@ -2205,7 +2261,7 @@ socket.on('chat_buddy_roam', (data) => {
     currentPos = nextPos;
   }
   
-  setTimeout(() => {
+  const timeoutId = setTimeout(() => {
     gsap.to(roamer, {
       scale: 0,
       opacity: 0,
@@ -2214,7 +2270,11 @@ socket.on('chat_buddy_roam', (data) => {
       onComplete: () => {
         roamer.remove();
         activeRoamerElements.delete(data.username);
+        activeRoamerTimeouts.delete(data.username);
+        activeRoamerTimelines.delete(data.username);
       }
     });
   }, duration * 1000);
+  
+  activeRoamerTimeouts.set(data.username, timeoutId);
 });

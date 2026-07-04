@@ -374,7 +374,9 @@ function getOrCreateSession(channelId) {
       },
       isInitialized: false,
       isInitializing: false,
-      initializationPromise: null
+      initializationPromise: null,
+      lastChatTimes: new Map(),
+      loyaltyTimerCounter: 0
     });
   }
   return activeSessions.get(cid);
@@ -394,6 +396,7 @@ async function ensureSessionInitialized(channelId) {
           session.config = dbConfig;
           
           startSpawnLoop(channelId);
+          startLoyaltyLoop(channelId);
           await youtube.startYoutubeChat(channelId, session.config, processCommand);
           twitch.startTwitchChat(channelId, session.config, processCommand);
           session.isInitialized = true;
@@ -419,6 +422,7 @@ function cleanupSession(channelId) {
     console.log(`[Session] [${cid}] Cleaning up inactive session state...`);
     if (session.wildDespawnTimer) clearTimeout(session.wildDespawnTimer);
     if (session.spawnIntervalTimer) clearInterval(session.spawnIntervalTimer);
+    if (session.loyaltyRewardTimer) clearInterval(session.loyaltyRewardTimer);
     
     youtube.stopYoutubeChat(cid);
     twitch.stopTwitchChat(cid);
@@ -705,6 +709,71 @@ function startSpawnLoop(channelId) {
       spawnWildPokemon(channelId);
     }
   }, 5000);
+}
+
+// Start the Loyalty rewards distribution loop (checks every 1 minute)
+function startLoyaltyLoop(channelId) {
+  const session = getOrCreateSession(channelId);
+  if (session.loyaltyRewardTimer) clearInterval(session.loyaltyRewardTimer);
+  
+  session.loyaltyRewardTimer = setInterval(async () => {
+    try {
+      const intervalMinutes = session.config.loyaltyRewardInterval || 15;
+      if (intervalMinutes <= 0) return;
+      
+      session.loyaltyTimerCounter = (session.loyaltyTimerCounter || 0) + 1;
+      
+      if (session.loyaltyTimerCounter >= intervalMinutes) {
+        session.loyaltyTimerCounter = 0; // Reset counter
+        
+        const now = Date.now();
+        const cutoff = now - (intervalMinutes * 60 * 1000);
+        const activeViewers = [];
+        
+        if (session.lastChatTimes) {
+          for (const [userKey, lastTime] of session.lastChatTimes.entries()) {
+            if (lastTime >= cutoff) {
+              activeViewers.push(userKey);
+            }
+          }
+        }
+        
+        if (activeViewers.length === 0) return;
+        
+        const coinsToGive = session.config.loyaltyRewardCoins || 0;
+        const ballsToGive = session.config.loyaltyRewardPokeballs || 0;
+        
+        if (coinsToGive <= 0 && ballsToGive <= 0) return;
+        
+        console.log(`[Loyalty Rewards] [${channelId}] Awarding ${activeViewers.length} active viewers: ${coinsToGive} coins, ${ballsToGive} Pokéballs`);
+        
+        for (const username of activeViewers) {
+          try {
+            const user = await db.getUser(channelId, username);
+            if (user) {
+              user.coins = (user.coins || 0) + coinsToGive;
+              user.balls = user.balls || { pokeball: 0, greatball: 0, ultraball: 0, masterball: 0 };
+              user.balls.pokeball = (user.balls.pokeball || 0) + ballsToGive;
+              
+              await db.saveUser(channelId, user);
+              
+              // Emit socket updates
+              io.to(channelId).emit('balls_updated', { username, balls: user.balls });
+              io.to(channelId).emit('player_updated', user);
+            }
+          } catch (e) {
+            console.error(`[Loyalty Award Error for ${username}]:`, e.message);
+          }
+        }
+        
+        // Announce rewards in on-screen activity feed
+        const announceMsg = `🎉 Chat Loyalty: Active viewers rewarded with 🪙 ${coinsToGive} coins & 🔴 ${ballsToGive} Pokéballs!`;
+        sendGameLog(channelId, 'system', announceMsg);
+      }
+    } catch (err) {
+      console.error('[Loyalty Loop Error]:', err.message);
+    }
+  }, 60000); // Check once per minute
 }
 
 // Type Advantage Matrix (Gen 1-3 simplified)
@@ -1057,6 +1126,10 @@ async function processCommand(channelId, username, displayName, messageText, bas
   const finalBaseUrl = baseUrl || process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000';
   const cleanMsg = messageText.toLowerCase().trim();
   const isBroadcaster = username.toLowerCase().trim() === channelId.toLowerCase().trim();
+  
+  // Track viewer chat activity time for loyalty rewards
+  session.lastChatTimes = session.lastChatTimes || new Map();
+  session.lastChatTimes.set(username.toLowerCase(), Date.now());
   
   // Handle Chat Buddy Roamer trigger on ANY chat message if enabled
   if (session.config.showBuddyOnChat !== false) {

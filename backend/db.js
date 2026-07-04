@@ -193,6 +193,9 @@ function migrateLocalConfig(c) {
   if (c.showRaid === undefined) c.showRaid = true;
   if (c.showBuddyOnChat === undefined) c.showBuddyOnChat = true;
   if (c.buddyChatDuration === undefined) c.buddyChatDuration = 15;
+  if (c.loyaltyRewardInterval === undefined) c.loyaltyRewardInterval = 15;
+  if (c.loyaltyRewardCoins === undefined) c.loyaltyRewardCoins = 50;
+  if (c.loyaltyRewardPokeballs === undefined) c.loyaltyRewardPokeballs = 5;
   return c;
 }
 
@@ -314,7 +317,10 @@ async function runAutoMigrations() {
       ADD COLUMN IF NOT EXISTS level_up_scale NUMERIC DEFAULT 1.0,
       ADD COLUMN IF NOT EXISTS show_raid BOOLEAN DEFAULT TRUE,
       ADD COLUMN IF NOT EXISTS show_buddy_on_chat BOOLEAN DEFAULT TRUE,
-      ADD COLUMN IF NOT EXISTS buddy_chat_duration INTEGER DEFAULT 15;
+      ADD COLUMN IF NOT EXISTS buddy_chat_duration INTEGER DEFAULT 15,
+      ADD COLUMN IF NOT EXISTS loyalty_reward_interval INTEGER DEFAULT 15,
+      ADD COLUMN IF NOT EXISTS loyalty_reward_coins INTEGER DEFAULT 50,
+      ADD COLUMN IF NOT EXISTS loyalty_reward_pokeballs INTEGER DEFAULT 5;
     `);
 
     // Add columns to inventories table
@@ -1196,7 +1202,10 @@ async function getStreamerConfig(streamerId) {
         fullHealTimeMinutes: 60,
         healCostCoins: 50,
         showBuddyOnChat: true,
-        buddyChatDuration: 15
+        buddyChatDuration: 15,
+        loyaltyRewardInterval: 15,
+        loyaltyRewardCoins: 50,
+        loyaltyRewardPokeballs: 5
       };
       saveLocalConfigs();
     } else {
@@ -1458,7 +1467,10 @@ async function getStreamerConfig(streamerId) {
     levelUpScale: row.level_up_scale !== null && row.level_up_scale !== undefined ? Number(row.level_up_scale) : 1.0,
     showRaid: row.show_raid !== false,
     showBuddyOnChat: row.show_buddy_on_chat !== false,
-    buddyChatDuration: row.buddy_chat_duration !== null && row.buddy_chat_duration !== undefined ? Number(row.buddy_chat_duration) : 15
+    buddyChatDuration: row.buddy_chat_duration !== null && row.buddy_chat_duration !== undefined ? Number(row.buddy_chat_duration) : 15,
+    loyaltyRewardInterval: row.loyalty_reward_interval !== null && row.loyalty_reward_interval !== undefined ? Number(row.loyalty_reward_interval) : 15,
+    loyaltyRewardCoins: row.loyalty_reward_coins !== null && row.loyalty_reward_coins !== undefined ? Number(row.loyalty_reward_coins) : 50,
+    loyaltyRewardPokeballs: row.loyalty_reward_pokeballs !== null && row.loyalty_reward_pokeballs !== undefined ? Number(row.loyalty_reward_pokeballs) : 5
   };
 }
 
@@ -1520,8 +1532,11 @@ async function saveStreamerConfig(streamerId, config) {
          level_up_scale = $114,
          show_raid = $115,
          show_buddy_on_chat = $116,
-         buddy_chat_duration = $117
-     WHERE channel_id = $118`,
+         buddy_chat_duration = $117,
+         loyalty_reward_interval = $118,
+         loyalty_reward_coins = $119,
+         loyalty_reward_pokeballs = $120
+     WHERE channel_id = $121`,
     [
       config.videoId || '',
       config.spawnIntervalMs,
@@ -1640,6 +1655,9 @@ async function saveStreamerConfig(streamerId, config) {
       config.showRaid !== false,
       config.showBuddyOnChat !== undefined ? config.showBuddyOnChat : true,
       config.buddyChatDuration !== undefined ? config.buddyChatDuration : 15,
+      config.loyaltyRewardInterval !== undefined ? config.loyaltyRewardInterval : 15,
+      config.loyaltyRewardCoins !== undefined ? config.loyaltyRewardCoins : 50,
+      config.loyaltyRewardPokeballs !== undefined ? config.loyaltyRewardPokeballs : 5,
       streamer
     ]
   );
