@@ -376,6 +376,7 @@ function getOrCreateSession(channelId) {
       isInitializing: false,
       initializationPromise: null,
       lastChatTimes: new Map(),
+      currentMinuteActiveUsers: new Set(),
       loyaltyTimerCounter: 0
     });
   }
@@ -718,62 +719,67 @@ function startLoyaltyLoop(channelId) {
   
   session.loyaltyRewardTimer = setInterval(async () => {
     try {
-      const intervalMinutes = session.config.loyaltyRewardInterval || 15;
-      if (intervalMinutes <= 0) return;
+      const threshold = session.config.loyaltyRewardInterval || 15;
+      if (threshold <= 0) return;
       
-      session.loyaltyTimerCounter = (session.loyaltyTimerCounter || 0) + 1;
+      // Get all active users who chatted in the last 1 minute
+      const activeThisMinute = Array.from(session.currentMinuteActiveUsers || []);
+      // Reset active set for the next minute
+      session.currentMinuteActiveUsers = new Set();
       
-      if (session.loyaltyTimerCounter >= intervalMinutes) {
-        session.loyaltyTimerCounter = 0; // Reset counter
-        
-        const now = Date.now();
-        const cutoff = now - (intervalMinutes * 60 * 1000);
-        const activeViewers = [];
-        
-        if (session.lastChatTimes) {
-          for (const [userKey, lastTime] of session.lastChatTimes.entries()) {
-            if (lastTime >= cutoff) {
-              activeViewers.push(userKey);
-            }
-          }
-        }
-        
-        if (activeViewers.length === 0) return;
-        
-        const coinsToGive = session.config.loyaltyRewardCoins || 0;
-        const ballsToGive = session.config.loyaltyRewardPokeballs || 0;
-        
-        if (coinsToGive <= 0 && ballsToGive <= 0) return;
-        
-        console.log(`[Loyalty Rewards] [${channelId}] Awarding ${activeViewers.length} active viewers: ${coinsToGive} coins, ${ballsToGive} Pokéballs`);
-        
-        for (const username of activeViewers) {
-          try {
-            const user = await db.getUser(channelId, username);
-            if (user) {
+      if (activeThisMinute.length === 0) return;
+      
+      const coinsToGive = session.config.loyaltyRewardCoins || 0;
+      const pokeballsToGive = session.config.loyaltyRewardPokeballs || 0;
+      const greatballsToGive = session.config.loyaltyRewardGreatballs || 0;
+      const ultraballsToGive = session.config.loyaltyRewardUltraballs || 0;
+      const masterballsToGive = session.config.loyaltyRewardMasterballs || 0;
+      
+      for (const username of activeThisMinute) {
+        try {
+          const user = await db.getUser(channelId, username);
+          if (user) {
+            user.loyaltyActiveMinutes = (user.loyaltyActiveMinutes || 0) + 1;
+            
+            if (user.loyaltyActiveMinutes >= threshold) {
+              user.loyaltyActiveMinutes = 0; // reset
+              
               user.coins = (user.coins || 0) + coinsToGive;
               user.balls = user.balls || { pokeball: 0, greatball: 0, ultraball: 0, masterball: 0 };
-              user.balls.pokeball = (user.balls.pokeball || 0) + ballsToGive;
+              user.balls.pokeball = (user.balls.pokeball || 0) + pokeballsToGive;
+              user.balls.greatball = (user.balls.greatball || 0) + greatballsToGive;
+              user.balls.ultraball = (user.balls.ultraball || 0) + ultraballsToGive;
+              user.balls.masterball = (user.balls.masterball || 0) + masterballsToGive;
               
               await db.saveUser(channelId, user);
               
               // Emit socket updates
               io.to(channelId).emit('balls_updated', { username, balls: user.balls });
               io.to(channelId).emit('player_updated', user);
+              
+              // Build clean ball breakdown display for message
+              const rewardsList = [];
+              if (coinsToGive > 0) rewardsList.push(`🪙 ${coinsToGive} Coins`);
+              if (pokeballsToGive > 0) rewardsList.push(`🔴 ${pokeballsToGive} Poke`);
+              if (greatballsToGive > 0) rewardsList.push(`🔵 ${greatballsToGive} Great`);
+              if (ultraballsToGive > 0) rewardsList.push(`🟡 ${ultraballsToGive} Ultra`);
+              if (masterballsToGive > 0) rewardsList.push(`🟣 ${masterballsToGive} Master`);
+              
+              const announceMsg = `🎉 @${user.displayName} reached ${threshold} active minutes in chat! Received: ${rewardsList.join(', ')}`;
+              sendGameLog(channelId, 'system', announceMsg);
+            } else {
+              // Just save the updated active minutes
+              await db.saveUser(channelId, user);
             }
-          } catch (e) {
-            console.error(`[Loyalty Award Error for ${username}]:`, e.message);
           }
+        } catch (e) {
+          console.error(`[Loyalty Process Error for ${username}]:`, e.message);
         }
-        
-        // Announce rewards in on-screen activity feed
-        const announceMsg = `🎉 Chat Loyalty: Active viewers rewarded with 🪙 ${coinsToGive} coins & 🔴 ${ballsToGive} Pokéballs!`;
-        sendGameLog(channelId, 'system', announceMsg);
       }
     } catch (err) {
       console.error('[Loyalty Loop Error]:', err.message);
     }
-  }, 60000); // Check once per minute
+  }, 60000); // Audit every 60 seconds
 }
 
 // Type Advantage Matrix (Gen 1-3 simplified)
@@ -1130,6 +1136,8 @@ async function processCommand(channelId, username, displayName, messageText, bas
   // Track viewer chat activity time for loyalty rewards
   session.lastChatTimes = session.lastChatTimes || new Map();
   session.lastChatTimes.set(username.toLowerCase(), Date.now());
+  session.currentMinuteActiveUsers = session.currentMinuteActiveUsers || new Set();
+  session.currentMinuteActiveUsers.add(username.toLowerCase());
   
   // Handle Chat Buddy Roamer trigger on ANY chat message if enabled
   if (session.config.showBuddyOnChat !== false) {

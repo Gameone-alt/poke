@@ -196,6 +196,9 @@ function migrateLocalConfig(c) {
   if (c.loyaltyRewardInterval === undefined) c.loyaltyRewardInterval = 15;
   if (c.loyaltyRewardCoins === undefined) c.loyaltyRewardCoins = 50;
   if (c.loyaltyRewardPokeballs === undefined) c.loyaltyRewardPokeballs = 5;
+  if (c.loyaltyRewardGreatballs === undefined) c.loyaltyRewardGreatballs = 0;
+  if (c.loyaltyRewardUltraballs === undefined) c.loyaltyRewardUltraballs = 0;
+  if (c.loyaltyRewardMasterballs === undefined) c.loyaltyRewardMasterballs = 0;
   return c;
 }
 
@@ -217,7 +220,8 @@ async function runAutoMigrations() {
       ADD COLUMN IF NOT EXISTS masterballs INTEGER DEFAULT 0,
       ADD COLUMN IF NOT EXISTS buddy_instance_id VARCHAR(50) DEFAULT NULL,
       ADD COLUMN IF NOT EXISTS items JSONB DEFAULT '{}',
-      ADD COLUMN IF NOT EXISTS gym_badges JSONB DEFAULT '[]';
+      ADD COLUMN IF NOT EXISTS gym_badges JSONB DEFAULT '[]',
+      ADD COLUMN IF NOT EXISTS loyalty_active_minutes INTEGER DEFAULT 0;
     `);
 
     // Add columns to streamer_configs table
@@ -320,7 +324,10 @@ async function runAutoMigrations() {
       ADD COLUMN IF NOT EXISTS buddy_chat_duration INTEGER DEFAULT 15,
       ADD COLUMN IF NOT EXISTS loyalty_reward_interval INTEGER DEFAULT 15,
       ADD COLUMN IF NOT EXISTS loyalty_reward_coins INTEGER DEFAULT 50,
-      ADD COLUMN IF NOT EXISTS loyalty_reward_pokeballs INTEGER DEFAULT 5;
+      ADD COLUMN IF NOT EXISTS loyalty_reward_pokeballs INTEGER DEFAULT 5,
+      ADD COLUMN IF NOT EXISTS loyalty_reward_greatballs INTEGER DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS loyalty_reward_ultraballs INTEGER DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS loyalty_reward_masterballs INTEGER DEFAULT 0;
     `);
 
     // Add columns to inventories table
@@ -530,7 +537,8 @@ async function getUser(streamerId, username, displayName = null) {
           inventory: [],
           activePokemonId: null,
           lastCatchAttempt: 0,
-          lastDaily: 0
+          lastDaily: 0,
+          loyaltyActiveMinutes: 0
         };
       }
       saveLocalUsers();
@@ -727,7 +735,8 @@ async function getUser(streamerId, username, displayName = null) {
     items: dbUser.items || {},
     gymBadges: dbUser.gym_badges || [],
     lastCatchAttempt: Number(dbUser.last_catch_attempt),
-    lastDaily: Number(dbUser.last_daily)
+    lastDaily: Number(dbUser.last_daily),
+    loyaltyActiveMinutes: dbUser.loyalty_active_minutes !== null && dbUser.loyalty_active_minutes !== undefined ? Number(dbUser.loyalty_active_minutes) : 0
   };
 }
 
@@ -747,12 +756,13 @@ async function saveUser(streamerId, user) {
   
   // PostgreSQL version
   await query(
-    `UPDATE players 
+    `ALTER TABLE players ADD COLUMN IF NOT EXISTS loyalty_active_minutes INTEGER DEFAULT 0;
+     UPDATE players 
      SET display_name = $1, pokeballs = $2, greatballs = $3, ultraballs = $4, masterballs = $5,
          coins = $6, xp = $7, level = $8, buddy_instance_id = $9,
          active_pokemon_id = $10, last_daily = $11, last_catch_attempt = $12,
-         items = $13, gym_badges = $14
-     WHERE streamer_id = $15 AND username = $16`,
+         items = $13, gym_badges = $14, loyalty_active_minutes = $15
+     WHERE streamer_id = $16 AND username = $17`,
     [
       user.displayName, 
       user.balls.pokeball, 
@@ -768,6 +778,7 @@ async function saveUser(streamerId, user) {
       BigInt(user.lastCatchAttempt),
       JSON.stringify(user.items || {}),
       JSON.stringify(user.gymBadges || []),
+      user.loyaltyActiveMinutes || 0,
       streamer, 
       key
     ]
@@ -1205,7 +1216,10 @@ async function getStreamerConfig(streamerId) {
         buddyChatDuration: 15,
         loyaltyRewardInterval: 15,
         loyaltyRewardCoins: 50,
-        loyaltyRewardPokeballs: 5
+        loyaltyRewardPokeballs: 5,
+        loyaltyRewardGreatballs: 0,
+        loyaltyRewardUltraballs: 0,
+        loyaltyRewardMasterballs: 0
       };
       saveLocalConfigs();
     } else {
@@ -1470,7 +1484,10 @@ async function getStreamerConfig(streamerId) {
     buddyChatDuration: row.buddy_chat_duration !== null && row.buddy_chat_duration !== undefined ? Number(row.buddy_chat_duration) : 15,
     loyaltyRewardInterval: row.loyalty_reward_interval !== null && row.loyalty_reward_interval !== undefined ? Number(row.loyalty_reward_interval) : 15,
     loyaltyRewardCoins: row.loyalty_reward_coins !== null && row.loyalty_reward_coins !== undefined ? Number(row.loyalty_reward_coins) : 50,
-    loyaltyRewardPokeballs: row.loyalty_reward_pokeballs !== null && row.loyalty_reward_pokeballs !== undefined ? Number(row.loyalty_reward_pokeballs) : 5
+    loyaltyRewardPokeballs: row.loyalty_reward_pokeballs !== null && row.loyalty_reward_pokeballs !== undefined ? Number(row.loyalty_reward_pokeballs) : 5,
+    loyaltyRewardGreatballs: row.loyalty_reward_greatballs !== null && row.loyalty_reward_greatballs !== undefined ? Number(row.loyalty_reward_greatballs) : 0,
+    loyaltyRewardUltraballs: row.loyalty_reward_ultraballs !== null && row.loyalty_reward_ultraballs !== undefined ? Number(row.loyalty_reward_ultraballs) : 0,
+    loyaltyRewardMasterballs: row.loyalty_reward_masterballs !== null && row.loyalty_reward_masterballs !== undefined ? Number(row.loyalty_reward_masterballs) : 0
   };
 }
 
@@ -1535,8 +1552,11 @@ async function saveStreamerConfig(streamerId, config) {
          buddy_chat_duration = $117,
          loyalty_reward_interval = $118,
          loyalty_reward_coins = $119,
-         loyalty_reward_pokeballs = $120
-     WHERE channel_id = $121`,
+         loyalty_reward_pokeballs = $120,
+         loyalty_reward_greatballs = $121,
+         loyalty_reward_ultraballs = $122,
+         loyalty_reward_masterballs = $123
+     WHERE channel_id = $124`,
     [
       config.videoId || '',
       config.spawnIntervalMs,
@@ -1658,6 +1678,9 @@ async function saveStreamerConfig(streamerId, config) {
       config.loyaltyRewardInterval !== undefined ? config.loyaltyRewardInterval : 15,
       config.loyaltyRewardCoins !== undefined ? config.loyaltyRewardCoins : 50,
       config.loyaltyRewardPokeballs !== undefined ? config.loyaltyRewardPokeballs : 5,
+      config.loyaltyRewardGreatballs !== undefined ? config.loyaltyRewardGreatballs : 0,
+      config.loyaltyRewardUltraballs !== undefined ? config.loyaltyRewardUltraballs : 0,
+      config.loyaltyRewardMasterballs !== undefined ? config.loyaltyRewardMasterballs : 0,
       streamer
     ]
   );

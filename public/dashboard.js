@@ -155,6 +155,9 @@ const levelUpUltraballsInput = document.getElementById('level-up-ultraballs');
 const loyaltyRewardIntervalInput = document.getElementById('loyalty-reward-interval');
 const loyaltyRewardCoinsInput = document.getElementById('loyalty-reward-coins');
 const loyaltyRewardPokeballsInput = document.getElementById('loyalty-reward-pokeballs');
+const loyaltyRewardGreatballsInput = document.getElementById('loyalty-reward-greatballs');
+const loyaltyRewardUltraballsInput = document.getElementById('loyalty-reward-ultraballs');
+const loyaltyRewardMasterballsInput = document.getElementById('loyalty-reward-masterballs');
 const catchMultiplierPokeballInput = document.getElementById('catch-multiplier-pokeball');
 const catchMultiplierGreatballInput = document.getElementById('catch-multiplier-greatball');
 const catchMultiplierUltraballInput = document.getElementById('catch-multiplier-ultraball');
@@ -376,6 +379,9 @@ function populateConfig(config) {
   loyaltyRewardIntervalInput.value = config.loyaltyRewardInterval !== undefined ? config.loyaltyRewardInterval : 15;
   loyaltyRewardCoinsInput.value = config.loyaltyRewardCoins !== undefined ? config.loyaltyRewardCoins : 50;
   loyaltyRewardPokeballsInput.value = config.loyaltyRewardPokeballs !== undefined ? config.loyaltyRewardPokeballs : 5;
+  loyaltyRewardGreatballsInput.value = config.loyaltyRewardGreatballs !== undefined ? config.loyaltyRewardGreatballs : 0;
+  loyaltyRewardUltraballsInput.value = config.loyaltyRewardUltraballs !== undefined ? config.loyaltyRewardUltraballs : 0;
+  loyaltyRewardMasterballsInput.value = config.loyaltyRewardMasterballs !== undefined ? config.loyaltyRewardMasterballs : 0;
   catchMultiplierPokeballInput.value = config.catchMultiplierPokeball !== undefined ? config.catchMultiplierPokeball : 1.0;
   catchMultiplierGreatballInput.value = config.catchMultiplierGreatball !== undefined ? config.catchMultiplierGreatball : 1.5;
   catchMultiplierUltraballInput.value = config.catchMultiplierUltraball !== undefined ? config.catchMultiplierUltraball : 2.0;
@@ -524,6 +530,9 @@ function compileConfigObject() {
     loyaltyRewardInterval: parseInt(loyaltyRewardIntervalInput.value, 10) || 15,
     loyaltyRewardCoins: parseInt(loyaltyRewardCoinsInput.value, 10) || 50,
     loyaltyRewardPokeballs: parseInt(loyaltyRewardPokeballsInput.value, 10) || 5,
+    loyaltyRewardGreatballs: parseInt(loyaltyRewardGreatballsInput.value, 10) || 0,
+    loyaltyRewardUltraballs: parseInt(loyaltyRewardUltraballsInput.value, 10) || 0,
+    loyaltyRewardMasterballs: parseInt(loyaltyRewardMasterballsInput.value, 10) || 0,
     catchMultiplierPokeball: parseFloat(catchMultiplierPokeballInput.value),
     catchMultiplierGreatball: parseFloat(catchMultiplierGreatballInput.value),
     catchMultiplierUltraball: parseFloat(catchMultiplierUltraballInput.value),
