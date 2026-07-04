@@ -935,7 +935,7 @@ const viewerDbBody = document.getElementById('viewer-db-body');
 
 let cachedPlayersList = [];
 
-// Tab click actions
+// Tab click actions & persistence
 function deactivateAllTabs() {
   [btnTabConsole, btnTabSettings, btnTabViewers].forEach(btn => {
     if (btn) {
@@ -949,42 +949,60 @@ function deactivateAllTabs() {
   });
 }
 
-if (btnTabConsole) {
-  btnTabConsole.addEventListener('click', () => {
-    deactivateAllTabs();
+function activateMainTab(tabName) {
+  deactivateAllTabs();
+  if (tabName === 'console' && btnTabConsole && mainConsoleView) {
     btnTabConsole.classList.add('active');
     btnTabConsole.style.background = 'var(--color-primary)';
     btnTabConsole.style.color = '#fff';
-    if (mainConsoleView) mainConsoleView.classList.remove('hidden');
-  });
-}
-
-if (btnTabSettings) {
-  btnTabSettings.addEventListener('click', () => {
-    deactivateAllTabs();
+    mainConsoleView.classList.remove('hidden');
+  } else if (tabName === 'settings' && btnTabSettings && mainSettingsView) {
     btnTabSettings.classList.add('active');
     btnTabSettings.style.background = 'var(--color-primary)';
     btnTabSettings.style.color = '#fff';
-    if (mainSettingsView) mainSettingsView.classList.remove('hidden');
-  });
-}
-
-if (btnTabViewers) {
-  btnTabViewers.addEventListener('click', () => {
-    deactivateAllTabs();
+    mainSettingsView.classList.remove('hidden');
+  } else if (tabName === 'viewers' && btnTabViewers && mainViewersView) {
     btnTabViewers.classList.add('active');
     btnTabViewers.style.background = 'var(--color-primary)';
     btnTabViewers.style.color = '#fff';
-    if (mainViewersView) mainViewersView.classList.remove('hidden');
-    
-    // Trigger socket load
+    mainViewersView.classList.remove('hidden');
     socket.emit('get_all_players', { password: adminPassword });
-  });
+  }
+  localStorage.setItem('activeMainTab', tabName);
 }
+
+if (btnTabConsole) {
+  btnTabConsole.addEventListener('click', () => activateMainTab('console'));
+}
+if (btnTabSettings) {
+  btnTabSettings.addEventListener('click', () => activateMainTab('settings'));
+}
+if (btnTabViewers) {
+  btnTabViewers.addEventListener('click', () => activateMainTab('viewers'));
+}
+
+// Restore saved main tab on page load
+const savedMainTab = localStorage.getItem('activeMainTab') || 'console';
+activateMainTab(savedMainTab);
 
 // Settings Inner Tab Navigation (Vertical sidebar tabs)
 const configTabBtns = document.querySelectorAll('.config-tab-btn');
 const configTabPanels = document.querySelectorAll('.config-tab-panel');
+
+// Load active tab from localStorage if present
+const savedTab = localStorage.getItem('activeConfigTab');
+if (savedTab) {
+  const activeBtn = Array.from(configTabBtns).find(btn => btn.getAttribute('data-panel') === savedTab);
+  if (activeBtn) {
+    configTabBtns.forEach(b => b.classList.remove('active'));
+    configTabPanels.forEach(p => p.classList.remove('active'));
+    activeBtn.classList.add('active');
+    const targetPanel = document.getElementById(savedTab);
+    if (targetPanel) {
+      targetPanel.classList.add('active');
+    }
+  }
+}
 
 configTabBtns.forEach(btn => {
   btn.addEventListener('click', () => {
@@ -1001,6 +1019,9 @@ configTabBtns.forEach(btn => {
     if (targetPanel) {
       targetPanel.classList.add('active');
     }
+    
+    // Save active tab to localStorage
+    localStorage.setItem('activeConfigTab', targetPanelId);
   });
 });
 
