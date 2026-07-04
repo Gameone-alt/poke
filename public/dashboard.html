@@ -828,10 +828,10 @@
               </div>
 
               <!-- Side-by-side: Canvas (left) + Sidebar (right) -->
-              <div style="display: flex; gap: 15px; align-items: flex-start;">
+              <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start;">
                 
                 <!-- LEFT: Screen Preview Box (16:9 Aspect Ratio) -->
-                <div style="flex: 1; min-width: 0;">
+                <div style="width: 720px; flex-shrink: 0;">
                   <div id="layout-screen-preview" style="position: relative; width: 720px; height: 405px; background: #0b0f19; border: 2px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); flex-shrink: 0;">
                     <!-- Grid Lines Backdrop -->
                     <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px); background-size: 20px 20px; pointer-events: none;"></div>
@@ -882,7 +882,7 @@
                 </div>
 
                 <!-- RIGHT: Sidebar Config -->
-                <div id="layout-sidebar-config" style="width: 280px; flex-shrink: 0; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; max-height: 500px; overflow-y: auto;">
+                <div id="layout-sidebar-config" style="width: 280px; flex-shrink: 0; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; min-height: 405px; max-height: 500px; overflow-y: auto;">
                   <!-- No widget selected state -->
                   <div id="sidebar-no-selection" style="text-align: center; color: var(--text-muted); padding: 30px 10px;">
                     <div style="font-size: 28px; margin-bottom: 10px;">👈</div>
