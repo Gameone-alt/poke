@@ -1186,7 +1186,8 @@ async function processCommand(channelId, username, displayName, messageText, bas
               spriteUrl,
               fallbackSpriteUrl,
               shiny: isShiny,
-              duration: session.config.buddyChatDuration || 15
+              duration: session.config.buddyChatDuration || 15,
+              scale: session.config.buddyRoamerScale || 1.0
             });
           }
         }

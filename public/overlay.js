@@ -2155,13 +2155,15 @@ socket.on('chat_buddy_roam', (data) => {
   if (!container) return;
 
   const duration = data.duration || 15;
+  const roamerScale = data.scale || 1.0;
 
   // If already roaming, reset their timers and start a new walk sequence
   if (activeRoamerElements.has(data.username)) {
     const existing = activeRoamerElements.get(data.username);
+    existing.dataset.scale = roamerScale;
     
     // Pulse nudge to show activity
-    gsap.to(existing, { scale: 1.15, duration: 0.15, yoyo: true, repeat: 1 });
+    gsap.to(existing, { scale: roamerScale * 1.15, duration: 0.15, yoyo: true, repeat: 1 });
     
     // Clear old dismiss timer
     const oldTimeout = activeRoamerTimeouts.get(data.username);
@@ -2184,8 +2186,8 @@ socket.on('chat_buddy_roam', (data) => {
       const direction = Math.random() < 0.5 ? -1 : 1;
       const distance = 5 + Math.random() * 15;
       let nextPos = currentPos + direction * distance;
-      if (nextPos < 5) nextPos = 5 + Math.random() * 10;
-      else if (nextPos > 85) nextPos = 85 - Math.random() * 10;
+      if (nextPos < 1) nextPos = 1 + Math.random() * 10;
+      else if (nextPos > 95) nextPos = 95 - Math.random() * 10;
       
       const walkDirection = nextPos > currentPos ? 1 : -1;
       tl.to(img, { scaleX: walkDirection, duration: 0.1 }, i * 3);
@@ -2216,8 +2218,9 @@ socket.on('chat_buddy_roam', (data) => {
 
   const roamer = document.createElement('div');
   roamer.className = 'roaming-buddy-container';
+  roamer.dataset.scale = roamerScale;
   
-  const spawnLeft = 5 + Math.random() * 80;
+  const spawnLeft = 2 + Math.random() * 91;
   roamer.style.left = `${spawnLeft}%`;
   
   const img = document.createElement('img');
@@ -2234,7 +2237,7 @@ socket.on('chat_buddy_roam', (data) => {
   container.appendChild(roamer);
   activeRoamerElements.set(data.username, roamer);
   
-  gsap.fromTo(roamer, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' });
+  gsap.fromTo(roamer, { scale: 0, opacity: 0 }, { scale: roamerScale, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' });
   
   const tl = gsap.timeline({ defaults: { ease: 'power1.inOut' } });
   activeRoamerTimelines.set(data.username, tl);
@@ -2247,10 +2250,10 @@ socket.on('chat_buddy_roam', (data) => {
     const distance = 5 + Math.random() * 15;
     let nextPos = currentPos + direction * distance;
     
-    if (nextPos < 5) {
-      nextPos = 5 + Math.random() * 10;
-    } else if (nextPos > 85) {
-      nextPos = 85 - Math.random() * 10;
+    if (nextPos < 1) {
+      nextPos = 1 + Math.random() * 10;
+    } else if (nextPos > 95) {
+      nextPos = 95 - Math.random() * 10;
     }
     
     const walkDirection = nextPos > currentPos ? 1 : -1;
@@ -2284,6 +2287,7 @@ socket.on('chat_buddy_update', (data) => {
     const container = activeRoamerElements.get(data.username);
     const img = container.querySelector('.roaming-buddy-sprite');
     const label = container.querySelector('.roaming-buddy-label');
+    const roamerScale = parseFloat(container.dataset.scale) || 1.0;
     
     // Smooth swap animation: scale down, change src, scale back up
     gsap.to(container, {
@@ -2298,7 +2302,7 @@ socket.on('chat_buddy_update', (data) => {
           const displayName = label.textContent.split(':')[0] || data.username;
           label.textContent = `${displayName}: ${data.pokemonName}`;
         }
-        gsap.to(container, { scale: 1, duration: 0.4, ease: 'back.out(1.7)' });
+        gsap.to(container, { scale: roamerScale, duration: 0.4, ease: 'back.out(1.7)' });
       }
     });
   }

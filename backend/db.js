@@ -199,6 +199,7 @@ function migrateLocalConfig(c) {
   if (c.loyaltyRewardGreatballs === undefined) c.loyaltyRewardGreatballs = 0;
   if (c.loyaltyRewardUltraballs === undefined) c.loyaltyRewardUltraballs = 0;
   if (c.loyaltyRewardMasterballs === undefined) c.loyaltyRewardMasterballs = 0;
+  if (c.buddyRoamerScale === undefined) c.buddyRoamerScale = 1.0;
   return c;
 }
 
@@ -327,7 +328,8 @@ async function runAutoMigrations() {
       ADD COLUMN IF NOT EXISTS loyalty_reward_pokeballs INTEGER DEFAULT 5,
       ADD COLUMN IF NOT EXISTS loyalty_reward_greatballs INTEGER DEFAULT 0,
       ADD COLUMN IF NOT EXISTS loyalty_reward_ultraballs INTEGER DEFAULT 0,
-      ADD COLUMN IF NOT EXISTS loyalty_reward_masterballs INTEGER DEFAULT 0;
+      ADD COLUMN IF NOT EXISTS loyalty_reward_masterballs INTEGER DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS buddy_roamer_scale NUMERIC DEFAULT 1.0;
     `);
 
     // Add columns to inventories table
@@ -1219,7 +1221,8 @@ async function getStreamerConfig(streamerId) {
         loyaltyRewardPokeballs: 5,
         loyaltyRewardGreatballs: 0,
         loyaltyRewardUltraballs: 0,
-        loyaltyRewardMasterballs: 0
+        loyaltyRewardMasterballs: 0,
+        buddyRoamerScale: 1.0
       };
       saveLocalConfigs();
     } else {
@@ -1487,7 +1490,8 @@ async function getStreamerConfig(streamerId) {
     loyaltyRewardPokeballs: row.loyalty_reward_pokeballs !== null && row.loyalty_reward_pokeballs !== undefined ? Number(row.loyalty_reward_pokeballs) : 5,
     loyaltyRewardGreatballs: row.loyalty_reward_greatballs !== null && row.loyalty_reward_greatballs !== undefined ? Number(row.loyalty_reward_greatballs) : 0,
     loyaltyRewardUltraballs: row.loyalty_reward_ultraballs !== null && row.loyalty_reward_ultraballs !== undefined ? Number(row.loyalty_reward_ultraballs) : 0,
-    loyaltyRewardMasterballs: row.loyalty_reward_masterballs !== null && row.loyalty_reward_masterballs !== undefined ? Number(row.loyalty_reward_masterballs) : 0
+    loyaltyRewardMasterballs: row.loyalty_reward_masterballs !== null && row.loyalty_reward_masterballs !== undefined ? Number(row.loyalty_reward_masterballs) : 0,
+    buddyRoamerScale: row.buddy_roamer_scale !== null && row.buddy_roamer_scale !== undefined ? Number(row.buddy_roamer_scale) : 1.0
   };
 }
 
@@ -1555,8 +1559,9 @@ async function saveStreamerConfig(streamerId, config) {
          loyalty_reward_pokeballs = $120,
          loyalty_reward_greatballs = $121,
          loyalty_reward_ultraballs = $122,
-         loyalty_reward_masterballs = $123
-     WHERE channel_id = $124`,
+         loyalty_reward_masterballs = $123,
+         buddy_roamer_scale = $124
+     WHERE channel_id = $125`,
     [
       config.videoId || '',
       config.spawnIntervalMs,
@@ -1681,6 +1686,7 @@ async function saveStreamerConfig(streamerId, config) {
       config.loyaltyRewardGreatballs !== undefined ? config.loyaltyRewardGreatballs : 0,
       config.loyaltyRewardUltraballs !== undefined ? config.loyaltyRewardUltraballs : 0,
       config.loyaltyRewardMasterballs !== undefined ? config.loyaltyRewardMasterballs : 0,
+      config.buddyRoamerScale !== undefined ? config.buddyRoamerScale : 1.0,
       streamer
     ]
   );
