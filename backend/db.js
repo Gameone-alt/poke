@@ -201,6 +201,7 @@ function migrateLocalConfig(c) {
   if (c.loyaltyRewardMasterballs === undefined) c.loyaltyRewardMasterballs = 0;
   if (c.buddyRoamerScale === undefined) c.buddyRoamerScale = 1.0;
   if (c.tradeTimeoutSeconds === undefined) c.tradeTimeoutSeconds = 60;
+  if (c.dailyBattleLimit === undefined) c.dailyBattleLimit = 5;
   return c;
 }
 
@@ -223,7 +224,9 @@ async function runAutoMigrations() {
       ADD COLUMN IF NOT EXISTS buddy_instance_id VARCHAR(50) DEFAULT NULL,
       ADD COLUMN IF NOT EXISTS items JSONB DEFAULT '{}',
       ADD COLUMN IF NOT EXISTS gym_badges JSONB DEFAULT '[]',
-      ADD COLUMN IF NOT EXISTS loyalty_active_minutes INTEGER DEFAULT 0;
+      ADD COLUMN IF NOT EXISTS loyalty_active_minutes INTEGER DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS daily_battle_count INTEGER DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS last_battle_date VARCHAR(10) DEFAULT '';
     `);
 
     // Add columns to streamer_configs table
@@ -331,7 +334,8 @@ async function runAutoMigrations() {
       ADD COLUMN IF NOT EXISTS loyalty_reward_ultraballs INTEGER DEFAULT 0,
       ADD COLUMN IF NOT EXISTS loyalty_reward_masterballs INTEGER DEFAULT 0,
       ADD COLUMN IF NOT EXISTS buddy_roamer_scale NUMERIC DEFAULT 1.0,
-      ADD COLUMN IF NOT EXISTS trade_timeout_seconds INTEGER DEFAULT 60;
+      ADD COLUMN IF NOT EXISTS trade_timeout_seconds INTEGER DEFAULT 60,
+      ADD COLUMN IF NOT EXISTS daily_battle_limit INTEGER DEFAULT 5;
     `);
 
     // Add columns to inventories table
@@ -542,7 +546,9 @@ async function getUser(streamerId, username, displayName = null) {
           activePokemonId: null,
           lastCatchAttempt: 0,
           lastDaily: 0,
-          loyaltyActiveMinutes: 0
+          loyaltyActiveMinutes: 0,
+          dailyBattleCount: 0,
+          lastBattleDate: ''
         };
       }
       saveLocalUsers();
@@ -740,7 +746,9 @@ async function getUser(streamerId, username, displayName = null) {
     gymBadges: dbUser.gym_badges || [],
     lastCatchAttempt: Number(dbUser.last_catch_attempt),
     lastDaily: Number(dbUser.last_daily),
-    loyaltyActiveMinutes: dbUser.loyalty_active_minutes !== null && dbUser.loyalty_active_minutes !== undefined ? Number(dbUser.loyalty_active_minutes) : 0
+    loyaltyActiveMinutes: dbUser.loyalty_active_minutes !== null && dbUser.loyalty_active_minutes !== undefined ? Number(dbUser.loyalty_active_minutes) : 0,
+    dailyBattleCount: dbUser.daily_battle_count !== null && dbUser.daily_battle_count !== undefined ? Number(dbUser.daily_battle_count) : 0,
+    lastBattleDate: dbUser.last_battle_date || ''
   };
 }
 
@@ -764,8 +772,8 @@ async function saveUser(streamerId, user) {
      SET display_name = $1, pokeballs = $2, greatballs = $3, ultraballs = $4, masterballs = $5,
          coins = $6, xp = $7, level = $8, buddy_instance_id = $9,
          active_pokemon_id = $10, last_daily = $11, last_catch_attempt = $12,
-         items = $13, gym_badges = $14, loyalty_active_minutes = $15
-     WHERE streamer_id = $16 AND username = $17`,
+         items = $13, gym_badges = $14, loyalty_active_minutes = $15, daily_battle_count = $16, last_battle_date = $17
+     WHERE streamer_id = $18 AND username = $19`,
     [
       user.displayName, 
       user.balls.pokeball, 
@@ -782,6 +790,8 @@ async function saveUser(streamerId, user) {
       JSON.stringify(user.items || {}),
       JSON.stringify(user.gymBadges || []),
       user.loyaltyActiveMinutes || 0,
+      user.dailyBattleCount || 0,
+      user.lastBattleDate || '',
       streamer, 
       key
     ]
@@ -1224,7 +1234,8 @@ async function getStreamerConfig(streamerId) {
         loyaltyRewardUltraballs: 0,
         loyaltyRewardMasterballs: 0,
         buddyRoamerScale: 1.0,
-        tradeTimeoutSeconds: 60
+        tradeTimeoutSeconds: 60,
+        dailyBattleLimit: 5
       };
       saveLocalConfigs();
     } else {
@@ -1494,7 +1505,8 @@ async function getStreamerConfig(streamerId) {
     loyaltyRewardUltraballs: row.loyalty_reward_ultraballs !== null && row.loyalty_reward_ultraballs !== undefined ? Number(row.loyalty_reward_ultraballs) : 0,
     loyaltyRewardMasterballs: row.loyalty_reward_masterballs !== null && row.loyalty_reward_masterballs !== undefined ? Number(row.loyalty_reward_masterballs) : 0,
     buddyRoamerScale: row.buddy_roamer_scale !== null && row.buddy_roamer_scale !== undefined ? Number(row.buddy_roamer_scale) : 1.0,
-    tradeTimeoutSeconds: row.trade_timeout_seconds !== null && row.trade_timeout_seconds !== undefined ? Number(row.trade_timeout_seconds) : 60
+    tradeTimeoutSeconds: row.trade_timeout_seconds !== null && row.trade_timeout_seconds !== undefined ? Number(row.trade_timeout_seconds) : 60,
+    dailyBattleLimit: row.daily_battle_limit !== null && row.daily_battle_limit !== undefined ? Number(row.daily_battle_limit) : 5
   };
 }
 
@@ -1563,8 +1575,9 @@ async function saveStreamerConfig(streamerId, config) {
          loyalty_reward_ultraballs = $122,
          loyalty_reward_masterballs = $123,
          buddy_roamer_scale = $124,
-         trade_timeout_seconds = $125
-     WHERE channel_id = $126`,
+         trade_timeout_seconds = $125,
+         daily_battle_limit = $126
+     WHERE channel_id = $127`,
     [
       config.videoId || '',
       config.spawnIntervalMs,
@@ -1691,6 +1704,7 @@ async function saveStreamerConfig(streamerId, config) {
       config.loyaltyRewardMasterballs !== undefined ? config.loyaltyRewardMasterballs : 0,
       config.buddyRoamerScale !== undefined ? config.buddyRoamerScale : 1.0,
       config.tradeTimeoutSeconds !== undefined ? config.tradeTimeoutSeconds : 60,
+      config.dailyBattleLimit !== undefined ? config.dailyBattleLimit : 5,
       streamer
     ]
   );

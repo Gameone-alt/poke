@@ -1420,6 +1420,20 @@ async function processCommand(channelId, username, displayName, messageText, bas
     const pokemonQuery = parts.slice(2).join(' ').toLowerCase().trim();
 
     const challenger = await db.getUser(channelId, username, displayName);
+    
+    // Check daily battle limit for challenger
+    const limit = session.config.dailyBattleLimit !== undefined ? Number(session.config.dailyBattleLimit) : 5;
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (challenger.lastBattleDate !== todayStr) {
+      challenger.dailyBattleCount = 0;
+      challenger.lastBattleDate = todayStr;
+    }
+    if (challenger.dailyBattleCount >= limit) {
+      const msg = `❌ @${displayName}, you have already reached your daily limit of ${limit} battles for today!`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+
     const foundPokeA = challenger.inventory.find(p => 
       p.name.toLowerCase().replace('✨ shiny ', '') === pokemonQuery || 
       p.originalName.toLowerCase() === pokemonQuery
@@ -1450,6 +1464,11 @@ async function processCommand(channelId, username, displayName, messageText, bas
         io.to(channelId).emit('command_feedback', { username, text: msg });
         return msg;
       }
+      
+      // Increment and save challenger battle count
+      challenger.dailyBattleCount++;
+      await db.saveUser(channelId, challenger);
+      
       const resultMessage = await new Promise((resolve) => {
         runBattle(channelId, { username, displayName, pokemonInstanceId: foundPokeA.instanceId }, 'wild', resolve);
       });
@@ -1466,6 +1485,18 @@ async function processCommand(channelId, username, displayName, messageText, bas
 
     if (targetUser.username === challenger.username) {
       const msg = `❌ @${displayName}, you cannot fight yourself!`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+
+    // Check opponent's daily limit
+    const opponentProfile = await db.getUser(channelId, targetUser.username, targetUser.displayName);
+    if (opponentProfile.lastBattleDate !== todayStr) {
+      opponentProfile.dailyBattleCount = 0;
+      opponentProfile.lastBattleDate = todayStr;
+    }
+    if (opponentProfile.dailyBattleCount >= limit) {
+      const msg = `❌ @${displayName}, @${targetUser.displayName} has already reached their daily limit of ${limit} battles for today!`;
       io.to(channelId).emit('command_feedback', { username, text: msg });
       return msg;
     }
@@ -1529,6 +1560,32 @@ async function processCommand(channelId, username, displayName, messageText, bas
     const pokemonQuery = parts.slice(1).join(' ').toLowerCase().trim();
 
     const opponentUser = await db.getUser(channelId, username, displayName);
+    
+    // Check daily battle limit for opponent (accepting user)
+    const limit = session.config.dailyBattleLimit !== undefined ? Number(session.config.dailyBattleLimit) : 5;
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (opponentUser.lastBattleDate !== todayStr) {
+      opponentUser.dailyBattleCount = 0;
+      opponentUser.lastBattleDate = todayStr;
+    }
+    if (opponentUser.dailyBattleCount >= limit) {
+      const msg = `❌ @${displayName}, you have already reached your daily limit of ${limit} battles for today!`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+
+    // Check daily battle limit for challenger again (to be safe)
+    const challengerUser = await db.getUser(channelId, session.activeChallenge.challenger.username, session.activeChallenge.challenger.displayName);
+    if (challengerUser.lastBattleDate !== todayStr) {
+      challengerUser.dailyBattleCount = 0;
+      challengerUser.lastBattleDate = todayStr;
+    }
+    if (challengerUser.dailyBattleCount >= limit) {
+      const msg = `❌ @${displayName}, challenge failed: @${challengerUser.displayName} has already reached their daily limit of ${limit} battles for today!`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+
     const foundPokeB = opponentUser.inventory.find(p => 
       p.name.toLowerCase().replace('✨ shiny ', '') === pokemonQuery || 
       p.originalName.toLowerCase() === pokemonQuery
@@ -1553,6 +1610,13 @@ async function processCommand(channelId, username, displayName, messageText, bas
     }
 
     clearTimeout(session.activeChallenge.timeoutId);
+    
+    // Increment and save daily battle counts
+    opponentUser.dailyBattleCount++;
+    await db.saveUser(channelId, opponentUser);
+    
+    challengerUser.dailyBattleCount++;
+    await db.saveUser(channelId, challengerUser);
     
     const challenger = session.activeChallenge.challenger;
     const opponent = {

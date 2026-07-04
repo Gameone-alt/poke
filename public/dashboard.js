@@ -191,6 +191,7 @@ const raidRewardXpInput = document.getElementById('raid-reward-xp');
 const raidDropStoneChanceInput = document.getElementById('raid-drop-stone-chance');
 const battleAcceptTimeoutInput = document.getElementById('battle-accept-timeout');
 const tradeTimeoutInput = document.getElementById('trade-timeout');
+const dailyBattleLimitInput = document.getElementById('daily-battle-limit');
 const streamDelayInput = document.getElementById('stream-delay');
 
 // Spawn Card Specific Elements
@@ -418,6 +419,7 @@ function populateConfig(config) {
   raidDropStoneChanceInput.value = config.raidDropStoneChance !== undefined ? Math.round(config.raidDropStoneChance * 100) : 15;
   battleAcceptTimeoutInput.value = config.battleAcceptTimeoutSeconds !== undefined ? config.battleAcceptTimeoutSeconds : 30;
   tradeTimeoutInput.value = config.tradeTimeoutSeconds !== undefined ? config.tradeTimeoutSeconds : 60;
+  dailyBattleLimitInput.value = config.dailyBattleLimit !== undefined ? config.dailyBattleLimit : 5;
   streamDelayInput.value = config.streamDelaySeconds !== undefined ? config.streamDelaySeconds : 0;
   
   // Set layout editor scale labels
@@ -567,6 +569,7 @@ function compileConfigObject() {
     raidDropStoneChance: parseFloat(raidDropStoneChanceInput.value) / 100,
     battleAcceptTimeoutSeconds: parseInt(battleAcceptTimeoutInput.value, 10),
     tradeTimeoutSeconds: parseInt(tradeTimeoutInput.value, 10) || 60,
+    dailyBattleLimit: parseInt(dailyBattleLimitInput.value, 10) || 5,
     streamDelaySeconds: parseInt(streamDelayInput.value, 10),
     showLiveFeed: widgetSidebarState['drag-feed'] ? widgetSidebarState['drag-feed'].show : true,
     liveFeedTitle: liveFeedTitleInput.value.trim(),
