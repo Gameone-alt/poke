@@ -2278,3 +2278,53 @@ socket.on('chat_buddy_roam', (data) => {
   
   activeRoamerTimeouts.set(data.username, timeoutId);
 });
+
+socket.on('chat_buddy_update', (data) => {
+  if (activeRoamerElements.has(data.username)) {
+    const container = activeRoamerElements.get(data.username);
+    const img = container.querySelector('.roaming-buddy-sprite');
+    const label = container.querySelector('.roaming-buddy-label');
+    
+    // Smooth swap animation: scale down, change src, scale back up
+    gsap.to(container, {
+      scale: 0,
+      duration: 0.3,
+      onComplete: () => {
+        if (img) {
+          img.src = getSafeSprite(data.spriteUrl, data.fallbackSpriteUrl);
+          img.onerror = () => { img.src = data.fallbackSpriteUrl; };
+        }
+        if (label) {
+          const displayName = label.textContent.split(':')[0] || data.username;
+          label.textContent = `${displayName}: ${data.pokemonName}`;
+        }
+        gsap.to(container, { scale: 1, duration: 0.4, ease: 'back.out(1.7)' });
+      }
+    });
+  }
+});
+
+socket.on('chat_buddy_remove', (data) => {
+  if (activeRoamerElements.has(data.username)) {
+    const container = activeRoamerElements.get(data.username);
+    
+    const timeout = activeRoamerTimeouts.get(data.username);
+    if (timeout) clearTimeout(timeout);
+    activeRoamerTimeouts.delete(data.username);
+    
+    const timeline = activeRoamerTimelines.get(data.username);
+    if (timeline) timeline.kill();
+    activeRoamerTimelines.delete(data.username);
+    
+    gsap.to(container, {
+      scale: 0,
+      opacity: 0,
+      duration: 0.5,
+      ease: 'back.in(1.7)',
+      onComplete: () => {
+        container.remove();
+        activeRoamerElements.delete(data.username);
+      }
+    });
+  }
+});

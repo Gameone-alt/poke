@@ -2331,6 +2331,10 @@ async function processCommand(channelId, username, displayName, messageText, bas
     if (query === 'none' || query === 'clear' || query === 'remove') {
       user.buddyInstanceId = null;
       await db.saveUser(channelId, user);
+      
+      // Emit roamer overlay update
+      io.to(channelId).emit('chat_buddy_remove', { username });
+
       const msg = `✅ @${displayName} cleared their companion buddy Pokémon.`;
       io.to(channelId).emit('command_feedback', { username, text: msg });
       return msg;
@@ -2350,6 +2354,21 @@ async function processCommand(channelId, username, displayName, messageText, bas
 
     user.buddyInstanceId = found.instanceId;
     await db.saveUser(channelId, user);
+
+    // Emit real-time buddy roamer update event
+    const basePoke = pokemonDb[found.pokemonId];
+    if (basePoke) {
+      const isShiny = found.shiny;
+      const spriteUrl = isShiny ? basePoke.shinySpriteUrl : basePoke.spriteUrl;
+      const fallbackSpriteUrl = isShiny ? basePoke.fallbackShinySpriteUrl : basePoke.fallbackSpriteUrl;
+      io.to(channelId).emit('chat_buddy_update', {
+        username,
+        pokemonName: found.name,
+        spriteUrl,
+        fallbackSpriteUrl,
+        shiny: isShiny
+      });
+    }
 
     const msg = `✨ @${displayName} set ${found.name} as their companion buddy Pokémon!`;
     sendGameLog(channelId, 'system', msg);
