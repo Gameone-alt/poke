@@ -2016,7 +2016,7 @@ async function processCommand(channelId, username, displayName, messageText, bas
     }
   }
 
-  // 8.7. Open-Market Trade System: !trade / !accept
+  // 8.7. Open-Market Trade System: !trade / !attacktrade
   if (cleanMsg.startsWith('!trade') || cleanMsg === 'trade') {
     const parts = messageText.trim().split(/\s+/);
     if (!session.tradeOffers) session.tradeOffers = {};
@@ -2024,7 +2024,7 @@ async function processCommand(channelId, username, displayName, messageText, bas
 
     if (parts.length < 2) {
       const offers = Object.keys(session.tradeOffers).map(u => `@${session.tradeOffers[u].displayName} (${session.tradeOffers[u].pokemon.name})`).join(', ');
-      const msg = offers ? `🤝 Active Trade Offers: ${offers}. Type '!trade [your_pokemon]' to offer one, or '!accept @player' to trade.` : `🤝 No active trade offers. Type '!trade [your_pokemon]' to put a Pokémon up for trade!`;
+      const msg = offers ? `🤝 Active Trade Offers: ${offers}. Type '!trade [your_pokemon]' to offer one, or '!attacktrade @player' to trade.` : `🤝 No active trade offers. Type '!trade [your_pokemon]' to put a Pokémon up for trade!`;
       io.to(channelId).emit('command_feedback', { username, text: msg });
       return msg;
     }
@@ -2033,42 +2033,43 @@ async function processCommand(channelId, username, displayName, messageText, bas
     if (query === 'cancel') {
       delete session.tradeOffers[username.toLowerCase()];
       delete session.tradeAcceptances[username.toLowerCase()];
-      const msg = `🤝 @${displayName}'s active trade offer has been cancelled.`;
+      const msg = `🤝 @${displayName} cancelled their trade offer.`;
       io.to(channelId).emit('command_feedback', { username, text: msg });
       return msg;
     }
-    
+
     const user = await db.getUser(channelId, username, displayName);
+    
+    // Search user inventory by name
     const foundPoke = user.inventory.find(p => 
       p.name.toLowerCase().replace('✨ shiny ', '') === query || 
-      p.originalName.toLowerCase() === query ||
-      p.pokemonId.toString() === query
+      p.originalName.toLowerCase() === query
     );
-    
+
     if (!foundPoke) {
       const msg = `❌ @${displayName}, you don't own a "${query}" to offer for trade!`;
       io.to(channelId).emit('command_feedback', { username, text: msg });
       return msg;
     }
-    
+
     session.tradeOffers[username.toLowerCase()] = {
-      pokemon: foundPoke,
-      displayName: displayName
+      username: username.toLowerCase(),
+      displayName,
+      pokemon: foundPoke
     };
-    delete session.tradeAcceptances[username.toLowerCase()];
-    
-    const msg = `🤝 @${displayName} is now offering their ${foundPoke.name} for trade! Type '!trade [your_pokemon]' to make an offer, or '!accept @${displayName}' to request an exchange.`;
+
+    const msg = `🤝 @${displayName} is now offering their ${foundPoke.name} for trade! Type '!trade [your_pokemon]' to make an offer, or '!attacktrade @${displayName}' to request an exchange.`;
     io.to(channelId).emit('command_feedback', { username, text: msg });
     return msg;
   }
 
-  if (cleanMsg.startsWith('!accept ') || cleanMsg.startsWith('accept ')) {
+  if (cleanMsg.startsWith('!attacktrade ') || cleanMsg.startsWith('attacktrade ') || cleanMsg.startsWith('!accepttrade ') || cleanMsg.startsWith('accepttrade ') || cleanMsg.startsWith('!accept ') || cleanMsg.startsWith('accept ')) {
     const parts = messageText.trim().split(/\s+/);
     if (!session.tradeOffers) session.tradeOffers = {};
     if (!session.tradeAcceptances) session.tradeAcceptances = {};
 
     if (parts.length < 2) {
-      const msg = `❌ @${displayName}, syntax: !accept @username`;
+      const msg = `❌ @${displayName}, syntax: !attacktrade @username`;
       io.to(channelId).emit('command_feedback', { username, text: msg });
       return msg;
     }
