@@ -658,16 +658,40 @@ async function getUser(streamerId, username, displayName = null) {
     res.rows[0].display_name = displayName;
   }
 
-  // Always sweep any remaining non-global inventories into global
-  // (handles users who already have a global record but still have orphaned channel inventories)
+  const cleanKey = key.replace(/^@/, '');
+  const keyWithAt = '@' + cleanKey;
+  const baseKey = cleanKey.replace(/\d+$/, '');
+
+  const knownUsernamesRes = await query(
+    `SELECT username, display_name FROM players 
+     WHERE LOWER(username) = $1 OR LOWER(username) = $2 OR LOWER(username) = $3
+        OR LOWER(display_name) = $1 OR LOWER(display_name) = $2 OR LOWER(display_name) = $3`,
+    [cleanKey, keyWithAt, baseKey]
+  );
+  
+  const userKeysSet = new Set([cleanKey, keyWithAt, baseKey]);
+  if (knownUsernamesRes && knownUsernamesRes.rows) {
+    for (const r of knownUsernamesRes.rows) {
+      if (r.username) userKeysSet.add(r.username.toLowerCase());
+      if (r.display_name) userKeysSet.add(r.display_name.toLowerCase());
+    }
+  }
+  const userKeys = Array.from(userKeysSet);
+
+  // Sweep all inventories belonging to any of these handle variations into global
   await query(
-    "UPDATE inventories SET streamer_id = 'global' WHERE streamer_id != 'global' AND username = $1",
-    [key]
+    `UPDATE inventories 
+     SET streamer_id = 'global', username = $1 
+     WHERE LOWER(username) = ANY($2)`,
+    [key, userKeys]
   );
   
   const invRes = await query(
-    'SELECT * FROM inventories WHERE streamer_id = $1 AND username = $2 ORDER BY caught_at ASC',
-    [streamer, key]
+    `SELECT * FROM inventories 
+     WHERE (LOWER(streamer_id) = 'global' OR streamer_id = $1)
+       AND (LOWER(username) = ANY($2) OR LOWER(username) = LOWER($3)) 
+     ORDER BY caught_at ASC`,
+    [streamer, userKeys, key]
   );
   
   const dbUser = res.rows[0];
