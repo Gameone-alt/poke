@@ -570,25 +570,47 @@ async function getUser(streamerId, username, displayName = null) {
   const baseKey = cleanKey.replace(/\d+$/, '');
 
   // 1. Search for ANY existing player record by username or display_name
+  // Sort 'global' records first to ensure we always load the unified player profile if it exists
   let res = await query(
     `SELECT * FROM players 
      WHERE LOWER(username) = $1 OR LOWER(username) = $2 OR LOWER(username) = $3
         OR LOWER(display_name) = $1 OR LOWER(display_name) = $2 OR LOWER(display_name) = $3
-     ORDER BY level DESC, xp DESC, coins DESC`,
+     ORDER BY CASE WHEN streamer_id = 'global' THEN 0 ELSE 1 END ASC, level DESC, xp DESC`,
     [cleanKey, keyWithAt, baseKey]
   );
 
   let dbUser;
   if (res.rows.length > 0) {
-    // Pick the best existing player record (highest level/XP/coins)
+    // Pick the best existing player record (global first, then highest level/XP)
     dbUser = res.rows[0];
     
     // Ensure this best player record is saved under streamer_id = 'global'
     if (dbUser.streamer_id !== 'global') {
-      await query(
-        "UPDATE players SET streamer_id = 'global' WHERE streamer_id = $1 AND username = $2",
-        [dbUser.streamer_id, dbUser.username]
-      );
+      try {
+        await query(
+          "UPDATE players SET streamer_id = 'global' WHERE streamer_id = $1 AND username = $2",
+          [dbUser.streamer_id, dbUser.username]
+        );
+      } catch (err) {
+        if (err.code === '23505') {
+          // If a global record already exists, update its stats with the duplicate record's stats and delete the duplicate
+          await query(
+            `UPDATE players 
+             SET level = $1, xp = $2, coins = $3, pokeballs = $4, greatballs = $5, ultraballs = $6, masterballs = $7,
+                 active_pokemon_id = $8, buddy_instance_id = $9, items = $10, gym_badges = $11
+             WHERE streamer_id = 'global' AND username = $12`,
+            [dbUser.level, dbUser.xp, dbUser.coins, dbUser.pokeballs, dbUser.greatballs, dbUser.ultraballs, dbUser.masterballs,
+             dbUser.active_pokemon_id, dbUser.buddy_instance_id, dbUser.items || '{}', dbUser.gym_badges || '[]', dbUser.username]
+          );
+          await query(
+            "DELETE FROM players WHERE streamer_id = $1 AND username = $2",
+            [dbUser.streamer_id, dbUser.username]
+          );
+        } else {
+          throw err;
+        }
+      }
+      dbUser.streamer_id = 'global';
     }
   } else {
     // Create new global player record
@@ -603,6 +625,16 @@ async function getUser(streamerId, username, displayName = null) {
       [cleanKey]
     );
     dbUser = res.rows[0];
+  }
+
+  // Ensure channel-specific dummy record exists so this player shows up on the streamer's dashboard
+  if (cleanStreamerId !== 'global') {
+    await query(
+      `INSERT INTO players (streamer_id, username, display_name, pokeballs, greatballs, ultraballs, masterballs, coins, xp, level)
+       VALUES ($1, $2, $3, 0, 0, 0, 0, 0, 0, 1)
+       ON CONFLICT (streamer_id, username) DO NOTHING`,
+      [cleanStreamerId, dbUser.username, dbUser.display_name]
+    );
   }
 
   // Update display_name if a new non-null displayName was provided
