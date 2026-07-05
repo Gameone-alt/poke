@@ -211,8 +211,9 @@ function migrateLocalConfig(c) {
 async function runAutoMigrations() {
   if (useLocalFallback || !pool) return;
   console.log('[Database] Checking schema auto-migrations...');
+  let client;
   try {
-    const client = await pool.connect();
+    client = await pool.connect();
     
     // Add columns to players table
     await client.query(`
@@ -346,11 +347,13 @@ async function runAutoMigrations() {
       ADD COLUMN IF NOT EXISTS last_battle_time BIGINT DEFAULT 0;
     `);
 
-    client.release();
     console.log('[Database] Auto-migrations check completed successfully.');
   } catch (err) {
-    console.error('[Database] Auto-migrations failed, falling back to local JSON database:', err.message);
-    useLocalFallback = true;
+    console.warn('[Database] Auto-migrations note/warning:', err.message);
+  } finally {
+    if (client) {
+      try { client.release(); } catch(e) {}
+    }
   }
 }
 
