@@ -413,45 +413,8 @@ async function query(text, params) {
  * Ensures that a player mapping record exists for the specific streamer channel.
  */
 async function ensureChannelPlayerExists(streamerId, username, displayName) {
-  const streamer = streamerId.toLowerCase().trim();
-  const key = username.toLowerCase().trim();
-  const compositeKey = `${streamer}_${key}`;
-
-  if (useLocalFallback) {
-    if (!localUsers[compositeKey]) {
-      localUsers[compositeKey] = {
-        username: key,
-        displayName: displayName || username,
-        balls: { pokeball: 10, greatball: 3, ultraball: 1, masterball: 0 },
-        coins: 100,
-        xp: 0,
-        level: 1,
-        buddyInstanceId: null,
-        items: { fire_stone: 0, water_stone: 0, thunder_stone: 0, leaf_stone: 0, moon_stone: 0 },
-        gymBadges: [],
-        inventory: [],
-        activePokemonId: null,
-        lastCatchAttempt: 0,
-        lastDaily: 0
-      };
-      saveLocalUsers();
-    }
-    return;
-  }
-
-  // PostgreSQL version
-  const res = await query(
-    'SELECT username FROM players WHERE streamer_id = $1 AND username = $2',
-    [streamer, key]
-  );
-  if (res.rows.length === 0) {
-    const defaultBalls = { pokeball: 10, greatball: 3, ultraball: 1, masterball: 0 };
-    await query(
-      `INSERT INTO players (streamer_id, username, display_name, pokeballs, greatballs, ultraballs, masterballs, coins, xp, level, last_daily, last_catch_attempt, active_pokemon_id, buddy_instance_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, 100, 0, 1, 0, 0, NULL, NULL)`,
-      [streamer, key, displayName || username, defaultBalls.pokeball, defaultBalls.greatball, defaultBalls.ultraball, defaultBalls.masterball]
-    );
-  }
+  // No-op: Profile resolution uses global consolidated player records and auto-migration
+  return;
 }
 
 async function getFullHealTime(streamerId) {
@@ -602,69 +565,56 @@ async function getUser(streamerId, username, displayName = null) {
   }
   
   // PostgreSQL version
-  let res = await query(
-    'SELECT * FROM players WHERE streamer_id = $1 AND username = $2',
-    [streamer, key]
-  );
-  
-  if (res.rows.length === 0) {
-    // Check if they have ANY existing channel-specific player records
-    const existingRes = await query(
-      "SELECT * FROM players WHERE streamer_id != 'global' AND username = $1 ORDER BY level DESC, xp DESC",
-      [key]
-    );
-    if (existingRes.rows.length > 0) {
-      // Pick the best record (highest level/XP) as the source for stats
-      const best = existingRes.rows[0];
-      // Aggregate coins, balls, etc. from ALL records for a fair merge
-      let totalCoins = 0, totalPokeballs = 0, totalGreatballs = 0, totalUltraballs = 0, totalMasterballs = 0;
-      let bestLevel = 0, bestXp = 0;
-      for (const p of existingRes.rows) {
-        totalCoins += Number(p.coins || 0);
-        totalPokeballs += Number(p.pokeballs || 0);
-        totalGreatballs += Number(p.greatballs || 0);
-        totalUltraballs += Number(p.ultraballs || 0);
-        totalMasterballs += Number(p.masterballs || 0);
-        if (Number(p.level) > bestLevel || (Number(p.level) === bestLevel && Number(p.xp) > bestXp)) {
-          bestLevel = Number(p.level);
-          bestXp = Number(p.xp);
-        }
-      }
-      // Create global player with merged stats
-      await query(
-        `INSERT INTO players (streamer_id, username, display_name, pokeballs, greatballs, ultraballs, masterballs, coins, xp, level, last_daily, last_catch_attempt, active_pokemon_id, buddy_instance_id, items, gym_badges)
-         VALUES ('global', $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
-        [key, best.display_name, totalPokeballs, totalGreatballs, totalUltraballs, totalMasterballs, totalCoins, bestXp, bestLevel, best.last_daily, best.last_catch_attempt, best.active_pokemon_id, best.buddy_instance_id, best.items, best.gym_badges]
-      );
-      // Migrate ALL caught pokemon from ALL channels to global
-      await query(
-        "UPDATE inventories SET streamer_id = 'global' WHERE streamer_id != 'global' AND username = $1",
-        [key]
-      );
-    } else {
-      const defaultBalls = { pokeball: 10, greatball: 3, ultraball: 1, masterball: 0 };
-      await query(
-        `INSERT INTO players (streamer_id, username, display_name, pokeballs, greatballs, ultraballs, masterballs, coins, xp, level, last_daily, last_catch_attempt, active_pokemon_id, buddy_instance_id)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, 100, 0, 1, 0, 0, NULL, NULL)`,
-        [streamer, key, displayName || username, defaultBalls.pokeball, defaultBalls.greatball, defaultBalls.ultraball, defaultBalls.masterball]
-      );
-    }
-    res = await query(
-      'SELECT * FROM players WHERE streamer_id = $1 AND username = $2',
-      [streamer, key]
-    );
-  } else if (displayName && res.rows[0].display_name !== displayName) {
-    await query(
-      'UPDATE players SET display_name = $1 WHERE streamer_id = $2 AND username = $3',
-      [displayName, streamer, key]
-    );
-    res.rows[0].display_name = displayName;
-  }
-
   const cleanKey = key.replace(/^@/, '');
   const keyWithAt = '@' + cleanKey;
   const baseKey = cleanKey.replace(/\d+$/, '');
 
+  // 1. Search for ANY existing player record by username or display_name
+  let res = await query(
+    `SELECT * FROM players 
+     WHERE LOWER(username) = $1 OR LOWER(username) = $2 OR LOWER(username) = $3
+        OR LOWER(display_name) = $1 OR LOWER(display_name) = $2 OR LOWER(display_name) = $3
+     ORDER BY level DESC, xp DESC, coins DESC`,
+    [cleanKey, keyWithAt, baseKey]
+  );
+
+  let dbUser;
+  if (res.rows.length > 0) {
+    // Pick the best existing player record (highest level/XP/coins)
+    dbUser = res.rows[0];
+    
+    // Ensure this best player record is saved under streamer_id = 'global'
+    if (dbUser.streamer_id !== 'global') {
+      await query(
+        "UPDATE players SET streamer_id = 'global' WHERE streamer_id = $1 AND username = $2",
+        [dbUser.streamer_id, dbUser.username]
+      );
+    }
+  } else {
+    // Create new global player record
+    const defaultBalls = { pokeball: 10, greatball: 3, ultraball: 1, masterball: 0 };
+    await query(
+      `INSERT INTO players (streamer_id, username, display_name, pokeballs, greatballs, ultraballs, masterballs, coins, xp, level, last_daily, last_catch_attempt, active_pokemon_id, buddy_instance_id)
+       VALUES ('global', $1, $2, $3, $4, $5, $6, 100, 0, 1, 0, 0, NULL, NULL)`,
+      [cleanKey, displayName || username, defaultBalls.pokeball, defaultBalls.greatball, defaultBalls.ultraball, defaultBalls.masterball]
+    );
+    res = await query(
+      "SELECT * FROM players WHERE streamer_id = 'global' AND LOWER(username) = LOWER($1)",
+      [cleanKey]
+    );
+    dbUser = res.rows[0];
+  }
+
+  // Update display_name if a new non-null displayName was provided
+  if (displayName && dbUser.display_name !== displayName) {
+    await query(
+      "UPDATE players SET display_name = $1 WHERE streamer_id = 'global' AND LOWER(username) = LOWER($2)",
+      [displayName, dbUser.username]
+    );
+    dbUser.display_name = displayName;
+  }
+
+  // 2. Gather ALL handles & nicknames associated with this player
   const knownUsernamesRes = await query(
     `SELECT username, display_name FROM players 
      WHERE LOWER(username) = $1 OR LOWER(username) = $2 OR LOWER(username) = $3
@@ -672,7 +622,7 @@ async function getUser(streamerId, username, displayName = null) {
     [cleanKey, keyWithAt, baseKey]
   );
   
-  const userKeysSet = new Set([cleanKey, keyWithAt, baseKey]);
+  const userKeysSet = new Set([cleanKey, keyWithAt, baseKey, dbUser.username.toLowerCase()]);
   if (knownUsernamesRes && knownUsernamesRes.rows) {
     for (const r of knownUsernamesRes.rows) {
       if (r.username) userKeysSet.add(r.username.toLowerCase());
@@ -681,12 +631,12 @@ async function getUser(streamerId, username, displayName = null) {
   }
   const userKeys = Array.from(userKeysSet);
 
-  // Sweep all inventories belonging to any of these handle variations into global
+  // Sweep ALL inventories belonging to any of these handles into 'global' under dbUser.username
   await query(
     `UPDATE inventories 
      SET streamer_id = 'global', username = $1 
      WHERE LOWER(username) = ANY($2)`,
-    [key, userKeys]
+    [dbUser.username, userKeys]
   );
   
   const invRes = await query(
@@ -694,10 +644,9 @@ async function getUser(streamerId, username, displayName = null) {
      WHERE (LOWER(streamer_id) = 'global' OR streamer_id = $1)
        AND (LOWER(username) = ANY($2) OR LOWER(username) = LOWER($3)) 
      ORDER BY caught_at ASC`,
-    [streamer, userKeys, key]
+    [streamer, userKeys, dbUser.username]
   );
   
-  const dbUser = res.rows[0];
   const healMinutes = await getFullHealTime(cleanStreamerId);
   const inventory = [];
   
