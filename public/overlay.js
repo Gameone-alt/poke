@@ -65,10 +65,10 @@ function playSound(audioEl) {
 
 // Map Pokéball Image URLs based on item name
 const BALL_SPRITES = {
-  pokeball: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png',
-  greatball: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/great-ball.png',
-  ultraball: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ultra-ball.png',
-  masterball: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/master-ball.png'
+  pokeball: 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/items/poke-ball.png',
+  greatball: 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/items/great-ball.png',
+  ultraball: 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/items/ultra-ball.png',
+  masterball: 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/items/master-ball.png'
 };
 
 // Handle Image error fallback wrapper

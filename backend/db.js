@@ -15,7 +15,9 @@ const staticPokemonDbPath = path.join(DB_DIR, 'pokemon.json');
 let staticPokemonDb = {};
 if (fs.existsSync(staticPokemonDbPath)) {
   try {
-    staticPokemonDb = JSON.parse(fs.readFileSync(staticPokemonDbPath, 'utf-8'));
+    let rawContent = fs.readFileSync(staticPokemonDbPath, 'utf-8');
+    rawContent = rawContent.replaceAll('https://raw.githubusercontent.com/PokeAPI/sprites/master/', 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/');
+    staticPokemonDb = JSON.parse(rawContent);
   } catch (err) {
     console.error('[Database] Failed loading pokemon.json:', err.message);
   }

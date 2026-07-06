@@ -302,7 +302,9 @@ const POKEMON_DB_FILE = path.join(__dirname, 'data', 'pokemon.json');
 function loadPokemonDb() {
   if (fs.existsSync(POKEMON_DB_FILE)) {
     try {
-      pokemonDb = JSON.parse(fs.readFileSync(POKEMON_DB_FILE, 'utf-8'));
+      let rawContent = fs.readFileSync(POKEMON_DB_FILE, 'utf-8');
+      rawContent = rawContent.replaceAll('https://raw.githubusercontent.com/PokeAPI/sprites/master/', 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/');
+      pokemonDb = JSON.parse(rawContent);
       console.log(`[Server] Loaded ${Object.keys(pokemonDb).length} Pokémon from database.`);
     } catch (err) {
       console.error('[Server] Failed parsing pokemon.json:', err.message);

@@ -350,11 +350,11 @@ function getSafeSprite(spriteUrl, fallbackUrl, pokemonId, isShiny) {
   }
   if (pokemonId) {
     if (isShiny) {
-      return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${pokemonId}.png`;
+      return `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/shiny/${pokemonId}.png`;
     }
-    return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonId}.png`;
+    return `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/${pokemonId}.png`;
   }
-  return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png'; // default fallback icon
+  return 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/0.png'; // default fallback icon
 }
 
 function calculateCP(baseStats, wins, isLegendary, fusionCount = 0) {

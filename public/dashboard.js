@@ -1250,11 +1250,11 @@ function renderViewersTable(players) {
           }
           if (pokemonId) {
             if (isShiny) {
-              return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${pokemonId}.png`;
+              return `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/shiny/${pokemonId}.png`;
             }
-            return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonId}.png`;
+            return `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/${pokemonId}.png`;
           }
-          return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png';
+          return 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/0.png';
         };
 
         const calculateCP = (baseStats, wins, isLegendary, fusionCount = 0) => {

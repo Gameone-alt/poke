@@ -246,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
     filtered.forEach(p => {
       const item = document.createElement('div');
       item.className = 'autocomplete-item';
-      const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.id}.png`;
+      const spriteUrl = `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/${p.id}.png`;
       item.innerHTML = `
         <img src="${spriteUrl}" alt="${p.name}">
         <span><strong>#${p.id}</strong> ${p.name}</span>
@@ -540,11 +540,11 @@ function getSafeSprite(spriteUrl, fallbackUrl, pokemonId, isShiny) {
   }
   if (pokemonId) {
     if (isShiny) {
-      return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${pokemonId}.png`;
+      return `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/shiny/${pokemonId}.png`;
     }
-    return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonId}.png`;
+    return `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/${pokemonId}.png`;
   }
-  return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png';
+  return 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/0.png';
 }
 
 function calculateCP(baseStats, wins, isLegendary, fusionCount = 0) {
