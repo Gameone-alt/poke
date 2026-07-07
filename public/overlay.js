@@ -52,6 +52,8 @@ const sfxCatchSuccess = document.getElementById('sfx-catch-success');
 const sfxCatchFail = document.getElementById('sfx-catch-fail');
 const sfxHit = document.getElementById('sfx-hit');
 const sfxEvolve = document.getElementById('sfx-evolve');
+const sfxShiny = document.getElementById('sfx-shiny');
+const sfxLegendary = document.getElementById('sfx-legendary');
 
 // Helper to play sound with user-interaction bypass safety
 function playSound(audioEl) {
@@ -159,7 +161,7 @@ function applyConfig(config) {
 
   // 2. Sound Effects Volume (0 to 1)
   const volume = config.sfxVolume !== undefined ? config.sfxVolume / 100 : 0.5;
-  [sfxSpawn, sfxThrow, sfxCatchSuccess, sfxCatchFail, sfxHit, sfxEvolve].forEach(audio => {
+  [sfxSpawn, sfxThrow, sfxCatchSuccess, sfxCatchFail, sfxHit, sfxEvolve, sfxShiny, sfxLegendary].forEach(audio => {
     if (audio) audio.volume = volume;
   });
 
@@ -672,7 +674,13 @@ socket.on('init_state', (state) => {
 
 // Wild Spawn Event
 socket.on('pokemon_spawned', (poke) => {
-  playSound(sfxSpawn);
+  if (poke.isShiny) {
+    playSound(sfxShiny);
+  } else if (poke.catchRate <= 0.1) {
+    playSound(sfxLegendary);
+  } else {
+    playSound(sfxSpawn);
+  }
   
   wildPokemonSprite.src = getSafeSprite(poke.spriteUrl, poke.fallbackSpriteUrl);
   wildPokemonName.textContent = poke.name;
@@ -1716,7 +1724,7 @@ socket.on('raid_start', (data) => {
   if (currentOverlayConfig && currentOverlayConfig.showRaid === false) {
     return;
   }
-  playSound(sfxSpawn);
+  playSound(sfxLegendary);
   
   // Clear any existing countdown interval
   if (raidCountdownInterval) {

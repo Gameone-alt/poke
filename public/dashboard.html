@@ -1036,7 +1036,14 @@
                 <small>Copy and paste this link as a Browser Source in OBS Studio (Resolution: 1920x1080).</small>
               </div>
 
-              <button type="submit" class="btn btn-primary" style="padding: 12px 20px; font-size: 15px; font-weight: 700; border-radius: 10px;">Save Settings</button>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                <button type="submit" class="btn btn-primary" style="padding: 12px 20px; font-size: 15px; font-weight: 700; border-radius: 10px;">Save Settings</button>
+                <div style="display: flex; gap: 8px;">
+                  <button type="button" id="btn-export-config" class="btn btn-preset" style="margin: 0; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 10px 15px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px;">📥 Export JSON</button>
+                  <button type="button" id="btn-import-trigger" class="btn btn-preset" style="margin: 0; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 10px 15px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px;">📤 Import JSON</button>
+                  <input type="file" id="btn-import-config" accept=".json" style="display: none;">
+                </div>
+              </div>
             </div>
 
           </div>

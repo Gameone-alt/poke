@@ -281,6 +281,7 @@ if (primaryColorInput && primaryColorTextInput) {
 
 function populateConfig(config) {
   currentConfigRef = config;
+  initWidgetSidebarState(config);
   channelIdInput.value = config.youtubeChannelId || '';
   twitchChannelInput.value = config.twitchChannel || '';
   videoIdInput.value = config.videoId || '';
@@ -650,6 +651,61 @@ configForm.addEventListener('submit', (e) => {
   socket.emit('update_config', { newConfig: updatedConfig, password: adminPassword });
   alert('Configuration updated successfully!');
 });
+
+// JSON Configuration Export Handler
+const btnExport = document.getElementById('btn-export-config');
+if (btnExport) {
+  btnExport.addEventListener('click', () => {
+    const config = compileConfigObject();
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(config, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `pokemon_overlay_config_${channelId}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  });
+}
+
+// JSON Configuration Import Handlers
+const btnImportTrigger = document.getElementById('btn-import-trigger');
+const btnImportConfig = document.getElementById('btn-import-config');
+
+if (btnImportTrigger && btnImportConfig) {
+  btnImportTrigger.addEventListener('click', () => {
+    btnImportConfig.click();
+  });
+
+  btnImportConfig.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const loadedConfig = JSON.parse(evt.target.result);
+        
+        // Basic signature validation
+        if (loadedConfig.theme === undefined && loadedConfig.allowedGenerations === undefined) {
+          throw new Error("Invalid configuration file format.");
+        }
+        
+        populateConfig(loadedConfig);
+        
+        // Instantly refresh layout preview positioning on the dashboard canvas
+        Object.keys(WIDGET_REGISTRY).forEach(wId => {
+          positionWidgetOnCanvas(wId);
+        });
+        
+        alert("Configuration loaded successfully! Please review the settings below and click 'Save Settings' to apply them permanently.");
+      } catch (err) {
+        alert("Failed to import configuration: " + err.message);
+      }
+      btnImportConfig.value = ''; // Reset input
+    };
+    reader.readAsText(file);
+  });
+}
 
 // Manual Spawn Target Override Button
 btnSaveTarget.addEventListener('click', () => {
