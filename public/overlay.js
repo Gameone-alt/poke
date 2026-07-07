@@ -270,11 +270,7 @@ function applyConfig(config) {
       battleOverlay.style.left = config.battleLeft || 'auto';
       battleOverlay.style.right = config.battleRight || 'auto';
       
-      if (config.battleLeft && config.battleLeft !== 'auto' && config.battleTop && config.battleTop !== 'auto') {
-        battleOverlay.style.transform = `translate(-50%, -50%) scale(${battleScale})`;
-      } else {
-        battleOverlay.style.transform = `scale(${battleScale})`;
-      }
+      battleOverlay.style.transform = `scale(${battleScale})`;
     } else {
       if (battlePos === 'center') {
         battleOverlay.style.top = '50%';
@@ -313,11 +309,7 @@ function applyConfig(config) {
       raidOverlay.style.left = config.raidLeft || '35%';
       raidOverlay.style.right = config.raidRight || 'auto';
       
-      if (config.raidLeft && config.raidLeft !== 'auto' && config.raidTop && config.raidTop !== 'auto') {
-        raidOverlay.style.transform = `translate(-50%, -50%) scale(${raidScale})`;
-      } else {
-        raidOverlay.style.transform = `scale(${raidScale})`;
-      }
+      raidOverlay.style.transform = `scale(${raidScale})`;
     } else {
       if (raidPos === 'center') {
         raidOverlay.style.top = '50%';
@@ -443,11 +435,7 @@ function applyConfig(config) {
       el.style.bottom = bottom || 'auto';
       el.style.left = left || defaultLeft;
       el.style.right = right || 'auto';
-      if (left && left !== 'auto' && top && top !== 'auto') {
-        el.style.transform = `translate(-50%, -50%) scale(${s})`;
-      } else {
-        el.style.transform = `scale(${s})`;
-      }
+      el.style.transform = `scale(${s})`;
     } else {
       if (pos === 'center' || !pos) {
         el.style.top = '50%';
@@ -1779,6 +1767,15 @@ socket.on('raid_start', (data) => {
   raidOverlay.classList.add('hidden');
   if (card) card.className = 'raid-card';
 
+  // Toggle active raid panels
+  const activeView = document.getElementById('raid-active-view');
+  const victoryView = document.getElementById('raid-victory-view');
+  if (activeView) activeView.classList.remove('hidden');
+  if (victoryView) {
+    victoryView.classList.add('hidden');
+    victoryView.innerHTML = '';
+  }
+
   // Apply layout config positions immediately to ensure custom alignment before reveal
   if (currentOverlayConfig) {
     applyConfig(currentOverlayConfig);
@@ -2000,15 +1997,21 @@ socket.on('raid_end', (data) => {
           `;
         });
         
-        bossInfo.innerHTML = `
-          <div style="text-align: center; animation: battlePopIn 0.5s ease-out; height: 100%; display: flex; flex-direction: column; justify-content: center;">
-            <h2 style="font-family: 'Press Start 2P', monospace; font-size: 14px; color: #10b981; text-shadow: 0 0 10px rgba(16,185,129,0.5); margin: 0 0 4px 0;">🏆 RAID VICTORY!</h2>
-            <div style="color: #94a3b8; font-size: 10px; margin-bottom: 8px;">The Boss has been defeated! Top Attackers & Rewards:</div>
-            <div style="text-align: left; overflow-y: auto; max-height: 180px;">
-              ${winnersHtml || '<div style="text-align: center; color: #94a3b8;">No contributors recorded.</div>'}
+        const activeView = document.getElementById('raid-active-view');
+        const victoryView = document.getElementById('raid-victory-view');
+        if (activeView) activeView.classList.add('hidden');
+        if (victoryView) {
+          victoryView.classList.remove('hidden');
+          victoryView.innerHTML = `
+            <div style="text-align: center; animation: battlePopIn 0.5s ease-out; height: 100%; display: flex; flex-direction: column; justify-content: center;">
+              <h2 style="font-family: 'Press Start 2P', monospace; font-size: 14px; color: #10b981; text-shadow: 0 0 10px rgba(16,185,129,0.5); margin: 0 0 4px 0;">🏆 RAID VICTORY!</h2>
+              <div style="color: #94a3b8; font-size: 10px; margin-bottom: 8px;">The Boss has been defeated! Top Attackers & Rewards:</div>
+              <div style="text-align: left; overflow-y: auto; max-height: 180px;">
+                ${winnersHtml || '<div style="text-align: center; color: #94a3b8;">No contributors recorded.</div>'}
+              </div>
             </div>
-          </div>
-        `;
+          `;
+        }
       }
     }
   } else {

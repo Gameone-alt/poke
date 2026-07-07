@@ -2068,7 +2068,7 @@ async function processCommand(channelId, username, displayName, messageText, bas
     try {
       const result = await db.fusePokemon(channelId, username, targetPokeName);
       
-      const msg = `🧬 Fusion: @${displayName} fused ${result.sacrificedCount} duplicates of ${result.survivorName}! Stats boosted by +${result.sacrificedCount * 5}! (★${result.fusionCount})`;
+      const msg = `🧬 Fusion: @${displayName} fused ${result.sacrificedCount} duplicates of ${result.survivorName}! Stats boosted by +${result.sacrificedCount * 10}! (★${result.fusionCount})`;
       
       // Update leaderboards
       io.to(channelId).emit('leaderboard_update', await db.getLeaderboard(channelId));
@@ -2332,7 +2332,8 @@ async function processCommand(channelId, username, displayName, messageText, bas
     // Return null to mute raid hit spam in chat. Chat notifications will only be posted on defeat.
     let reply = null;
     
-    if (boss.currentHp <= 0) {
+    if (boss.currentHp <= 0 && !boss.isDefeated) {
+      boss.isDefeated = true;
       clearTimeout(session.wildDespawnTimer);
       const baseCoins = session.config.raidRewardCoins !== undefined ? Number(session.config.raidRewardCoins) : 250;
       const baseXP = session.config.raidRewardXp !== undefined ? Number(session.config.raidRewardXp) : 150;

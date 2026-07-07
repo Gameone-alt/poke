@@ -327,6 +327,7 @@ function renderTrainerProfile(user) {
         <div class="stat-row"><span>HP:</span> <strong>${poke.baseStats.hp}</strong></div>
         <div class="stat-row"><span>ATK:</span> <strong>${poke.baseStats.attack}</strong></div>
         <div class="stat-row"><span>DEF:</span> <strong>${poke.baseStats.defense}</strong></div>
+        <div class="stat-row"><span>SPD:</span> <strong>${poke.baseStats.speed || 50}</strong></div>
       </div>
       <div class="pokemon-wins">🏆 Wins: ${poke.wins || 0}</div>
       ${hpBarHtml}

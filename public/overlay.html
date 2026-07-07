@@ -187,21 +187,29 @@
         
         <!-- Main Stats and Leaderboard Panel -->
         <div class="raid-boss-info">
-          <div class="boss-details-header">
-            <span id="raid-boss-name">Gigantamax Pokemon</span>
-            <span class="boss-time-ticker">⏳ 5:00</span>
-          </div>
-          
-          <div class="raid-hp-container">
-            <div class="raid-hp-bar" id="raid-hp-fill" style="width: 100%;"></div>
-            <span class="raid-hp-text" id="raid-hp-text">5000 / 5000 HP</span>
-          </div>
-          
-          <div class="raid-contributors">
-            <div class="contrib-title">🏆 Top Attacker Rankings</div>
-            <div class="contrib-list" id="raid-contrib-list">
-              <!-- Attacker rankings -->
+          <!-- Active Raid View -->
+          <div id="raid-active-view" style="width: 100%; height: 100%; display: flex; flex-direction: column;">
+            <div class="boss-details-header">
+              <span id="raid-boss-name">Gigantamax Pokemon</span>
+              <span class="boss-time-ticker">⏳ 5:00</span>
             </div>
+            
+            <div class="raid-hp-container">
+              <div class="raid-hp-bar" id="raid-hp-fill" style="width: 100%;"></div>
+              <span class="raid-hp-text" id="raid-hp-text">5000 / 5000 HP</span>
+            </div>
+            
+            <div class="raid-contributors">
+              <div class="contrib-title">🏆 Top Attacker Rankings</div>
+              <div class="contrib-list" id="raid-contrib-list">
+                <!-- Attacker rankings -->
+              </div>
+            </div>
+          </div>
+          
+          <!-- Victory / End View -->
+          <div id="raid-victory-view" class="hidden" style="width: 100%; height: 100%;">
+            <!-- Render top 3 winners with rewards here -->
           </div>
         </div>
       </div>

@@ -689,14 +689,14 @@ async function getUser(streamerId, username, displayName = null) {
     const baseName = staticPoke.name || p.pokemon_name || 'Unknown';
     const name = p.shiny ? `✨ Shiny ${baseName}` : baseName;
     const types = staticPoke.types || p.types || [];
-    const baseStats = staticPoke.stats || {
-      hp: p.base_hp || 50,
-      attack: p.base_atk || 50,
-      defense: p.base_def || 50,
-      speed: p.base_spd || 50
+    const baseStats = {
+      hp: p.base_hp || staticPoke.stats?.hp || 50,
+      attack: p.base_atk || staticPoke.stats?.attack || 50,
+      defense: p.base_def || staticPoke.stats?.defense || 50,
+      speed: p.base_spd || staticPoke.stats?.speed || 50
     };
     
-    const baseHp = p.base_hp || baseStats.hp || 50;
+    const baseHp = baseStats.hp;
     let currentHp = p.current_hp;
     const lastBattleTime = Number(p.last_battle_time || 0);
     
