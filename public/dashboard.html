@@ -1072,82 +1072,91 @@
               </div>
 
               <h4>🎁 Prize Distribution Configuration</h4>
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="champ-1st-type">1st Place Prize Type</label>
-                  <select id="champ-1st-type">
-                    <option value="coins">Coins</option>
-                    <option value="item">Item</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label for="champ-1st-value">1st Place Prize Value</label>
-                  <input type="text" id="champ-1st-value" value="1000">
-                  <select id="champ-1st-item-select" class="hidden" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; display: none;">
-                    <option value="championship_pack">Championship Booster Pack 📦</option>
-                    <option value="masterball">Master Ball 🔴</option>
-                    <option value="ultraball">Ultra Ball 🟡</option>
-                    <option value="greatball">Great Ball 🔵</option>
-                    <option value="pokeball">Poké Ball 🔴</option>
-                    <option value="fire_stone">Fire Stone 🔥</option>
-                    <option value="water_stone">Water Stone 💧</option>
-                    <option value="thunder_stone">Thunder Stone ⚡</option>
-                    <option value="leaf_stone">Leaf Stone 🍃</option>
-                    <option value="moon_stone">Moon Stone 🌙</option>
-                  </select>
-                  <small>E.g. coin amount or item ID.</small>
-                </div>
-              </div>
-
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="champ-2nd-type">2nd Place Prize Type</label>
-                  <select id="champ-2nd-type">
-                    <option value="coins" selected>Coins</option>
-                    <option value="item">Item</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label for="champ-2nd-value">2nd Place Prize Value</label>
-                  <input type="text" id="champ-2nd-value" value="500">
-                  <select id="champ-2nd-item-select" class="hidden" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; display: none;">
-                    <option value="championship_pack">Championship Booster Pack 📦</option>
-                    <option value="masterball">Master Ball 🔴</option>
-                    <option value="ultraball">Ultra Ball 🟡</option>
-                    <option value="greatball">Great Ball 🔵</option>
-                    <option value="pokeball">Poké Ball 🔴</option>
-                    <option value="fire_stone">Fire Stone 🔥</option>
-                    <option value="water_stone">Water Stone 💧</option>
-                    <option value="thunder_stone">Thunder Stone ⚡</option>
-                    <option value="leaf_stone">Leaf Stone 🍃</option>
-                    <option value="moon_stone">Moon Stone 🌙</option>
-                  </select>
+              
+              <!-- 1st Place -->
+              <div class="form-row" style="margin-bottom: 20px;">
+                <div style="flex: 1;">
+                  <strong style="color: #10b981; font-size: 14px; display: block; margin-bottom: 8px;">🏆 1st Place (Champion)</strong>
+                  <div style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                      <label for="champ-1st-coins">Coins Prize</label>
+                      <input type="number" id="champ-1st-coins" value="1000" min="0">
+                    </div>
+                    <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                      <label for="champ-1st-item">Bonus Item</label>
+                      <select id="champ-1st-item" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff;">
+                        <option value="championship_pack" selected>Championship Booster Pack 📦</option>
+                        <option value="none">None (No Item)</option>
+                        <option value="masterball">Master Ball 🔴</option>
+                        <option value="ultraball">Ultra Ball 🟡</option>
+                        <option value="greatball">Great Ball 🔵</option>
+                        <option value="pokeball">Poké Ball 🔴</option>
+                        <option value="fire_stone">Fire Stone 🔥</option>
+                        <option value="water_stone">Water Stone 💧</option>
+                        <option value="thunder_stone">Thunder Stone ⚡</option>
+                        <option value="leaf_stone">Leaf Stone 🍃</option>
+                        <option value="moon_stone">Moon Stone 🌙</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="champ-3rd-type">3rd Place Prize Type</label>
-                  <select id="champ-3rd-type">
-                    <option value="coins" selected>Coins</option>
-                    <option value="item">Item</option>
-                  </select>
+              <!-- 2nd Place -->
+              <div class="form-row" style="margin-bottom: 20px;">
+                <div style="flex: 1;">
+                  <strong style="color: #3b82f6; font-size: 14px; display: block; margin-bottom: 8px;">🥈 2nd Place (Runner-up)</strong>
+                  <div style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                      <label for="champ-2nd-coins">Coins Prize</label>
+                      <input type="number" id="champ-2nd-coins" value="500" min="0">
+                    </div>
+                    <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                      <label for="champ-2nd-item">Bonus Item</label>
+                      <select id="champ-2nd-item" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff;">
+                        <option value="none" selected>None (No Item)</option>
+                        <option value="championship_pack">Championship Booster Pack 📦</option>
+                        <option value="masterball">Master Ball 🔴</option>
+                        <option value="ultraball">Ultra Ball 🟡</option>
+                        <option value="greatball">Great Ball 🔵</option>
+                        <option value="pokeball">Poké Ball 🔴</option>
+                        <option value="fire_stone">Fire Stone 🔥</option>
+                        <option value="water_stone">Water Stone 💧</option>
+                        <option value="thunder_stone">Thunder Stone ⚡</option>
+                        <option value="leaf_stone">Leaf Stone 🍃</option>
+                        <option value="moon_stone">Moon Stone 🌙</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
-                <div class="form-group">
-                  <label for="champ-3rd-value">3rd Place Prize Value</label>
-                  <input type="text" id="champ-3rd-value" value="250">
-                  <select id="champ-3rd-item-select" class="hidden" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; display: none;">
-                    <option value="championship_pack">Championship Booster Pack 📦</option>
-                    <option value="masterball">Master Ball 🔴</option>
-                    <option value="ultraball">Ultra Ball 🟡</option>
-                    <option value="greatball">Great Ball 🔵</option>
-                    <option value="pokeball">Poké Ball 🔴</option>
-                    <option value="fire_stone">Fire Stone 🔥</option>
-                    <option value="water_stone">Water Stone 💧</option>
-                    <option value="thunder_stone">Thunder Stone ⚡</option>
-                    <option value="leaf_stone">Leaf Stone 🍃</option>
-                    <option value="moon_stone">Moon Stone 🌙</option>
-                  </select>
+              </div>
+
+              <!-- 3rd Place -->
+              <div class="form-row" style="margin-bottom: 20px;">
+                <div style="flex: 1;">
+                  <strong style="color: #f59e0b; font-size: 14px; display: block; margin-bottom: 8px;">🥉 3rd Place (Bronze)</strong>
+                  <div style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                      <label for="champ-3rd-coins">Coins Prize</label>
+                      <input type="number" id="champ-3rd-coins" value="250" min="0">
+                    </div>
+                    <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                      <label for="champ-3rd-item">Bonus Item</label>
+                      <select id="champ-3rd-item" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff;">
+                        <option value="none" selected>None (No Item)</option>
+                        <option value="championship_pack">Championship Booster Pack 📦</option>
+                        <option value="masterball">Master Ball 🔴</option>
+                        <option value="ultraball">Ultra Ball 🟡</option>
+                        <option value="greatball">Great Ball 🔵</option>
+                        <option value="pokeball">Poké Ball 🔴</option>
+                        <option value="fire_stone">Fire Stone 🔥</option>
+                        <option value="water_stone">Water Stone 💧</option>
+                        <option value="thunder_stone">Thunder Stone ⚡</option>
+                        <option value="leaf_stone">Leaf Stone 🍃</option>
+                        <option value="moon_stone">Moon Stone 🌙</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
               </div>
 

@@ -3659,20 +3659,30 @@ async function advanceChampionshipRound(channelId) {
 }
 
 async function awardChampionshipPrize(channelId, username, prize, placeName) {
+  if (!prize) return;
   try {
     const user = await db.getUser(channelId, username);
-    if (prize.type === 'coins') {
-      user.coins += Number(prize.value);
-      await db.saveUser(channelId, user);
-      sendGameLog(channelId, 'system', `🎁 Payout: @${user.displayName} received 🪙 ${prize.value} coins for winning ${placeName}!`);
-    } else if (prize.type === 'item') {
-      const itemKey = prize.value.toLowerCase().trim();
+    const messages = [];
+
+    // Award coins if specified
+    if (prize.coins && Number(prize.coins) > 0) {
+      user.coins += Number(prize.coins);
+      messages.push(`🪙 ${prize.coins} coins`);
+    }
+
+    // Award item if specified
+    if (prize.item && prize.item !== 'none') {
+      const itemKey = prize.item.toLowerCase().trim();
       user.items = user.items || {};
       user.items[itemKey] = (user.items[itemKey] || 0) + 1;
-      await db.saveUser(channelId, user);
       
       const prettyItem = itemKey.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
-      sendGameLog(channelId, 'system', `🎁 Payout: @${user.displayName} received 🪨 1x ${prettyItem} for winning ${placeName}!`);
+      messages.push(`🪨 1x ${prettyItem}`);
+    }
+
+    if (messages.length > 0) {
+      await db.saveUser(channelId, user);
+      sendGameLog(channelId, 'system', `🎁 Payout: @${user.displayName} received ${messages.join(' and ')} for winning ${placeName}!`);
     }
   } catch (err) {
     console.error(`[Championship] Failed to award prize to ${username}:`, err.message);
