@@ -2363,3 +2363,18 @@ socket.on('chat_buddy_remove', (data) => {
     });
   }
 });
+
+// Autoplay Audio Unblock Banner click listener
+const audioBanner = document.getElementById('audio-unblock-banner');
+if (audioBanner) {
+  window.addEventListener('click', () => {
+    // Play a brief silent sound to trigger the unlock context
+    const unlockAudio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAAA');
+    unlockAudio.play().then(() => {
+      audioBanner.style.opacity = '0';
+      setTimeout(() => {
+        audioBanner.classList.add('hidden');
+      }, 300);
+    }).catch(err => console.log('Autoplay unlock retry', err));
+  }, { once: true });
+}
