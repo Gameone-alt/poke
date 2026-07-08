@@ -2642,8 +2642,12 @@ async function processCommand(channelId, username, displayName, messageText, bas
           throw new Error(`You need at least 6 healthy Pokémon to register! (You have ${healthyInventory.length})`);
         }
         const sorted = [...healthyInventory].sort((a, b) => {
-          const cpA = calculateCP(a.baseStats, a.wins || 0, a.shiny);
-          const cpB = calculateCP(b.baseStats, b.wins || 0, b.shiny);
+          const staticA = pokemonDb[a.pokemonId.toString()] || {};
+          const staticB = pokemonDb[b.pokemonId.toString()] || {};
+          const isLegA = staticA.catchRate <= 0.1;
+          const isLegB = staticB.catchRate <= 0.1;
+          const cpA = calculateCP(a.baseStats, a.wins || 0, isLegA, a.fusionCount || 0, a.shiny);
+          const cpB = calculateCP(b.baseStats, b.wins || 0, isLegB, b.fusionCount || 0, b.shiny);
           return cpB - cpA;
         });
         team = sorted.slice(0, 6);
@@ -3690,15 +3694,21 @@ async function awardChampionshipPrize(channelId, username, prize, placeName) {
 }
 
 
-function calculateCP(stats, wins, shiny) {
-  const hp = stats.hp || 50;
-  const attack = stats.attack || 50;
-  const defense = stats.defense || 50;
-  const speed = stats.speed || 50;
-  const total = hp + attack + defense + speed;
-  const winsBonus = 1 + (wins || 0) * 0.05;
-  const shinyMultiplier = shiny ? 1.2 : 1.0;
-  return Math.floor(total * winsBonus * shinyMultiplier);
+function calculateCP(baseStats, wins, isLegendary, fusionCount = 0, shiny = false) {
+  const hp = baseStats ? (baseStats.hp || 50) : 50;
+  const attack = baseStats ? (baseStats.attack || 50) : 50;
+  const defense = baseStats ? (baseStats.defense || 50) : 50;
+  const speed = baseStats ? (baseStats.speed || 50) : 50;
+  
+  let baseCP = (hp + attack * 1.5 + defense + speed) * 3.5;
+  if (isLegendary) {
+    baseCP *= 1.8;
+  }
+  let finalCP = baseCP * (1 + (wins || 0) * 0.02 + (fusionCount || 0) * 0.05);
+  if (shiny) {
+    finalCP *= 1.2;
+  }
+  return Math.max(10, Math.floor(finalCP));
 }
 
 // Start listening

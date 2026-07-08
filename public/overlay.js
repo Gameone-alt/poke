@@ -539,7 +539,7 @@ function renderTypes(typesContainer, types) {
   });
 }
 
-function calculateCP(baseStats, wins, isLegendary, fusionCount = 0) {
+function calculateCP(baseStats, wins, isLegendary, fusionCount = 0, shiny = false) {
   const hp = baseStats ? (baseStats.hp || 50) : 50;
   const attack = baseStats ? (baseStats.attack || 50) : 50;
   const defense = baseStats ? (baseStats.defense || 50) : 50;
@@ -550,6 +550,9 @@ function calculateCP(baseStats, wins, isLegendary, fusionCount = 0) {
     baseCP *= 1.8;
   }
   let finalCP = baseCP * (1 + (wins || 0) * 0.02 + (fusionCount || 0) * 0.05);
+  if (shiny) {
+    finalCP *= 1.2;
+  }
   return Math.max(10, Math.floor(finalCP));
 }
 
@@ -2487,7 +2490,7 @@ function buildFighterCardHtml(poke) {
   return `
     <div class="relay-card-inner" style="width: 100%; height: 100%; background: radial-gradient(circle at center, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 0.99) 100%); border-radius: 16px; ${borderStyle} display: flex; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box; padding: 15px; position: relative;">
       ${poke.shiny ? '<div style="position: absolute; top: 8px; right: 10px; font-size: 10px; animation: bounce 1s infinite alternate;">✨</div>' : ''}
-      <div style="font-size: 7px; color: #94a3b8; margin-bottom: 5px; text-transform: uppercase;">CP ${calculateCP(poke.baseStats, poke.wins || 0, poke.shiny)}</div>
+      <div style="font-size: 7px; color: #94a3b8; margin-bottom: 5px; text-transform: uppercase;">CP ${calculateCP(poke.baseStats, poke.wins || 0, poke.isLegendary, poke.fusionCount || 0, poke.shiny)}</div>
       
       <img class="fighter-sprite" src="${poke.spriteUrl}" onerror="this.src='${poke.fallbackSpriteUrl}';" style="width: 90px; height: 90px; object-fit: contain; image-rendering: pixelated; margin-bottom: 8px;" />
       
@@ -2828,17 +2831,7 @@ socket.on('trade_completed', (data) => {
   }, 8500);
 });
 
-// Helper for CP calculation matching backend
-function calculateCP(stats, wins, shiny) {
-  const hp = stats.hp || 50;
-  const attack = stats.attack || 50;
-  const defense = stats.defense || 50;
-  const speed = stats.speed || 50;
-  const total = hp + attack + defense + speed;
-  const winsBonus = 1 + (wins || 0) * 0.05;
-  const shinyMultiplier = shiny ? 1.2 : 1.0;
-  return Math.floor(total * winsBonus * shinyMultiplier);
-}
+
 
 // Animates a stylized collision splash bubble in the center stage
 function createRelashImpactPopup(damage, isCrit) {
