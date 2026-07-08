@@ -2140,7 +2140,6 @@ if (btnCloseInventory) {
     manageInventoryModal.style.display = 'none';
     manageInventoryModal.classList.add('hidden');
   });
-  });
 }
 
 // ==========================================================================
