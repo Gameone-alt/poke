@@ -2150,13 +2150,45 @@ const btnForceChamp = document.getElementById('btn-force-champ');
 const btnCancelChamp = document.getElementById('btn-cancel-champ');
 const champStatusDesc = document.getElementById('champ-status-desc');
 
+function setupChampPrizeToggles(placeId) {
+  const typeSelect = document.getElementById(`champ-${placeId}-type`);
+  const valInput = document.getElementById(`champ-${placeId}-value`);
+  const itemSelect = document.getElementById(`champ-${placeId}-item-select`);
+  
+  if (typeSelect && valInput && itemSelect) {
+    typeSelect.addEventListener('change', () => {
+      if (typeSelect.value === 'item') {
+        valInput.style.display = 'none';
+        itemSelect.classList.remove('hidden');
+        itemSelect.style.display = 'block';
+      } else {
+        valInput.style.display = 'block';
+        itemSelect.classList.add('hidden');
+        itemSelect.style.display = 'none';
+      }
+    });
+  }
+}
+setupChampPrizeToggles('1st');
+setupChampPrizeToggles('2nd');
+setupChampPrizeToggles('3rd');
+
 if (btnStartChamp) {
   btnStartChamp.addEventListener('click', () => {
     const duration = parseInt(document.getElementById('champ-duration').value, 10) || 5;
+    
+    const getPrizeValue = (placeId) => {
+      const type = document.getElementById(`champ-${placeId}-type`).value;
+      if (type === 'item') {
+        return document.getElementById(`champ-${placeId}-item-select`).value;
+      }
+      return document.getElementById(`champ-${placeId}-value`).value;
+    };
+
     const rewards = {
-      first: { type: document.getElementById('champ-1st-type').value, value: document.getElementById('champ-1st-value').value },
-      second: { type: document.getElementById('champ-2nd-type').value, value: document.getElementById('champ-2nd-value').value },
-      third: { type: document.getElementById('champ-3rd-type').value, value: document.getElementById('champ-3rd-value').value }
+      first: { type: document.getElementById('champ-1st-type').value, value: getPrizeValue('1st') },
+      second: { type: document.getElementById('champ-2nd-type').value, value: getPrizeValue('2nd') },
+      third: { type: document.getElementById('champ-3rd-type').value, value: getPrizeValue('3rd') }
     };
     
     socket.emit('start_championship', { 
