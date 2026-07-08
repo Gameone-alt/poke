@@ -2728,6 +2728,100 @@ socket.on('championship_cancelled', () => {
   if (overlay) overlay.classList.add('hidden');
 });
 
+socket.on('trade_completed', (data) => {
+  console.log('[Trade] Trade completed event received:', data);
+  
+  const overlay = document.getElementById('trade-overlay');
+  if (!overlay) return;
+
+  const sideA = document.getElementById('trade-side-a');
+  const sideB = document.getElementById('trade-side-b');
+  const spriteA = sideA.querySelector('.trade-sprite');
+  const spriteB = sideB.querySelector('.trade-sprite');
+  const nameA = sideA.querySelector('.trainer-name');
+  const nameB = sideB.querySelector('.trainer-name');
+  const pokeNameA = sideA.querySelector('.poke-name');
+  const pokeNameB = sideB.querySelector('.poke-name');
+  const ballA = document.getElementById('trade-ball-a');
+  const ballB = document.getElementById('trade-ball-b');
+  const statusLabel = document.getElementById('trade-status-label');
+
+  nameA.textContent = `@${data.playerA}`;
+  nameB.textContent = `@${data.playerB}`;
+  pokeNameA.textContent = data.pokeA.toUpperCase();
+  pokeNameB.textContent = data.pokeB.toUpperCase();
+  
+  spriteA.src = getSafeSprite(data.spriteA, data.fallbackA);
+  spriteB.src = getSafeSprite(data.spriteB, data.fallbackB);
+  
+  spriteA.style.transform = 'scale(1)';
+  spriteB.style.transform = 'scale(1)';
+  spriteA.style.opacity = '1';
+  spriteB.style.opacity = '1';
+  
+  ballA.style.display = 'none';
+  ballB.style.display = 'none';
+  ballA.style.left = '0';
+  ballB.style.right = '0';
+  
+  statusLabel.textContent = `🤝 ESTABLISHING TRADE LINK FOR @${data.playerA.toUpperCase()} AND @${data.playerB.toUpperCase()}...`;
+  overlay.classList.remove('hidden');
+  
+  // Step 1: Shrink sprites into Pokéballs
+  setTimeout(() => {
+    statusLabel.textContent = `⚡ CONVERTING POKÉMON INTO DIGITAL DATA STREAM...`;
+    spriteA.style.transform = 'scale(0)';
+    spriteB.style.transform = 'scale(0)';
+    spriteA.style.opacity = '0';
+    spriteB.style.opacity = '0';
+    triggerScreenFlash();
+    playSound(sfxHit); // Play conversion sound
+  }, 1500);
+
+  // Step 2: Show balls and slide swap
+  setTimeout(() => {
+    ballA.style.display = 'block';
+    ballB.style.display = 'block';
+    statusLabel.textContent = `🚀 INITIATING TRANS-MAP MOVEMENT SEGMENT...`;
+    
+    setTimeout(() => {
+      ballA.style.left = 'calc(100% - 40px)';
+      ballB.style.right = 'calc(100% - 40px)';
+    }, 100);
+  }, 2200);
+
+  // Step 3: Reconstruct sprites swapped
+  setTimeout(() => {
+    statusLabel.textContent = `⚡ ARRIVAL DETECTED. RECONSTRUCTING POKÉMON SPATIAL FORMS...`;
+    ballA.style.display = 'none';
+    ballB.style.display = 'none';
+    
+    spriteA.src = getSafeSprite(data.spriteB, data.fallbackB);
+    spriteB.src = getSafeSprite(data.spriteA, data.fallbackA);
+    pokeNameA.textContent = data.pokeB.toUpperCase();
+    pokeNameB.textContent = data.pokeA.toUpperCase();
+    
+    spriteA.style.transform = 'scale(1.3)';
+    spriteB.style.transform = 'scale(1.3)';
+    spriteA.style.opacity = '1';
+    spriteB.style.opacity = '1';
+    triggerScreenFlash();
+    playSound(sfxEvolve); // Play triumphant evolution sound
+    
+    setTimeout(() => {
+      spriteA.style.transform = 'scale(1)';
+      spriteB.style.transform = 'scale(1)';
+    }, 500);
+    
+    statusLabel.innerHTML = `<span style="color: #10b981;">🤝 TRADE SUCCESSFUL!</span><br/>@${data.playerA} received ${data.pokeB}!<br/>@${data.playerB} received ${data.pokeA}!`;
+  }, 5200);
+
+  // Step 4: Hide trade overlay
+  setTimeout(() => {
+    overlay.classList.add('hidden');
+  }, 8500);
+});
+
 // Helper for CP calculation matching backend
 function calculateCP(stats, wins, shiny) {
   const hp = stats.hp || 50;

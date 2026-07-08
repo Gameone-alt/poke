@@ -2329,11 +2329,32 @@ async function processCommand(channelId, username, displayName, messageText, bas
       const msg = `🤝 Trade successful! @${trade.initiatorDisplayName} traded ${trade.initiatorPoke.name} to @${trade.targetDisplayName} for ${trade.targetPoke.name}!`;
       sendGameLog(channelId, 'system', msg);
       
+      const staticA = pokemonDb[trade.initiatorPoke.pokemonId.toString()] || {};
+      const staticB = pokemonDb[trade.targetPoke.pokemonId.toString()] || {};
+      
+      const spriteA = trade.initiatorPoke.shiny
+        ? staticA.shinySpriteUrl || staticA.spriteUrl
+        : staticA.spriteUrl;
+      const fallbackA = trade.initiatorPoke.shiny
+        ? staticA.fallbackShinySpriteUrl || staticA.fallbackSpriteUrl
+        : staticA.fallbackSpriteUrl;
+
+      const spriteB = trade.targetPoke.shiny
+        ? staticB.shinySpriteUrl || staticB.spriteUrl
+        : staticB.spriteUrl;
+      const fallbackB = trade.targetPoke.shiny
+        ? staticB.fallbackShinySpriteUrl || staticB.fallbackSpriteUrl
+        : staticB.fallbackSpriteUrl;
+
       io.to(channelId).emit('trade_completed', {
         playerA: trade.initiatorDisplayName,
         pokeA: trade.initiatorPoke.name,
+        spriteA,
+        fallbackA,
         playerB: trade.targetDisplayName,
-        pokeB: trade.targetPoke.name
+        pokeB: trade.targetPoke.name,
+        spriteB,
+        fallbackB
       });
       
       delete session.activeTrades[trade.initiator];
