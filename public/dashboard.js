@@ -2150,22 +2150,86 @@ const btnForceChamp = document.getElementById('btn-force-champ');
 const btnCancelChamp = document.getElementById('btn-cancel-champ');
 const champStatusDesc = document.getElementById('champ-status-desc');
 
+function createPrizeItemRow(containerId, defaultItem = 'championship_pack') {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const row = document.createElement('div');
+  row.className = 'prize-item-row';
+  row.style.display = 'flex';
+  row.style.gap = '10px';
+  row.style.alignItems = 'center';
+  row.style.marginTop = '8px';
+
+  row.innerHTML = `
+    <select class="prize-item-select" style="flex: 2; padding: 8px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; font-family: inherit;">
+      <option value="championship_pack" ${defaultItem === 'championship_pack' ? 'selected' : ''}>Championship Booster Pack 📦</option>
+      <option value="masterball" ${defaultItem === 'masterball' ? 'selected' : ''}>Master Ball 🔴</option>
+      <option value="ultraball" ${defaultItem === 'ultraball' ? 'selected' : ''}>Ultra Ball 🟡</option>
+      <option value="greatball" ${defaultItem === 'greatball' ? 'selected' : ''}>Great Ball 🔵</option>
+      <option value="pokeball" ${defaultItem === 'pokeball' ? 'selected' : ''}>Poké Ball 🔴</option>
+      <option value="fire_stone" ${defaultItem === 'fire_stone' ? 'selected' : ''}>Fire Stone 🔥</option>
+      <option value="water_stone" ${defaultItem === 'water_stone' ? 'selected' : ''}>Water Stone 💧</option>
+      <option value="thunder_stone" ${defaultItem === 'thunder_stone' ? 'selected' : ''}>Thunder Stone ⚡</option>
+      <option value="leaf_stone" ${defaultItem === 'leaf_stone' ? 'selected' : ''}>Leaf Stone 🍃</option>
+      <option value="moon_stone" ${defaultItem === 'moon_stone' ? 'selected' : ''}>Moon Stone 🌙</option>
+    </select>
+    <input type="number" class="prize-item-count" value="1" min="1" style="width: 70px; padding: 8px; text-align: center; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; font-family: inherit;">
+    <button type="button" class="btn-remove-prize-item" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 16px; font-weight: bold; font-family: inherit; margin: 0; padding: 0 5px;">✕</button>
+  `;
+
+  row.querySelector('.btn-remove-prize-item').addEventListener('click', () => {
+    row.remove();
+  });
+
+  container.appendChild(row);
+}
+
+// Bind add buttons
+const btnAdd1st = document.getElementById('btn-add-1st-item');
+const btnAdd2nd = document.getElementById('btn-add-2nd-item');
+const btnAdd3rd = document.getElementById('btn-add-3rd-item');
+
+if (btnAdd1st) btnAdd1st.addEventListener('click', () => createPrizeItemRow('champ-1st-items-list', 'masterball'));
+if (btnAdd2nd) btnAdd2nd.addEventListener('click', () => createPrizeItemRow('champ-2nd-items-list', 'ultraball'));
+if (btnAdd3rd) btnAdd3rd.addEventListener('click', () => createPrizeItemRow('champ-3rd-items-list', 'greatball'));
+
+// Populate default 1x Championship Booster Pack for 1st place on page load
+createPrizeItemRow('champ-1st-items-list', 'championship_pack');
+
 if (btnStartChamp) {
   btnStartChamp.addEventListener('click', () => {
     const duration = parseInt(document.getElementById('champ-duration').value, 10) || 5;
     
+    const getPrizeItems = (placeId) => {
+      const container = document.getElementById(`champ-${placeId}-items-list`);
+      if (!container) return [];
+      
+      const rows = container.querySelectorAll('.prize-item-row');
+      const itemsList = [];
+      
+      rows.forEach(row => {
+        const key = row.querySelector('.prize-item-select').value;
+        const count = parseInt(row.querySelector('.prize-item-count').value, 10) || 1;
+        if (key && key !== 'none') {
+          itemsList.push({ key, count });
+        }
+      });
+      return itemsList;
+    };
+
     const rewards = {
       first: {
         coins: parseInt(document.getElementById('champ-1st-coins').value, 10) || 0,
-        item: document.getElementById('champ-1st-item').value
+        items: getPrizeItems('1st')
       },
       second: {
         coins: parseInt(document.getElementById('champ-2nd-coins').value, 10) || 0,
-        item: document.getElementById('champ-2nd-item').value
+        items: getPrizeItems('2nd')
       },
       third: {
         coins: parseInt(document.getElementById('champ-3rd-coins').value, 10) || 0,
-        item: document.getElementById('champ-3rd-item').value
+        items: getPrizeItems('3rd')
       }
     };
     
