@@ -55,6 +55,26 @@ const sfxEvolve = document.getElementById('sfx-evolve');
 const sfxShiny = document.getElementById('sfx-shiny');
 const sfxLegendary = document.getElementById('sfx-legendary');
 
+console.log("[Audio Debug] Initializing spawn sound effects verification...");
+[
+  { name: 'Spawn', el: sfxSpawn },
+  { name: 'Throw', el: sfxThrow },
+  { name: 'CatchSuccess', el: sfxCatchSuccess },
+  { name: 'CatchFail', el: sfxCatchFail },
+  { name: 'Hit', el: sfxHit },
+  { name: 'Evolve', el: sfxEvolve },
+  { name: 'Shiny', el: sfxShiny },
+  { name: 'Legendary', el: sfxLegendary }
+].forEach(s => {
+  if (s.el) {
+    s.el.addEventListener('error', (e) => {
+      console.error(`[Audio Debug] Error loading ${s.name} sound. URL: ${s.el.src}`);
+    });
+  } else {
+    console.warn(`[Audio Debug] Element for ${s.name} not found in DOM.`);
+  }
+});
+
 // Helper to play sound with user-interaction bypass safety
 function playSound(audioEl) {
   if (audioEl) {
