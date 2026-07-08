@@ -2368,14 +2368,20 @@ socket.on('chat_buddy_remove', (data) => {
 const audioBanner = document.getElementById('audio-unblock-banner');
 if (audioBanner) {
   window.addEventListener('click', () => {
-    // Play a brief silent sound to trigger the unlock context
-    const unlockAudio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAAA');
-    unlockAudio.play().then(() => {
-      audioBanner.style.opacity = '0';
-      setTimeout(() => {
-        audioBanner.classList.add('hidden');
-      }, 300);
-    }).catch(err => console.log('Autoplay unlock retry', err));
+    // Hide the banner immediately on click
+    audioBanner.style.opacity = '0';
+    setTimeout(() => {
+      audioBanner.classList.add('hidden');
+      audioBanner.style.display = 'none';
+    }, 300);
+
+    // Attempt to trigger silent audio context unlock
+    try {
+      const unlockAudio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAAA');
+      unlockAudio.play().catch(err => console.log('Autoplay audio context unlock trigger:', err.message));
+    } catch (e) {
+      console.log('Autoplay context unlock failed:', e.message);
+    }
   }, { once: true });
 }
 
