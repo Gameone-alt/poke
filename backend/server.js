@@ -1733,6 +1733,85 @@ async function processCommand(channelId, username, displayName, messageText, bas
     }
   }
 
+  // --- Open Pack Command ---
+  if (cleanMsg.startsWith('!open pack ') || cleanMsg.startsWith('open pack ') || cleanMsg.startsWith('!open ') || cleanMsg.startsWith('open ')) {
+    const parts = messageText.trim().split(/\s+/);
+    let packType = '';
+    if (parts.length >= 3 && parts[1].toLowerCase() === 'pack') {
+      packType = parts[2].toLowerCase().trim();
+    } else if (parts.length >= 2) {
+      packType = parts[1].toLowerCase().trim();
+    }
+
+    if (!packType) {
+      const msg = `❌ @${displayName}, syntax: !open pack [pack_type] (e.g. !open pack championship)`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+
+    if (packType !== 'championship') {
+      const msg = `❌ @${displayName}, only "championship" packs can be opened from your inventory currently!`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+
+    try {
+      const user = await db.getUser(channelId, username, displayName);
+      const ownedPacks = user.items && user.items.championship_pack ? Number(user.items.championship_pack) : 0;
+      if (ownedPacks <= 0) {
+        throw new Error("You do not own any Championship Booster Packs!");
+      }
+
+      user.items.championship_pack = ownedPacks - 1;
+      await db.saveUser(channelId, user);
+
+      const allPokes = Object.values(pokemonDb);
+      const evolvedCandidates = allPokes.filter(p => p.id >= 3 || p.catchRate <= 0.2);
+      const legendaryCandidates = allPokes.filter(p => p.catchRate <= 0.1);
+
+      const cards = [];
+      for (let i = 0; i < 3; i++) {
+        let drawPool = evolvedCandidates;
+        
+        if (i === 0 && legendaryCandidates.length > 0) {
+          drawPool = legendaryCandidates;
+        } else {
+          drawPool = evolvedCandidates;
+        }
+
+        const randomPoke = drawPool[Math.floor(Math.random() * drawPool.length)];
+        const isShiny = Math.random() < 0.05;
+
+        const newPoke = await db.addPokemon(channelId, username, displayName, randomPoke, isShiny);
+        cards.push({
+          id: randomPoke.id,
+          name: newPoke.name,
+          originalName: randomPoke.name,
+          types: randomPoke.types,
+          spriteUrl: isShiny ? randomPoke.shinySpriteUrl : randomPoke.spriteUrl,
+          fallbackSpriteUrl: isShiny ? randomPoke.fallbackShinySpriteUrl : randomPoke.fallbackSpriteUrl,
+          shiny: isShiny
+        });
+      }
+
+      io.to(channelId).emit('gacha_pack_opened', {
+        username,
+        displayName,
+        packType: 'championship',
+        cards
+      });
+
+      const listStr = cards.map(c => c.name).join(', ');
+      const msg = `🎁 @${displayName} opened a CHAMPIONSHIP Booster Pack and got: ${listStr}!`;
+      sendGameLog(channelId, 'system', msg);
+      return msg;
+    } catch (err) {
+      const msg = `❌ @${displayName}, failed to open pack: ${err.message}`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+  }
+
   // 8.5. !buy pack [kanto/johto/hoenn/sinnoh/unova/kalos/alola/legendary] command
   if (cleanMsg.startsWith('!buy pack ') || cleanMsg.startsWith('buy pack ')) {
     const parts = messageText.trim().split(/\s+/);
@@ -2651,6 +2730,9 @@ async function processCommand(channelId, username, displayName, messageText, bas
         amount
       });
 
+      // Emit bets update
+      io.to(channelId).emit('championship_bet_update', { bets: session.activeChampionship.bets });
+
       const msg = `🪙 @${displayName} bet ${amount} coins on @${targetUser === p1 ? currentMatch.p1.displayName : currentMatch.p2.displayName}!`;
       io.to(channelId).emit('command_feedback', { username, text: msg });
       return msg;
@@ -3398,6 +3480,7 @@ async function resolveMatchBets(channelId, winnerUsername, loserUsername) {
   }
 
   champ.bets = [];
+  io.to(channelId).emit('championship_bet_update', { bets: [] });
 }
 
 async function advanceChampionshipRound(channelId) {
@@ -3484,6 +3567,16 @@ async function advanceChampionshipRound(channelId) {
       await db.incrementChampionshipWin(champion.username);
     } catch (err) {
       console.error(`[Championship] Failed to increment champ win:`, err.message);
+    }
+
+    try {
+      const u = await db.getUser(channelId, champion.username);
+      u.items = u.items || {};
+      u.items.championship_pack = (u.items.championship_pack || 0) + 1;
+      await db.saveUser(channelId, u);
+      sendGameLog(channelId, 'system', `🎁 Payout: @${champion.displayName} received 📦 1x Championship Booster Pack for winning the tournament!`);
+    } catch (err) {
+      console.error('[Championship] Failed to award champ pack:', err.message);
     }
 
     champ.status = 'ended';

@@ -157,6 +157,39 @@
         </div>
       </section>
 
+      <!-- Right Panel: Championship Betting Monitor -->
+      <section class="grid-card championship-bet-card">
+        <h2>🏆 Tournament Betting Monitor</h2>
+        <p class="section-desc">Real-time chat wagers placed on the active matchup.</p>
+        
+        <div class="state-block" style="margin-top: 10px;">
+          <h3>Active Matchup</h3>
+          <div id="champ-bet-matchup" style="font-size: 11px; font-weight: bold; color: var(--color-primary); padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid var(--border-color); text-align: center; font-family: monospace;">
+            No tournament matches active.
+          </div>
+        </div>
+
+        <div style="flex: 1; display: flex; flex-direction: column; min-height: 200px; margin-top: 15px;">
+          <h3>📊 Viewer Wagers</h3>
+          <div class="table-wrap" style="flex: 1; max-height: 280px; overflow-y: auto; margin-top: 10px;">
+            <table class="leaderboard-table" style="font-size: 12px; width: 100%;">
+              <thead>
+                <tr>
+                  <th>Bettor</th>
+                  <th>Backing</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody id="champ-bets-body">
+                <tr>
+                  <td colspan="3" class="text-center muted" style="padding: 20px 0;">No active bets.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
     </main>
 
     <!-- Config View (Full width split tab form) -->

@@ -2209,3 +2209,48 @@ socket.on('championship_cancelled', () => {
     champStatusDesc.textContent = `Status: Inactive`;
   }
 });
+
+// Live Tournament Betting Monitor handlers
+socket.on('championship_match_start', (data) => {
+  const matchupBox = document.getElementById('champ-bet-matchup');
+  const betsBody = document.getElementById('champ-bets-body');
+  if (matchupBox) {
+    matchupBox.textContent = `@${data.p1.displayName} vs @${data.p2.displayName}`;
+  }
+  if (betsBody) {
+    betsBody.innerHTML = `<tr><td colspan="3" class="text-center muted" style="padding: 20px 0;">Waiting for wagers...</td></tr>`;
+  }
+});
+
+socket.on('championship_bet_update', (data) => {
+  const betsBody = document.getElementById('champ-bets-body');
+  if (!betsBody) return;
+
+  const bets = data.bets || [];
+  if (bets.length === 0) {
+    betsBody.innerHTML = `<tr><td colspan="3" class="text-center muted" style="padding: 20px 0;">No active wagers.</td></tr>`;
+    return;
+  }
+
+  betsBody.innerHTML = bets.map(b => `
+    <tr>
+      <td>@${b.displayName}</td>
+      <td style="color: var(--color-primary); font-weight: bold;">@${b.targetUser}</td>
+      <td style="font-weight: bold;">🪙 ${b.amount}</td>
+    </tr>
+  `).join('');
+});
+
+socket.on('championship_match_end', (data) => {
+  const matchupBox = document.getElementById('champ-bet-matchup');
+  if (matchupBox) {
+    matchupBox.textContent = `No active match.`;
+  }
+});
+
+socket.on('championship_ended', (data) => {
+  const matchupBox = document.getElementById('champ-bet-matchup');
+  const betsBody = document.getElementById('champ-bets-body');
+  if (matchupBox) matchupBox.textContent = `No active match.`;
+  if (betsBody) betsBody.innerHTML = `<tr><td colspan="3" class="text-center muted" style="padding: 20px 0;">No active wagers.</td></tr>`;
+});
