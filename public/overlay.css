@@ -2181,3 +2181,82 @@ body.raid-mode-active #battle-overlay {
   0% { transform: translateY(0); }
   100% { transform: translateY(-4px); }
 }
+
+/* ==========================================================================
+   Championship Tournament Bracket Styles
+   ========================================================================== */
+.bracket-matchup {
+  background: rgba(30, 41, 59, 0.9);
+  border: 2px solid rgba(148, 163, 184, 0.3);
+  border-radius: 8px;
+  width: 130px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 7px;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  transition: all 0.3s ease;
+  font-family: 'Press Start 2P', monospace;
+}
+
+.bracket-matchup.active-match {
+  border-color: #ef4444;
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+  transform: scale(1.05);
+}
+
+.bracket-matchup.bye-match {
+  border-color: #10b981;
+  opacity: 0.8;
+}
+
+.bracket-slot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 5px;
+  border-radius: 4px;
+  background: rgba(15, 23, 42, 0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bracket-slot.winner-slot {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  font-weight: bold;
+}
+
+.bracket-slot.loser-slot {
+  opacity: 0.5;
+}
+
+.finals-match-node .bracket-matchup {
+  width: 170px;
+  border-color: #fbbf24;
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+  padding: 8px;
+  font-size: 8px;
+}
+
+.third-place-match-node .bracket-matchup {
+  width: 140px;
+  border-color: #cd7f32;
+  padding: 6px;
+  font-size: 7px;
+}
+
+/* Pinch Mode / Last Hope aura animation */
+.last-hope-glow {
+  box-shadow: 0 0 25px #3b82f6, inset 0 0 15px #3b82f6 !important;
+  animation: lastHopePulse 1.2s infinite alternate !important;
+  border-color: #3b82f6 !important;
+}
+
+@keyframes lastHopePulse {
+  0% { box-shadow: 0 0 15px #3b82f6, inset 0 0 10px #3b82f6; }
+  100% { box-shadow: 0 0 35px #ef4444, inset 0 0 25px #ef4444; border-color: #ef4444; }
+}

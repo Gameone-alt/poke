@@ -178,6 +178,7 @@
             <button type="button" class="config-tab-btn" data-panel="panel-overlay">🎨 Overlay Theme</button>
             <button type="button" class="config-tab-btn" data-panel="panel-raid">🦖 Raid Boss</button>
             <button type="button" class="config-tab-btn" data-panel="panel-layout">📐 Layout Editor</button>
+            <button type="button" class="config-tab-btn" data-panel="panel-championship">🏆 Championship</button>
           </div>
 
           <!-- Content Panels -->
@@ -1023,6 +1024,71 @@
               <div style="margin-top: 15px; text-align: right;">
                 <button type="button" id="btn-reset-layout" class="btn btn-secondary" style="font-size: 12px; padding: 10px 15px; border-radius: 8px; background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: #fff;">Reset All Positions</button>
               </div>
+            </div>
+
+            <!-- Panel: Championship -->
+            <div class="config-tab-panel" id="panel-championship">
+              <h3>🏆 Championship Tournament Settings</h3>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="champ-duration">Registration Window (Minutes)</label>
+                  <input type="number" id="champ-duration" min="1" max="60" value="5">
+                  <small>Duration viewers have to register their teams using <code>!join tournament</code>.</small>
+                </div>
+              </div>
+
+              <h4>🎁 Prize Distribution Configuration</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="champ-1st-type">1st Place Prize Type</label>
+                  <select id="champ-1st-type">
+                    <option value="coins">Coins</option>
+                    <option value="item">Item</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="champ-1st-value">1st Place Prize Value</label>
+                  <input type="text" id="champ-1st-value" value="1000">
+                  <small>E.g. coin amount or item ID (masterball, fire_stone).</small>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="champ-2nd-type">2nd Place Prize Type</label>
+                  <select id="champ-2nd-type">
+                    <option value="coins" selected>Coins</option>
+                    <option value="item">Item</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="champ-2nd-value">2nd Place Prize Value</label>
+                  <input type="text" id="champ-2nd-value" value="500">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="champ-3rd-type">3rd Place Prize Type</label>
+                  <select id="champ-3rd-type">
+                    <option value="coins" selected>Coins</option>
+                    <option value="item">Item</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="champ-3rd-value">3rd Place Prize Value</label>
+                  <input type="text" id="champ-3rd-value" value="250">
+                </div>
+              </div>
+
+              <h4 style="margin-top: 25px;">⚡ Tournament Controls</h4>
+              <div style="display: flex; gap: 12px; align-items: center; margin-top: 10px;">
+                <button type="button" class="btn btn-success" id="btn-start-champ" style="background: #10b981; color: #fff; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-family: inherit;">🏆 Start Registration</button>
+                <button type="button" class="btn btn-primary" id="btn-force-champ" style="background: #3b82f6; color: #fff; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-family: inherit;">⚔️ Force Start Matchmaking</button>
+                <button type="button" class="btn btn-danger" id="btn-cancel-champ" style="background: #ef4444; color: #fff; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-family: inherit;">❌ Cancel Tournament</button>
+              </div>
+              <div id="champ-status-desc" style="font-size: 13px; color: var(--text-muted); margin-top: 15px;">Status: Inactive | Registered Players: 0</div>
             </div>
 
             <!-- Global Action / Save Panel -->

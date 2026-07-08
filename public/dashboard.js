@@ -2140,4 +2140,73 @@ if (btnCloseInventory) {
     manageInventoryModal.style.display = 'none';
     manageInventoryModal.classList.add('hidden');
   });
+  });
 }
+
+// ==========================================================================
+// Championship Tournament Dashboard Controllers
+// ==========================================================================
+const btnStartChamp = document.getElementById('btn-start-champ');
+const btnForceChamp = document.getElementById('btn-force-champ');
+const btnCancelChamp = document.getElementById('btn-cancel-champ');
+const champStatusDesc = document.getElementById('champ-status-desc');
+
+if (btnStartChamp) {
+  btnStartChamp.addEventListener('click', () => {
+    const duration = parseInt(document.getElementById('champ-duration').value, 10) || 5;
+    const rewards = {
+      first: { type: document.getElementById('champ-1st-type').value, value: document.getElementById('champ-1st-value').value },
+      second: { type: document.getElementById('champ-2nd-type').value, value: document.getElementById('champ-2nd-value').value },
+      third: { type: document.getElementById('champ-3rd-type').value, value: document.getElementById('champ-3rd-value').value }
+    };
+    
+    socket.emit('start_championship', { 
+      password: adminPassword, 
+      durationMinutes: duration, 
+      rewards 
+    });
+  });
+}
+
+if (btnForceChamp) {
+  btnForceChamp.addEventListener('click', () => {
+    socket.emit('force_start_championship', { password: adminPassword });
+  });
+}
+
+if (btnCancelChamp) {
+  btnCancelChamp.addEventListener('click', () => {
+    socket.emit('cancel_championship', { password: adminPassword });
+  });
+}
+
+// Socket updates for dashboard
+socket.on('championship_registration_started', (data) => {
+  if (champStatusDesc) {
+    champStatusDesc.textContent = `Status: Registration Open | Registered Players: 0`;
+  }
+});
+
+socket.on('championship_registered_count', (data) => {
+  if (champStatusDesc) {
+    champStatusDesc.textContent = `Status: Registration Open | Registered Players: ${data.count}`;
+  }
+});
+
+socket.on('championship_started', (data) => {
+  if (champStatusDesc) {
+    champStatusDesc.textContent = `Status: Matches Playing`;
+  }
+});
+
+socket.on('championship_ended', (data) => {
+  if (champStatusDesc) {
+    champStatusDesc.textContent = `Status: Inactive`;
+  }
+});
+
+socket.on('championship_cancelled', () => {
+  if (champStatusDesc) {
+    champStatusDesc.textContent = `Status: Inactive`;
+  }
+});

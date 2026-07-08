@@ -233,6 +233,82 @@
     <!-- Chat Buddy Roamer Screen Area (roaming around bottom layer) -->
     <div id="chat-roamer-container" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 120px; overflow: visible; pointer-events: none; z-index: 100;"></div>
 
+    <!-- Championship Tournament Overlay -->
+    <div id="championship-overlay" class="hidden" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 60; background: radial-gradient(circle at center, rgba(15, 23, 42, 0.95) 0%, rgba(8, 12, 24, 0.98) 100%); font-family: 'Press Start 2P', monospace;">
+      
+      <!-- Split Bracket Layout -->
+      <div id="championship-bracket-view" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: space-between; padding: 40px; box-sizing: border-box; position: relative;">
+        <!-- Left half bracket -->
+        <div class="bracket-side-left" style="width: 38%; height: 100%; display: flex; justify-content: space-between; align-items: center;">
+          <div class="bracket-col round-16" style="display: flex; flex-direction: column; justify-content: space-around; height: 100%; gap: 10px;"></div>
+          <div class="bracket-col round-qtr" style="display: flex; flex-direction: column; justify-content: space-around; height: 100%; gap: 20px;"></div>
+          <div class="bracket-col round-semi" style="display: flex; flex-direction: column; justify-content: space-around; height: 100%;"></div>
+        </div>
+
+        <!-- Center area -->
+        <div class="bracket-center" style="width: 24%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
+          <div class="tournament-header" style="text-align: center; font-size: 14px; color: #fbbf24; text-shadow: 0 0 10px rgba(251, 191, 36, 0.5); margin-bottom: 25px; line-height: 1.6;">🏆 STREAM CHAMPIONSHIP 🏆</div>
+          
+          <!-- Finals matchup -->
+          <div class="finals-match-node" style="width: 100%; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center;"></div>
+          
+          <!-- 3rd Place Playoff matchup -->
+          <div class="third-place-match-node" style="width: 100%; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center;"></div>
+          
+          <!-- Trophy/Podium display -->
+          <div class="trophy-display hidden" style="text-align: center; animation: bounce 2s infinite ease-in-out;">
+            <div style="font-size: 60px; margin-bottom: 10px;">👑</div>
+            <div id="champ-winner-name" style="font-size: 11px; color: #10b981; text-shadow: 0 0 8px rgba(16, 185, 129, 0.5);">streamer</div>
+            <div style="font-size: 8px; color: #94a3b8; margin-top: 5px;">TOURNAMENT CHAMPION!</div>
+          </div>
+        </div>
+
+        <!-- Right half bracket -->
+        <div class="bracket-side-right" style="width: 38%; height: 100%; display: flex; justify-content: space-between; align-items: center;">
+          <div class="bracket-col round-semi" style="display: flex; flex-direction: column; justify-content: space-around; height: 100%;"></div>
+          <div class="bracket-col round-qtr" style="display: flex; flex-direction: column; justify-content: space-around; height: 100%; gap: 20px;"></div>
+          <div class="bracket-col round-16" style="display: flex; flex-direction: column; justify-content: space-around; height: 100%; gap: 10px;"></div>
+        </div>
+      </div>
+
+      <!-- Relay Battle Arena Overlay -->
+      <div id="championship-battle-arena" class="hidden" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(8, 12, 24, 0.96); z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box; padding: 20px;">
+        <!-- Bench indicators & fight header -->
+        <div class="relay-fight-header" style="width: 800px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; color: #fff;">
+          <!-- P1 Bench -->
+          <div id="p1-bench-box" style="display: flex; flex-direction: column; gap: 8px; width: 220px;">
+            <div id="p1-bench-name" style="font-size: 9px; color: #3b82f6; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">@Player1</div>
+            <div id="p1-bench-balls" style="display: flex; gap: 6px;"></div>
+          </div>
+          
+          <!-- VS banner -->
+          <div style="font-size: 14px; color: #ef4444; text-shadow: 0 0 10px rgba(239, 68, 68, 0.6); animation: pulse 1s infinite alternate;">VS</div>
+          
+          <!-- P2 Bench -->
+          <div id="p2-bench-box" style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px; width: 220px; text-align: right;">
+            <div id="p2-bench-name" style="font-size: 9px; color: #ec4899; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">@Player2</div>
+            <div id="p2-bench-balls" style="display: flex; gap: 6px; flex-direction: row-reverse;"></div>
+          </div>
+        </div>
+
+        <!-- Stage Area (Relay Clash) -->
+        <div class="relay-stage-area" style="position: relative; width: 800px; height: 320px; display: flex; justify-content: space-between; align-items: center;">
+          <!-- Player 1 Card Wrapper -->
+          <div id="p1-relay-card-wrap" style="position: relative; width: 280px; height: 100%;"></div>
+          
+          <!-- Particle & Clash Center Emitter -->
+          <div id="relay-clash-impact" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; z-index: 100;"></div>
+          
+          <!-- Player 2 Card Wrapper -->
+          <div id="p2-relay-card-wrap" style="position: relative; width: 280px; height: 100%;"></div>
+        </div>
+
+        <!-- Floating fight instructions or status log -->
+        <div id="relay-status-text" style="font-size: 8px; color: #94a3b8; margin-top: 15px; text-align: center; line-height: 1.5; font-family: monospace;">Preparing Relay Matchup...</div>
+      </div>
+      
+    </div>
+
   </div>
 
   <!-- Autoplay Audio Unblock Banner -->

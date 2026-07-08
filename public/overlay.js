@@ -2378,3 +2378,449 @@ if (audioBanner) {
     }).catch(err => console.log('Autoplay unlock retry', err));
   }, { once: true });
 }
+
+// ==========================================================================
+// Championship Tournament Overlay Visuals
+// ==========================================================================
+let currentTournamentState = null;
+let currentP1Idx = 0;
+let currentP2Idx = 0;
+
+function renderChampionshipBracket(bracket, activeRoundIdx, activeMatchIdx) {
+  const leftCol16 = document.querySelector('.bracket-side-left .round-16');
+  const leftColQtr = document.querySelector('.bracket-side-left .round-qtr');
+  const leftColSemi = document.querySelector('.bracket-side-left .round-semi');
+
+  const rightCol16 = document.querySelector('.bracket-side-right .round-16');
+  const rightColQtr = document.querySelector('.bracket-side-right .round-qtr');
+  const rightColSemi = document.querySelector('.bracket-side-right .round-semi');
+
+  const finalsNode = document.querySelector('.finals-match-node');
+  const thirdPlaceNode = document.querySelector('.third-place-match-node');
+
+  if (leftCol16) leftCol16.innerHTML = '';
+  if (leftColQtr) leftColQtr.innerHTML = '';
+  if (leftColSemi) leftColSemi.innerHTML = '';
+  if (rightCol16) rightCol16.innerHTML = '';
+  if (rightColQtr) rightColQtr.innerHTML = '';
+  if (rightColSemi) rightColSemi.innerHTML = '';
+  if (finalsNode) finalsNode.innerHTML = '';
+  if (thirdPlaceNode) thirdPlaceNode.innerHTML = '';
+
+  bracket.forEach((round, roundIdx) => {
+    const isRoundActive = (roundIdx === activeRoundIdx);
+    
+    if (round.length === 8) {
+      round.slice(0, 4).forEach((match, idx) => {
+        if (leftCol16) leftCol16.innerHTML += createMatchupNodeHtml(match, roundIdx, idx, isRoundActive && idx === activeMatchIdx);
+      });
+      round.slice(4, 8).forEach((match, idx) => {
+        const actualIdx = idx + 4;
+        if (rightCol16) rightCol16.innerHTML += createMatchupNodeHtml(match, roundIdx, actualIdx, isRoundActive && actualIdx === activeMatchIdx);
+      });
+    } else if (round.length === 4) {
+      round.slice(0, 2).forEach((match, idx) => {
+        if (leftColQtr) leftColQtr.innerHTML += createMatchupNodeHtml(match, roundIdx, idx, isRoundActive && idx === activeMatchIdx);
+      });
+      round.slice(2, 4).forEach((match, idx) => {
+        const actualIdx = idx + 2;
+        if (rightColQtr) rightColQtr.innerHTML += createMatchupNodeHtml(match, roundIdx, actualIdx, isRoundActive && actualIdx === activeMatchIdx);
+      });
+    } else if (round.length === 2) {
+      if (leftColSemi && round[0]) leftColSemi.innerHTML += createMatchupNodeHtml(round[0], roundIdx, 0, isRoundActive && activeMatchIdx === 0);
+      if (rightColSemi && round[1]) rightColSemi.innerHTML += createMatchupNodeHtml(round[1], roundIdx, 1, isRoundActive && activeMatchIdx === 1);
+    } else if (round.length === 1) {
+      const isFinalsRound = (roundIdx === bracket.length - 1);
+      if (isFinalsRound) {
+        if (finalsNode && round[0]) finalsNode.innerHTML += createMatchupNodeHtml(round[0], roundIdx, 0, isRoundActive);
+      } else {
+        if (thirdPlaceNode && round[0]) {
+          thirdPlaceNode.innerHTML += `<div style="font-size: 7px; color: #cd7f32; margin-bottom: 6px; font-weight: bold;">🥉 3RD PLACE PLAYOFF</div>`;
+          thirdPlaceNode.innerHTML += createMatchupNodeHtml(round[0], roundIdx, 0, isRoundActive);
+        }
+      }
+    }
+  });
+}
+
+function createMatchupNodeHtml(match, roundIdx, matchIdx, isActive) {
+  if (!match) return '';
+  const p1Name = match.p1 ? `@${match.p1.displayName}` : 'EMPTY';
+  const p2Name = match.p2 ? `@${match.p2.displayName}` : 'EMPTY';
+  
+  let p1Class = 'bracket-slot';
+  let p2Class = 'bracket-slot';
+  
+  if (match.winner) {
+    if (match.p1 && match.winner.username === match.p1.username) {
+      p1Class += ' winner-slot';
+      p2Class += ' loser-slot';
+    } else if (match.p2 && match.winner.username === match.p2.username) {
+      p2Class += ' winner-slot';
+      p1Class += ' loser-slot';
+    }
+  }
+  
+  const activeClass = isActive ? 'active-match' : '';
+  const byeClass = match.isBye ? 'bye-match' : '';
+  
+  return `
+    <div class="bracket-matchup ${activeClass} ${byeClass}">
+      <div class="${p1Class}">${p1Name}</div>
+      <div class="bracket-divider" style="border-bottom: 1px solid rgba(255,255,255,0.08); margin: 2px 0;"></div>
+      <div class="${p2Class}">${p2Name}</div>
+    </div>
+  `;
+}
+
+function buildFighterCardHtml(poke) {
+  if (!poke) return '';
+  const typeBadges = (poke.types || []).map(t => `<span class="type-badge type-${t}" style="padding: 2px 4px; border-radius: 4px; font-size: 6px; text-transform: uppercase; color: #fff;">${t}</span>`).join(' ');
+  const borderStyle = poke.shiny ? 'border: 2px solid #fbbf24; box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);' : 'border: 1px solid rgba(255,255,255,0.15);';
+  
+  return `
+    <div class="relay-card-inner" style="width: 100%; height: 100%; background: radial-gradient(circle at center, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 0.99) 100%); border-radius: 16px; ${borderStyle} display: flex; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box; padding: 15px; position: relative;">
+      ${poke.shiny ? '<div style="position: absolute; top: 8px; right: 10px; font-size: 10px; animation: bounce 1s infinite alternate;">✨</div>' : ''}
+      <div style="font-size: 7px; color: #94a3b8; margin-bottom: 5px; text-transform: uppercase;">CP ${calculateCP(poke.baseStats, poke.wins || 0, poke.shiny)}</div>
+      
+      <img class="fighter-sprite" src="${poke.spriteUrl}" onerror="this.src='${poke.fallbackSpriteUrl}';" style="width: 90px; height: 90px; object-fit: contain; image-rendering: pixelated; margin-bottom: 8px;" />
+      
+      <div style="font-size: 8px; color: #fff; margin-bottom: 4px; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px; text-align: center;">${poke.name}</div>
+      <div style="display: flex; gap: 4px; margin-bottom: 12px;">${typeBadges}</div>
+      
+      <div style="width: 100%; background: rgba(0, 0, 0, 0.5); height: 8px; border-radius: 4px; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.05);">
+        <div class="fighter-hp-fill" style="width: 100%; height: 100%; background: #10b981; transition: width 0.3s ease;"></div>
+      </div>
+      <div class="fighter-hp-text" style="font-size: 6px; color: #94a3b8; margin-top: 4px;">${poke.currentHp} / ${poke.maxHp} HP</div>
+    </div>
+  `;
+}
+
+function updateRelayBenchBalls(containerId, activeIdx) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  
+  let ballsHtml = '';
+  for (let i = 0; i < 6; i++) {
+    if (i < activeIdx) {
+      ballsHtml += `<span style="font-size: 11px; opacity: 0.2; filter: grayscale(100%);">⚫</span>`;
+    } else if (i === activeIdx) {
+      ballsHtml += `<span style="font-size: 11px; animation: bounce 0.6s infinite alternate;">🔴</span>`;
+    } else {
+      ballsHtml += `<span style="font-size: 11px;">🔴</span>`;
+    }
+  }
+  container.innerHTML = ballsHtml;
+}
+
+// Websocket Events for Championship Overlay
+socket.on('championship_registration_started', (data) => {
+  const overlay = document.getElementById('championship-overlay');
+  const bracketView = document.getElementById('championship-bracket-view');
+  const battleArena = document.getElementById('championship-battle-arena');
+  const trophy = document.querySelector('.trophy-display');
+
+  if (overlay) overlay.classList.remove('hidden');
+  if (bracketView) bracketView.classList.add('hidden');
+  if (battleArena) battleArena.classList.add('hidden');
+  if (trophy) trophy.classList.add('hidden');
+  
+  // Clean up bracket elements
+  renderChampionshipBracket([], 0, 0);
+  
+  playSound(sfxSpawn);
+});
+
+socket.on('championship_started', (data) => {
+  const overlay = document.getElementById('championship-overlay');
+  const bracketView = document.getElementById('championship-bracket-view');
+  const battleArena = document.getElementById('championship-battle-arena');
+  
+  if (overlay) overlay.classList.remove('hidden');
+  if (bracketView) bracketView.classList.remove('hidden');
+  if (battleArena) battleArena.classList.add('hidden');
+  
+  currentTournamentState = data.bracket;
+  renderChampionshipBracket(data.bracket, 0, 0);
+  
+  playSound(sfxEvolve);
+});
+
+socket.on('championship_bracket_update', (data) => {
+  currentTournamentState = data.bracket;
+  renderChampionshipBracket(data.bracket, data.currentRound, 0);
+});
+
+socket.on('championship_match_start', (data) => {
+  const battleArena = document.getElementById('championship-battle-arena');
+  const p1CardWrap = document.getElementById('p1-relay-card-wrap');
+  const p2CardWrap = document.getElementById('p2-relay-card-wrap');
+  const p1Name = document.getElementById('p1-bench-name');
+  const p2Name = document.getElementById('p2-bench-name');
+  const statusText = document.getElementById('relay-status-text');
+
+  if (battleArena) battleArena.classList.remove('hidden');
+  
+  currentP1Idx = 0;
+  currentP2Idx = 0;
+  
+  if (p1Name) p1Name.textContent = `@${data.p1.displayName}`;
+  if (p2Name) p2Name.textContent = `@${data.p2.displayName}`;
+  
+  updateRelayBenchBalls('p1-bench-balls', 0);
+  updateRelayBenchBalls('p2-bench-balls', 0);
+
+  if (p1CardWrap) {
+    p1CardWrap.innerHTML = buildFighterCardHtml(data.p1.team[0]);
+    p1CardWrap.className = ''; // Reset Last Hope aura classes
+    gsap.fromTo(p1CardWrap, { x: -350, opacity: 0 }, { x: 0, opacity: 1, duration: 0.8, ease: 'power2.out' });
+  }
+  
+  if (p2CardWrap) {
+    p2CardWrap.innerHTML = buildFighterCardHtml(data.p2.team[0]);
+    p2CardWrap.className = '';
+    gsap.fromTo(p2CardWrap, { x: 350, opacity: 0 }, { x: 0, opacity: 1, duration: 0.8, ease: 'power2.out' });
+  }
+
+  if (statusText) statusText.innerHTML = `⚔️ Matchup Started!<br/>Place your bets now: <strong>!bet [username] [coins]</strong>`;
+
+  playSound(sfxSpawn);
+  renderChampionshipBracket(currentTournamentState, data.roundIdx, data.matchIdx);
+});
+
+socket.on('championship_relay_hit', (data) => {
+  const p1CardWrap = document.getElementById('p1-relay-card-wrap');
+  const p2CardWrap = document.getElementById('p2-relay-card-wrap');
+  const statusText = document.getElementById('relay-status-text');
+
+  // Trigger Clash collision animation
+  const activeAttacker = data.attacker === 'p1' ? p1CardWrap : p2CardWrap;
+  const activeDefender = data.attacker === 'p1' ? p2CardWrap : p1CardWrap;
+  const moveX = data.attacker === 'p1' ? 120 : -120;
+
+  // Animate attack clash
+  gsap.timeline()
+    .to(activeAttacker, { x: moveX, duration: 0.1, ease: 'power2.in' })
+    .to(activeAttacker, { 
+      x: 0, 
+      duration: 0.4, 
+      ease: 'back.out(1.5)',
+      onStart: () => {
+        // Play hit sound effect
+        playSound(sfxHit);
+        
+        // Shake defender card & flash full-screen briefly
+        gsap.fromTo(activeDefender, { x: data.attacker === 'p1' ? 10 : -10 }, { x: 0, duration: 0.08, repeat: 3, yoyo: true });
+        
+        // Render stylized impact bubble popup
+        createRelashImpactPopup(data.damage, data.isCrit);
+      }
+    });
+
+  // Update HP indicators
+  setTimeout(() => {
+    if (p1CardWrap) {
+      const fill = p1CardWrap.querySelector('.fighter-hp-fill');
+      const text = p1CardWrap.querySelector('.fighter-hp-text');
+      if (fill) fill.style.width = `${(data.p1Hp / data.p1MaxHp) * 100}%`;
+      if (text) text.textContent = `${data.p1Hp} / ${data.p1MaxHp} HP`;
+    }
+    if (p2CardWrap) {
+      const fill = p2CardWrap.querySelector('.fighter-hp-fill');
+      const text = p2CardWrap.querySelector('.fighter-hp-text');
+      if (fill) fill.style.width = `${(data.p2Hp / data.p2MaxHp) * 100}%`;
+      if (text) text.textContent = `${data.p2Hp} / ${data.p2MaxHp} HP`;
+    }
+  }, 100);
+});
+
+socket.on('championship_relay_slidein', (data) => {
+  const p1CardWrap = document.getElementById('p1-relay-card-wrap');
+  const p2CardWrap = document.getElementById('p2-relay-card-wrap');
+  const statusText = document.getElementById('relay-status-text');
+
+  const faintedCard = data.player === 'p1' ? p1CardWrap : p2CardWrap;
+  
+  if (data.player === 'p1') {
+    currentP1Idx = data.nextIndex;
+    updateRelayBenchBalls('p1-bench-balls', currentP1Idx);
+  } else {
+    currentP2Idx = data.nextIndex;
+    updateRelayBenchBalls('p2-bench-balls', currentP2Idx);
+  }
+
+  // Play Red energy-burst faint exit animation
+  gsap.timeline()
+    .to(faintedCard.querySelector('.relay-card-inner'), {
+      filter: 'brightness(1.5) sepia(100%) saturate(1000%) hue-rotate(-50deg)',
+      duration: 0.3
+    })
+    .to(faintedCard, {
+      scale: 0.3,
+      opacity: 0,
+      y: 150,
+      duration: 0.5,
+      ease: 'power2.in',
+      onStart: () => {
+        playSound(sfxCatchFail);
+        createRelashFaintParticles(faintedCard);
+      },
+      onComplete: () => {
+        faintedCard.innerHTML = buildFighterCardHtml(data.nextPokemon);
+        
+        // Apply Last Hope aura if index is 5 (last pokemon)
+        if (data.nextIndex === 5) {
+          faintedCard.classList.add('last-hope-glow');
+          if (statusText) statusText.innerHTML = `⚠️ <strong>LAST HOPE AURA ENERGISED!</strong>`;
+        }
+
+        // Pokéball Launch summon animation
+        const xOffset = data.player === 'p1' ? -350 : 350;
+        gsap.fromTo(faintedCard, { x: xOffset, scale: 0.3, opacity: 0 }, {
+          x: 0,
+          scale: 1,
+          opacity: 1,
+          duration: 0.6,
+          ease: 'back.out(1.5)',
+          onStart: () => {
+            playSound(sfxThrow);
+          }
+        });
+      }
+    });
+});
+
+socket.on('championship_match_result', (data) => {
+  const battleArena = document.getElementById('championship-battle-arena');
+  if (battleArena) battleArena.classList.add('hidden');
+});
+
+socket.on('championship_match_end', (data) => {
+  const battleArena = document.getElementById('championship-battle-arena');
+  const statusText = document.getElementById('relay-status-text');
+
+  if (statusText) statusText.innerHTML = `🏁 Match ended! Winner: @${data.winner.displayName}`;
+  
+  setTimeout(() => {
+    if (battleArena) battleArena.classList.add('hidden');
+    renderChampionshipBracket(currentTournamentState, data.roundIdx + 1, data.matchIdx + 1);
+  }, 2000);
+});
+
+socket.on('championship_ended', (data) => {
+  const battleArena = document.getElementById('championship-battle-arena');
+  const bracketView = document.getElementById('championship-bracket-view');
+  const trophy = document.querySelector('.trophy-display');
+  const champName = document.getElementById('champ-winner-name');
+
+  if (battleArena) battleArena.classList.add('hidden');
+  if (bracketView) bracketView.classList.remove('hidden');
+  if (trophy) {
+    trophy.classList.remove('hidden');
+    if (champName) champName.textContent = `@${data.champion.displayName}`;
+  }
+
+  playSound(sfxEvolve);
+});
+
+socket.on('championship_cancelled', () => {
+  const overlay = document.getElementById('championship-overlay');
+  if (overlay) overlay.classList.add('hidden');
+});
+
+// Helper for CP calculation matching backend
+function calculateCP(stats, wins, shiny) {
+  const hp = stats.hp || 50;
+  const attack = stats.attack || 50;
+  const defense = stats.defense || 50;
+  const speed = stats.speed || 50;
+  const total = hp + attack + defense + speed;
+  const winsBonus = 1 + (wins || 0) * 0.05;
+  const shinyMultiplier = shiny ? 1.2 : 1.0;
+  return Math.floor(total * winsBonus * shinyMultiplier);
+}
+
+// Animates a stylized collision splash bubble in the center stage
+function createRelashImpactPopup(damage, isCrit) {
+  const clashCenter = document.getElementById('relay-clash-impact');
+  if (!clashCenter) return;
+
+  const bubble = document.createElement('div');
+  bubble.className = 'clash-impact-bubble';
+  bubble.style.position = 'absolute';
+  bubble.style.transform = 'translate(-50%, -50%)';
+  bubble.style.background = isCrit ? '#ef4444' : '#fbbf24';
+  bubble.style.border = '2px solid #fff';
+  bubble.style.borderRadius = '8px';
+  bubble.style.padding = '5px 10px';
+  bubble.style.color = '#fff';
+  bubble.style.fontSize = isCrit ? '11px' : '9px';
+  bubble.style.fontWeight = 'bold';
+  bubble.style.boxShadow = '0 0 15px rgba(255,255,255,0.4)';
+  bubble.style.whiteSpace = 'nowrap';
+  bubble.style.zIndex = '1000';
+  
+  const textArr = isCrit ? ['💥 CRIT!', '💥 BOOM!', '💥 SLAM!'] : ['💥 POW!', '💥 HIT!', '💥 CLASH!'];
+  const text = textArr[Math.floor(Math.random() * textArr.length)];
+  bubble.textContent = `${text} -${damage}`;
+
+  clashCenter.appendChild(bubble);
+
+  // Animate splash boom popup
+  const rot = Math.floor(Math.random() * 20) - 10;
+  gsap.fromTo(bubble, 
+    { scale: 0.1, rotation: rot, opacity: 1 }, 
+    { 
+      scale: 1.3, 
+      y: -50,
+      opacity: 0, 
+      duration: 0.8, 
+      ease: 'back.out(1.7)',
+      onComplete: () => {
+        bubble.remove();
+      }
+    }
+  );
+}
+
+// Particle explosion for fainted exit cards
+function createRelashFaintParticles(cardEl) {
+  const clashCenter = document.getElementById('relay-clash-impact');
+  if (!clashCenter || !cardEl) return;
+
+  const cardRect = cardEl.getBoundingClientRect();
+  const centerLeft = cardRect.left + cardRect.width / 2;
+  const centerTop = cardRect.top + cardRect.height / 2;
+
+  // Emit 25 small pixel particles
+  for (let i = 0; i < 25; i++) {
+    const p = document.createElement('div');
+    p.style.position = 'fixed';
+    p.style.left = `${centerLeft}px`;
+    p.style.top = `${centerTop}px`;
+    p.style.width = '6px';
+    p.style.height = '6px';
+    p.style.background = Math.random() < 0.5 ? '#ef4444' : '#475569';
+    p.style.borderRadius = '2px';
+    p.style.zIndex = '2000';
+    p.style.pointerEvents = 'none';
+
+    document.body.appendChild(p);
+
+    const destX = (Math.random() - 0.5) * 150;
+    const destY = (Math.random() - 0.5) * 150 - 50;
+
+    gsap.to(p, {
+      x: destX,
+      y: destY,
+      opacity: 0,
+      scale: 0.2,
+      rotation: Math.random() * 360,
+      duration: 1.0,
+      ease: 'power2.out',
+      onComplete: () => {
+        p.remove();
+      }
+    });
+  }
+}

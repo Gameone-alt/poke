@@ -229,7 +229,8 @@ async function runAutoMigrations() {
       ADD COLUMN IF NOT EXISTS gym_badges JSONB DEFAULT '[]',
       ADD COLUMN IF NOT EXISTS loyalty_active_minutes INTEGER DEFAULT 0,
       ADD COLUMN IF NOT EXISTS daily_battle_count INTEGER DEFAULT 0,
-      ADD COLUMN IF NOT EXISTS last_battle_date VARCHAR(10) DEFAULT '';
+      ADD COLUMN IF NOT EXISTS last_battle_date VARCHAR(10) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS championship_wins INTEGER DEFAULT 0;
     `);
 
     // Add columns to streamer_configs table
@@ -2236,7 +2237,54 @@ async function findPlayerByNickname(streamerId, nickname) {
   return await getUser('global', cleanKey);
 }
 
+async function incrementChampionshipWin(username) {
+  if (useLocalFallback) {
+    const k = `global_${username.toLowerCase()}`;
+    if (localUsers[k]) {
+      localUsers[k].championship_wins = (localUsers[k].championship_wins || 0) + 1;
+      saveLocalUsers();
+    }
+    return;
+  }
+  await query(
+    "UPDATE players SET championship_wins = COALESCE(championship_wins, 0) + 1 WHERE streamer_id = 'global' AND LOWER(username) = LOWER($1)",
+    [username]
+  );
+}
+
+async function getChampionshipLeaderboard(streamerId) {
+  const streamer = streamerId.toLowerCase().trim();
+  if (useLocalFallback) {
+    const list = [];
+    for (const k of Object.keys(localUsers)) {
+      if (k.startsWith(`global_`)) {
+        const u = localUsers[k];
+        list.push({
+          username: u.username,
+          displayName: u.display_name || u.username,
+          championshipWins: u.championship_wins || 0
+        });
+      }
+    }
+    return list.sort((a, b) => b.championshipWins - a.championshipWins).slice(0, 10);
+  }
+  
+  const playersRes = await query(
+    "SELECT username, display_name, COALESCE(championship_wins, 0) as championship_wins FROM players WHERE streamer_id = 'global' AND COALESCE(championship_wins, 0) > 0"
+  );
+  
+  const list = playersRes.rows.map(row => ({
+    username: row.username,
+    displayName: row.display_name || row.username,
+    championshipWins: row.championship_wins
+  }));
+  
+  return list.sort((a, b) => b.championshipWins - a.championshipWins).slice(0, 10);
+}
+
 module.exports = {
+  incrementChampionshipWin,
+  getChampionshipLeaderboard,
   getUser,
   saveUser,
   addPokemon,

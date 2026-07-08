@@ -375,6 +375,7 @@ function getOrCreateSession(channelId) {
       activeBattle: null,
       activeTrade: null,
       activeRaidBoss: null,
+      activeChampionship: null,
       config: {
         channelId: cid,
         videoId: '',
@@ -2514,9 +2515,155 @@ async function processCommand(channelId, username, displayName, messageText, bas
     return msg;
   }
 
+  // --- Championship Join Command ---
+  if (cleanMsg.startsWith('!join tournament') || cleanMsg.startsWith('!join championship') || cleanMsg.startsWith('!join tourney')) {
+    if (!session.activeChampionship || session.activeChampionship.status !== 'registration') {
+      const msg = `❌ @${displayName}, there is no active Championship Tournament registration currently!`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+
+    try {
+      const user = await db.getUser(channelId, username, displayName);
+      if (!user.inventory || user.inventory.length === 0) {
+        throw new Error("You don't have any Pokémon yet!");
+      }
+
+      // Check if they supplied custom pokemon names
+      const parts = messageText.trim().split(/\s+/);
+      let team = [];
+
+      // Filter healthy pokemon
+      const healthyInventory = user.inventory.filter(p => p.currentHp > 0);
+
+      if (parts.length <= 2) {
+        // Fallback: auto-pick top 6 CP healthy
+        if (healthyInventory.length < 6) {
+          throw new Error(`You need at least 6 healthy Pokémon to register! (You have ${healthyInventory.length})`);
+        }
+        const sorted = [...healthyInventory].sort((a, b) => {
+          const cpA = calculateCP(a.baseStats, a.wins || 0, a.shiny);
+          const cpB = calculateCP(b.baseStats, b.wins || 0, b.shiny);
+          return cpB - cpA;
+        });
+        team = sorted.slice(0, 6);
+      } else {
+        // Custom team names specified.
+        const nameList = parts.slice(2).map(n => n.replace(/,/g, '').toLowerCase().trim());
+        if (nameList.length < 6) {
+          throw new Error("Please specify exactly 6 healthy Pokémon names, or type just '!join tournament' for your top 6 CP healthy team!");
+        }
+
+        const chosenInstanceIds = new Set();
+        for (let i = 0; i < 6; i++) {
+          const targetName = nameList[i];
+          const matchPoke = healthyInventory.find(p => p.name.toLowerCase() === targetName && !chosenInstanceIds.has(p.instanceId));
+          if (!matchPoke) {
+            throw new Error(`You do not own a healthy "${targetName}"! Check names & spelling.`);
+          }
+          chosenInstanceIds.add(matchPoke.instanceId);
+          team.push(matchPoke);
+        }
+      }
+
+      // Add to tournament list
+      const isUpdate = session.activeChampionship.players.has(username.toLowerCase());
+      session.activeChampionship.players.set(username.toLowerCase(), {
+        username: username.toLowerCase(),
+        displayName: displayName,
+        team: team.map(p => ({
+          instanceId: p.instanceId,
+          pokemonId: p.pokemonId,
+          name: p.name,
+          types: p.types,
+          baseStats: { ...p.baseStats },
+          currentHp: p.currentHp,
+          maxHp: p.baseStats.hp,
+          wins: p.wins || 0,
+          shiny: p.shiny,
+          spriteUrl: p.shiny ? p.shinySpriteUrl || p.spriteUrl : p.spriteUrl,
+          fallbackSpriteUrl: p.shiny ? p.fallbackShinySpriteUrl || p.fallbackSpriteUrl : p.fallbackSpriteUrl
+        }))
+      });
+
+      const msg = isUpdate 
+        ? `✅ @${displayName}, your Tournament Team has been updated successfully! (${team.map(t => t.name).join(', ')})`
+        : `🏆 @${displayName} registered for the Championship! Team: ${team.map(t => t.name).join(', ')}`;
+      
+      sendGameLog(channelId, 'system', msg);
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      
+      io.to(channelId).emit('championship_registered_count', { count: session.activeChampionship.players.size });
+      return msg;
+    } catch (err) {
+      const msg = `❌ @${displayName}, registration failed: ${err.message}`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+  }
+
+  // --- Championship Bet Command ---
+  if (cleanMsg.startsWith('!bet ')) {
+    if (!session.activeChampionship || session.activeChampionship.status !== 'playing') {
+      const msg = `❌ @${displayName}, betting is only open during active tournament matches!`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+
+    try {
+      const parts = messageText.trim().split(/\s+/);
+      if (parts.length < 3) {
+        throw new Error("Syntax: !bet [username] [amount]");
+      }
+      
+      const targetUser = parts[1].replace(/@/g, '').toLowerCase().trim();
+      const amount = parseInt(parts[2], 10);
+      if (isNaN(amount) || amount <= 0) {
+        throw new Error("Please specify a valid positive coin amount to bet!");
+      }
+
+      const roundIdx = session.activeChampionship.currentRound;
+      const matchIdx = session.activeChampionship.currentMatch;
+      const currentMatch = session.activeChampionship.bracket[roundIdx]?.[matchIdx];
+      if (!currentMatch || currentMatch.winner || currentMatch.isBye) {
+        throw new Error("There is no active fight currently to bet on!");
+      }
+
+      const p1 = currentMatch.p1.username.toLowerCase();
+      const p2 = currentMatch.p2.username.toLowerCase();
+      if (targetUser !== p1 && targetUser !== p2) {
+        throw new Error(`Player "@${targetUser}" is not in the active match! Select either @${currentMatch.p1.displayName} or @${currentMatch.p2.displayName}.`);
+      }
+
+      const bettor = await db.getUser(channelId, username, displayName);
+      if (bettor.coins < amount) {
+        throw new Error(`You do not have enough coins! (Current: 🪙 ${bettor.coins})`);
+      }
+
+      bettor.coins -= amount;
+      await db.saveUser(channelId, bettor);
+
+      session.activeChampionship.bets = session.activeChampionship.bets || [];
+      session.activeChampionship.bets.push({
+        username: username.toLowerCase(),
+        displayName: displayName,
+        targetUser,
+        amount
+      });
+
+      const msg = `🪙 @${displayName} bet ${amount} coins on @${targetUser === p1 ? currentMatch.p1.displayName : currentMatch.p2.displayName}!`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    } catch (err) {
+      const msg = `❌ @${displayName}, bet declined: ${err.message}`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+  }
+
   // 11. !help / !commands command
   if (cleanMsg === '!help' || cleanMsg === 'help' || cleanMsg === '!commands' || cleanMsg === 'commands') {
-    return `🎮 Pokémon Game: !daily | !inventory | !coins | !shop | !buy [ball/stone] [amt] | !buddy [name] | !select [name] | !catch [ball_type] | !fight [@user/wild] [your_poke] | !trade @user [poke] | !accepttrade [poke] | !confirm | !use [stone] [poke] | !fuse [name] | !heal [name] | !attack`;
+    return `🎮 Pokémon Game: !daily | !inventory | !coins | !shop | !buy [ball/stone] [amt] | !buddy [name] | !select [name] | !catch [ball_type] | !fight [@user/wild] [your_poke] | !trade @user [poke] | !accepttrade [poke] | !confirm | !use [stone] [poke] | !fuse [name] | !heal [name] | !attack | !join tournament | !bet [user] [amt]`;
   }
 
   return null;
@@ -2644,6 +2791,43 @@ io.on('connection', async (socket) => {
     } catch (err) {
       console.error(`[Server] [${channelId}] Failed to trigger boss raid:`, err.message);
       socket.emit('command_feedback', { text: `❌ Failed to trigger boss raid: ${err.message}` });
+    }
+  });
+
+  // Championship Tournament socket handlers
+  socket.on('start_championship', async (data) => {
+    const { password, durationMinutes, rewards } = data || {};
+    if (!isAuthorizedAdmin(password, socket)) return;
+    
+    try {
+      await startChampionship(channelId, durationMinutes || 5, rewards);
+      socket.emit('command_feedback', { text: '🏆 Championship Tournament registration started!' });
+    } catch (err) {
+      socket.emit('command_feedback', { text: `❌ Failed to start tournament: ${err.message}` });
+    }
+  });
+
+  socket.on('force_start_championship', async (data) => {
+    const { password } = data || {};
+    if (!isAuthorizedAdmin(password, socket)) return;
+    
+    try {
+      await forceStartChampionship(channelId);
+      socket.emit('command_feedback', { text: '🏆 Bracket generated and matches started!' });
+    } catch (err) {
+      socket.emit('command_feedback', { text: `❌ Failed to start bracket: ${err.message}` });
+    }
+  });
+
+  socket.on('cancel_championship', async (data) => {
+    const { password } = data || {};
+    if (!isAuthorizedAdmin(password, socket)) return;
+    
+    try {
+      await cancelChampionship(channelId);
+      socket.emit('command_feedback', { text: '⚠️ Tournament cancelled!' });
+    } catch (err) {
+      socket.emit('command_feedback', { text: `❌ Failed to cancel tournament: ${err.message}` });
     }
   });
 
@@ -2925,6 +3109,473 @@ io.on('connection', async (socket) => {
     socket.emit('config_updated', session.config);
   }
 });
+
+// --- Championship Tournament Engine ---
+
+async function startChampionship(channelId, durationMinutes, rewards) {
+  const session = getOrCreateSession(channelId);
+  session.activeChampionship = {
+    status: 'registration',
+    rewards: rewards || {
+      first: { type: 'coins', value: 1000 },
+      second: { type: 'coins', value: 500 },
+      third: { type: 'coins', value: 250 }
+    },
+    players: new Map(),
+    bracket: [],
+    currentRound: 0,
+    currentMatch: 0,
+    semifinalLosers: [],
+    thirdPlaceWinner: null,
+    bets: []
+  };
+
+  const durationMs = durationMinutes * 60 * 1000;
+  
+  io.to(channelId).emit('championship_registration_started', {
+    durationMs,
+    rewards: session.activeChampionship.rewards
+  });
+
+  sendGameLog(channelId, 'system', `🏆 Championship registration started! Duration: ${durationMinutes} mins. Type !join tournament to register!`);
+
+  session.championshipTimer = setTimeout(() => {
+    forceStartChampionship(channelId).catch(err => {
+      console.error(`[Championship] [${channelId}] Auto-start failed:`, err.message);
+    });
+  }, durationMs);
+}
+
+async function cancelChampionship(channelId) {
+  const session = getOrCreateSession(channelId);
+  if (session.championshipTimer) {
+    clearTimeout(session.championshipTimer);
+    session.championshipTimer = null;
+  }
+  session.activeChampionship = null;
+  io.to(channelId).emit('championship_cancelled');
+  sendGameLog(channelId, 'system', '⚠️ The Championship Tournament has been cancelled by the streamer.');
+}
+
+async function forceStartChampionship(channelId) {
+  const session = getOrCreateSession(channelId);
+  if (session.championshipTimer) {
+    clearTimeout(session.championshipTimer);
+    session.championshipTimer = null;
+  }
+
+  const champ = session.activeChampionship;
+  if (!champ || champ.status !== 'registration') {
+    throw new Error("No active tournament registration to start!");
+  }
+
+  const registeredList = Array.from(champ.players.values());
+  if (registeredList.length < 2) {
+    champ.status = 'inactive';
+    session.activeChampionship = null;
+    io.to(channelId).emit('championship_cancelled');
+    throw new Error("Cannot start tournament: At least 2 players are required to build a bracket!");
+  }
+
+  const shuffled = [...registeredList].sort(() => Math.random() - 0.5);
+
+  let bracketSize = 2;
+  if (shuffled.length > 8) bracketSize = 16;
+  else if (shuffled.length > 4) bracketSize = 8;
+  else if (shuffled.length > 2) bracketSize = 4;
+
+  const round1Matches = [];
+  for (let i = 0; i < bracketSize; i += 2) {
+    const p1 = shuffled[i] || null;
+    const p2 = shuffled[i + 1] || null;
+    
+    let isBye = false;
+    let winner = null;
+    if (p1 && !p2) {
+      isBye = true;
+      winner = p1;
+    } else if (!p1 && p2) {
+      isBye = true;
+      winner = p2;
+    }
+
+    round1Matches.push({
+      matchId: i / 2,
+      p1,
+      p2,
+      isBye,
+      winner
+    });
+  }
+
+  champ.bracket = [round1Matches];
+  champ.currentRound = 0;
+  champ.currentMatch = 0;
+  champ.status = 'playing';
+
+  io.to(channelId).emit('championship_started', {
+    bracket: champ.bracket,
+    rewards: champ.rewards
+  });
+
+  sendGameLog(channelId, 'system', `🏆 Championship bracket generated with ${shuffled.length} players! Starting matches...`);
+
+  setTimeout(() => {
+    runNextChampionshipMatch(channelId);
+  }, 4000);
+}
+
+async function runNextChampionshipMatch(channelId) {
+  const session = getOrCreateSession(channelId);
+  const champ = session.activeChampionship;
+  if (!champ || champ.status !== 'playing') return;
+
+  const roundIdx = champ.currentRound;
+  const matchIdx = champ.currentMatch;
+  const currentRoundMatches = champ.bracket[roundIdx];
+
+  if (matchIdx >= currentRoundMatches.length) {
+    await advanceChampionshipRound(channelId);
+    return;
+  }
+
+  const match = currentRoundMatches[matchIdx];
+
+  if (!match.p1 && !match.p2) {
+    match.winner = null;
+    champ.currentMatch++;
+    runNextChampionshipMatch(channelId);
+    return;
+  }
+
+  if (match.isBye || !match.p1 || !match.p2) {
+    match.winner = match.p1 || match.p2;
+    match.isBye = true;
+    sendGameLog(channelId, 'system', `🏆 Match ${matchIdx + 1}: @${match.winner.displayName} advances on a BYE!`);
+    
+    io.to(channelId).emit('championship_match_result', {
+      roundIdx,
+      matchIdx,
+      winner: { username: match.winner.username, displayName: match.winner.displayName }
+    });
+
+    champ.currentMatch++;
+    setTimeout(() => {
+      runNextChampionshipMatch(channelId);
+    }, 2000);
+    return;
+  }
+
+  champ.bets = [];
+  
+  io.to(channelId).emit('championship_match_start', {
+    roundIdx,
+    matchIdx,
+    p1: { username: match.p1.username, displayName: match.p1.displayName, team: match.p1.team },
+    p2: { username: match.p2.username, displayName: match.p2.displayName, team: match.p2.team }
+  });
+
+  sendGameLog(channelId, 'system', `⚔️ Matchup: @${match.p1.displayName} vs @${match.p2.displayName}! Place your bets: !bet [username] [coins]`);
+
+  setTimeout(() => {
+    simulateRelayFightTicks(channelId, match);
+  }, 15000);
+}
+
+function simulateRelayFightTicks(channelId, match) {
+  const session = getOrCreateSession(channelId);
+  const champ = session.activeChampionship;
+  if (!champ) return;
+
+  const team1 = match.p1.team;
+  const team2 = match.p2.team;
+
+  team1.forEach(p => p.currentHp = p.maxHp);
+  team2.forEach(p => p.currentHp = p.maxHp);
+
+  let idx1 = 0;
+  let idx2 = 0;
+  
+  let nextActionType = 'hit';
+  let faintedPlayer = null;
+
+  const fightInterval = setInterval(() => {
+    const currentChamp = session.activeChampionship;
+    if (!currentChamp || currentChamp.status !== 'playing') {
+      clearInterval(fightInterval);
+      return;
+    }
+
+    if (idx1 >= 6 || idx2 >= 6) {
+      clearInterval(fightInterval);
+      const winner = idx1 < 6 ? match.p1 : match.p2;
+      const loser = idx1 < 6 ? match.p2 : match.p1;
+      match.winner = winner;
+
+      io.to(channelId).emit('championship_match_end', {
+        roundIdx: currentChamp.currentRound,
+        matchIdx: currentChamp.currentMatch,
+        winner: { username: winner.username, displayName: winner.displayName }
+      });
+
+      sendGameLog(channelId, 'system', `🏆 Match result: @${winner.displayName} defeats @${loser.displayName}!`);
+      
+      resolveMatchBets(channelId, winner.username.toLowerCase(), loser.username.toLowerCase());
+
+      currentChamp.currentMatch++;
+      
+      setTimeout(() => {
+        runNextChampionshipMatch(channelId);
+      }, 5000);
+      return;
+    }
+
+    const poke1 = team1[idx1];
+    const poke2 = team2[idx2];
+
+    if (nextActionType === 'faint') {
+      io.to(channelId).emit('championship_relay_slidein', {
+        player: faintedPlayer,
+        nextIndex: faintedPlayer === 'p1' ? idx1 : idx2,
+        nextPokemon: faintedPlayer === 'p1' ? team1[idx1] : team2[idx2]
+      });
+      nextActionType = 'hit';
+      return;
+    }
+
+    const attacker = Math.random() < 0.5 ? 'p1' : 'p2';
+    const activeAttacker = attacker === 'p1' ? poke1 : poke2;
+    const activeDefender = attacker === 'p1' ? poke2 : poke1;
+
+    const baseDmg = Math.max(5, Math.round(((activeAttacker.baseStats.attack || 50) / (activeDefender.baseStats.defense || 50)) * 12));
+    const isCrit = Math.random() < 0.15;
+    const damage = Math.round(baseDmg * (isCrit ? 1.5 : 1.0) + Math.floor(Math.random() * 4));
+
+    activeDefender.currentHp = Math.max(0, activeDefender.currentHp - damage);
+
+    io.to(channelId).emit('championship_relay_hit', {
+      attacker,
+      damage,
+      isCrit,
+      p1Hp: poke1.currentHp,
+      p2Hp: poke2.currentHp,
+      p1MaxHp: poke1.maxHp,
+      p2MaxHp: poke2.maxHp
+    });
+
+    if (activeDefender.currentHp <= 0) {
+      if (attacker === 'p1') {
+        idx2++;
+        faintedPlayer = 'p2';
+      } else {
+        idx1++;
+        faintedPlayer = 'p1';
+      }
+      nextActionType = 'faint';
+    }
+  }, 2000);
+}
+
+async function resolveMatchBets(channelId, winnerUsername, loserUsername) {
+  const session = getOrCreateSession(channelId);
+  const champ = session.activeChampionship;
+  if (!champ || !champ.bets) return;
+
+  const winningBets = champ.bets.filter(b => b.targetUser.toLowerCase() === winnerUsername);
+  
+  for (const bet of winningBets) {
+    try {
+      const payout = bet.amount * 2;
+      const user = await db.getUser(channelId, bet.username, bet.displayName);
+      user.coins += payout;
+      await db.saveUser(channelId, user);
+      
+      const feedback = `🪙 @${user.displayName} won 🪙 ${payout} coins betting on the winner!`;
+      io.to(channelId).emit('command_feedback', { username: user.username, text: feedback });
+    } catch (err) {
+      console.error(`[Championship] [${channelId}] Failed payout for ${bet.username}:`, err.message);
+    }
+  }
+
+  champ.bets = [];
+}
+
+async function advanceChampionshipRound(channelId) {
+  const session = getOrCreateSession(channelId);
+  const champ = session.activeChampionship;
+  if (!champ) return;
+
+  const currentRoundIdx = champ.currentRound;
+  const currentRoundMatches = champ.bracket[currentRoundIdx];
+
+  if (currentRoundMatches.length === 2) {
+    const m1 = currentRoundMatches[0];
+    const m2 = currentRoundMatches[1];
+
+    const winnerM1 = m1.winner;
+    const loserM1 = m1.winner === m1.p1 ? m1.p2 : m1.p1;
+    const winnerM2 = m2.winner;
+    const loserM2 = m2.winner === m2.p1 ? m2.p2 : m2.p1;
+
+    const thirdPlaceRound = [{
+      matchId: 0,
+      p1: loserM1,
+      p2: loserM2,
+      winner: null
+    }];
+
+    const finalsRound = [{
+      matchId: 0,
+      p1: winnerM1,
+      p2: winnerM2,
+      winner: null
+    }];
+
+    champ.bracket.push(thirdPlaceRound);
+    champ.bracket.push(finalsRound);
+    
+    champ.currentRound++;
+    champ.currentMatch = 0;
+
+    io.to(channelId).emit('championship_bracket_update', {
+      bracket: champ.bracket,
+      currentRound: champ.currentRound
+    });
+
+    sendGameLog(channelId, 'system', `🏆 Up next: 3rd Place Playoff match!`);
+    setTimeout(() => {
+      runNextChampionshipMatch(channelId);
+    }, 4000);
+    return;
+  }
+
+  const isThirdPlacePlayoff = currentRoundIdx === (champ.bracket.length - 2) && champ.bracket[currentRoundIdx].length === 1;
+  if (isThirdPlacePlayoff) {
+    const playoffMatch = currentRoundMatches[0];
+    champ.thirdPlaceWinner = playoffMatch.winner;
+
+    await awardChampionshipPrize(channelId, playoffMatch.winner.username, champ.rewards.third, '3rd Place');
+
+    champ.currentRound++;
+    champ.currentMatch = 0;
+
+    io.to(channelId).emit('championship_bracket_update', {
+      bracket: champ.bracket,
+      currentRound: champ.currentRound
+    });
+
+    sendGameLog(channelId, 'system', `🏆 Up next: The Grand Final match!`);
+    setTimeout(() => {
+      runNextChampionshipMatch(channelId);
+    }, 4000);
+    return;
+  }
+
+  const isGrandFinals = currentRoundIdx === (champ.bracket.length - 1);
+  if (isGrandFinals) {
+    const finalMatch = currentRoundMatches[0];
+    const champion = finalMatch.winner;
+    const runnerUp = champion === finalMatch.p1 ? finalMatch.p2 : finalMatch.p1;
+
+    await awardChampionshipPrize(channelId, champion.username, champ.rewards.first, '1st Place');
+    await awardChampionshipPrize(channelId, runnerUp.username, champ.rewards.second, '2nd Place');
+
+    try {
+      await db.incrementChampionshipWin(champion.username);
+    } catch (err) {
+      console.error(`[Championship] Failed to increment champ win:`, err.message);
+    }
+
+    champ.status = 'ended';
+
+    io.to(channelId).emit('championship_ended', {
+      champion: { username: champion.username, displayName: champion.displayName },
+      runnerUp: { username: runnerUp.username, displayName: runnerUp.displayName },
+      thirdPlace: champ.thirdPlaceWinner ? { username: champ.thirdPlaceWinner.username, displayName: champ.thirdPlaceWinner.displayName } : null
+    });
+
+    sendGameLog(channelId, 'system', `🏆 CONGRATULATIONS TO THE TOURNAMENT CHAMPION: @${champion.displayName}!`);
+    
+    setTimeout(() => {
+      session.activeChampionship = null;
+    }, 20000);
+    return;
+  }
+
+  const nextRoundMatches = [];
+  for (let i = 0; i < currentRoundMatches.length; i += 2) {
+    const m1 = currentRoundMatches[i];
+    const m2 = currentRoundMatches[i + 1] || null;
+
+    const p1 = m1.winner;
+    const p2 = m2 ? m2.winner : null;
+
+    let isBye = false;
+    let winner = null;
+    if (p1 && !p2) {
+      isBye = true;
+      winner = p1;
+    } else if (!p1 && p2) {
+      isBye = true;
+      winner = p2;
+    }
+
+    nextRoundMatches.push({
+      matchId: i / 2,
+      p1,
+      p2,
+      isBye,
+      winner
+    });
+  }
+
+  champ.bracket.push(nextRoundMatches);
+  champ.currentRound++;
+  champ.currentMatch = 0;
+
+  io.to(channelId).emit('championship_bracket_update', {
+    bracket: champ.bracket,
+    currentRound: champ.currentRound
+  });
+
+  sendGameLog(channelId, 'system', `🏆 Moving to Round ${champ.currentRound + 1}!`);
+  setTimeout(() => {
+    runNextChampionshipMatch(channelId);
+  }, 4000);
+}
+
+async function awardChampionshipPrize(channelId, username, prize, placeName) {
+  try {
+    const user = await db.getUser(channelId, username);
+    if (prize.type === 'coins') {
+      user.coins += Number(prize.value);
+      await db.saveUser(channelId, user);
+      sendGameLog(channelId, 'system', `🎁 Payout: @${user.displayName} received 🪙 ${prize.value} coins for winning ${placeName}!`);
+    } else if (prize.type === 'item') {
+      const itemKey = prize.value.toLowerCase().trim();
+      user.items = user.items || {};
+      user.items[itemKey] = (user.items[itemKey] || 0) + 1;
+      await db.saveUser(channelId, user);
+      
+      const prettyItem = itemKey.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
+      sendGameLog(channelId, 'system', `🎁 Payout: @${user.displayName} received 🪨 1x ${prettyItem} for winning ${placeName}!`);
+    }
+  } catch (err) {
+    console.error(`[Championship] Failed to award prize to ${username}:`, err.message);
+  }
+}
+
+
+function calculateCP(stats, wins, shiny) {
+  const hp = stats.hp || 50;
+  const attack = stats.attack || 50;
+  const defense = stats.defense || 50;
+  const speed = stats.speed || 50;
+  const total = hp + attack + defense + speed;
+  const winsBonus = 1 + (wins || 0) * 0.05;
+  const shinyMultiplier = shiny ? 1.2 : 1.0;
+  return Math.floor(total * winsBonus * shinyMultiplier);
+}
 
 // Start listening
 server.listen(PORT, () => {
