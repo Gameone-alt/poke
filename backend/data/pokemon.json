@@ -1685,7 +1685,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/82.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/82.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/82.png",
-    "evolution": null
+    "evolution": 462
   },
   "83": {
     "id": 83,
@@ -2298,7 +2298,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/112.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/112.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/112.png",
-    "evolution": null
+    "evolution": 464
   },
   "113": {
     "id": 113,
@@ -2562,7 +2562,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/125.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/125.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/125.png",
-    "evolution": null
+    "evolution": 466
   },
   "126": {
     "id": 126,
@@ -2582,7 +2582,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/126.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/126.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/126.png",
-    "evolution": null
+    "evolution": 467
   },
   "127": {
     "id": 127,
@@ -2810,7 +2810,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/137.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/137.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/137.png",
-    "evolution": null
+    "evolution": 233
   },
   "138": {
     "id": 138,
@@ -3610,7 +3610,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/176.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/176.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/176.png",
-    "evolution": null
+    "evolution": 468
   },
   "177": {
     "id": 177,
@@ -4061,7 +4061,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/198.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/198.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/198.png",
-    "evolution": null
+    "evolution": 430
   },
   "199": {
     "id": 199,
@@ -4102,7 +4102,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/200.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/200.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/200.png",
-    "evolution": null
+    "evolution": 429
   },
   "201": {
     "id": 201,
@@ -4245,7 +4245,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/207.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/207.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/207.png",
-    "evolution": null
+    "evolution": 472
   },
   "208": {
     "id": 208,
@@ -4534,7 +4534,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/221.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/221.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/221.png",
-    "evolution": null
+    "evolution": 473
   },
   "222": {
     "id": 222,
@@ -4781,7 +4781,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/233.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/233.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/233.png",
-    "evolution": null
+    "evolution": 474
   },
   "234": {
     "id": 234,
@@ -6143,7 +6143,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/299.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/299.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/299.png",
-    "evolution": null
+    "evolution": 476
   },
   "300": {
     "id": 300,
@@ -6471,7 +6471,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/315.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/315.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/315.png",
-    "evolution": null
+    "evolution": 407
   },
   "316": {
     "id": 316,
@@ -7311,7 +7311,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/356.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/356.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/356.png",
-    "evolution": null
+    "evolution": 477
   },
   "357": {
     "id": 357,
@@ -7947,7 +7947,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/387.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/387.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/387.png",
-    "evolution": null
+    "evolution": 388
   },
   "388": {
     "id": 388,
@@ -7967,7 +7967,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/388.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/388.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/388.png",
-    "evolution": null
+    "evolution": 389
   },
   "389": {
     "id": 389,
@@ -8008,7 +8008,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/390.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/390.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/390.png",
-    "evolution": null
+    "evolution": 391
   },
   "391": {
     "id": 391,
@@ -8029,7 +8029,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/391.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/391.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/391.png",
-    "evolution": null
+    "evolution": 392
   },
   "392": {
     "id": 392,
@@ -8070,7 +8070,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/393.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/393.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/393.png",
-    "evolution": null
+    "evolution": 394
   },
   "394": {
     "id": 394,
@@ -8090,7 +8090,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/394.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/394.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/394.png",
-    "evolution": null
+    "evolution": 395
   },
   "395": {
     "id": 395,
@@ -8132,7 +8132,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/396.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/396.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/396.png",
-    "evolution": null
+    "evolution": 397
   },
   "397": {
     "id": 397,
@@ -8153,7 +8153,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/397.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/397.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/397.png",
-    "evolution": null
+    "evolution": 398
   },
   "398": {
     "id": 398,
@@ -8194,7 +8194,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/399.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/399.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/399.png",
-    "evolution": null
+    "evolution": 400
   },
   "400": {
     "id": 400,
@@ -8235,7 +8235,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/401.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/401.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/401.png",
-    "evolution": null
+    "evolution": 402
   },
   "402": {
     "id": 402,
@@ -8275,7 +8275,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/403.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/403.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/403.png",
-    "evolution": null
+    "evolution": 404
   },
   "404": {
     "id": 404,
@@ -8295,7 +8295,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/404.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/404.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/404.png",
-    "evolution": null
+    "evolution": 405
   },
   "405": {
     "id": 405,
@@ -8336,7 +8336,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/406.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/406.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/406.png",
-    "evolution": null
+    "evolution": 315
   },
   "407": {
     "id": 407,
@@ -8377,7 +8377,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/408.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/408.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/408.png",
-    "evolution": null
+    "evolution": 409
   },
   "409": {
     "id": 409,
@@ -8418,7 +8418,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/410.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/410.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/410.png",
-    "evolution": null
+    "evolution": 411
   },
   "411": {
     "id": 411,
@@ -8459,7 +8459,10 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/412.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/412.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/412.png",
-    "evolution": null
+    "evolution": [
+      414,
+      413
+    ]
   },
   "413": {
     "id": 413,
@@ -8522,7 +8525,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/415.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/415.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/415.png",
-    "evolution": null
+    "evolution": 416
   },
   "416": {
     "id": 416,
@@ -8583,7 +8586,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/418.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/418.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/418.png",
-    "evolution": null
+    "evolution": 419
   },
   "419": {
     "id": 419,
@@ -8623,7 +8626,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/420.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/420.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/420.png",
-    "evolution": null
+    "evolution": 421
   },
   "421": {
     "id": 421,
@@ -8663,7 +8666,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/422.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/422.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/422.png",
-    "evolution": null
+    "evolution": 423
   },
   "423": {
     "id": 423,
@@ -8725,7 +8728,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/425.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/425.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/425.png",
-    "evolution": null
+    "evolution": 426
   },
   "426": {
     "id": 426,
@@ -8766,7 +8769,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/427.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/427.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/427.png",
-    "evolution": null
+    "evolution": 428
   },
   "428": {
     "id": 428,
@@ -8847,7 +8850,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/431.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/431.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/431.png",
-    "evolution": null
+    "evolution": 432
   },
   "432": {
     "id": 432,
@@ -8887,7 +8890,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/433.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/433.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/433.png",
-    "evolution": null
+    "evolution": 358
   },
   "434": {
     "id": 434,
@@ -8908,7 +8911,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/434.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/434.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/434.png",
-    "evolution": null
+    "evolution": 435
   },
   "435": {
     "id": 435,
@@ -8950,7 +8953,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/436.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/436.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/436.png",
-    "evolution": null
+    "evolution": 437
   },
   "437": {
     "id": 437,
@@ -8991,7 +8994,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/438.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/438.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/438.png",
-    "evolution": null
+    "evolution": 185
   },
   "439": {
     "id": 439,
@@ -9032,7 +9035,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/440.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/440.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/440.png",
-    "evolution": null
+    "evolution": 113
   },
   "441": {
     "id": 441,
@@ -9095,7 +9098,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/443.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/443.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/443.png",
-    "evolution": null
+    "evolution": 444
   },
   "444": {
     "id": 444,
@@ -9116,7 +9119,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/444.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/444.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/444.png",
-    "evolution": null
+    "evolution": 445
   },
   "445": {
     "id": 445,
@@ -9157,7 +9160,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/446.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/446.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/446.png",
-    "evolution": null
+    "evolution": 143
   },
   "447": {
     "id": 447,
@@ -9177,7 +9180,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/447.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/447.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/447.png",
-    "evolution": null
+    "evolution": 448
   },
   "448": {
     "id": 448,
@@ -9218,7 +9221,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/449.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/449.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/449.png",
-    "evolution": null
+    "evolution": 450
   },
   "450": {
     "id": 450,
@@ -9259,7 +9262,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/451.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/451.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/451.png",
-    "evolution": null
+    "evolution": 452
   },
   "452": {
     "id": 452,
@@ -9301,7 +9304,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/453.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/453.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/453.png",
-    "evolution": null
+    "evolution": 454
   },
   "454": {
     "id": 454,
@@ -9362,7 +9365,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/456.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/456.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/456.png",
-    "evolution": null
+    "evolution": 457
   },
   "457": {
     "id": 457,
@@ -9403,7 +9406,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/458.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/458.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/458.png",
-    "evolution": null
+    "evolution": 226
   },
   "459": {
     "id": 459,
@@ -9424,7 +9427,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/459.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/459.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/459.png",
-    "evolution": null
+    "evolution": 460
   },
   "460": {
     "id": 460,
@@ -10161,7 +10164,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/495.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/495.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/495.png",
-    "evolution": null
+    "evolution": 496
   },
   "496": {
     "id": 496,
@@ -10181,7 +10184,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/496.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/496.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/496.png",
-    "evolution": null
+    "evolution": 497
   },
   "497": {
     "id": 497,
@@ -10221,7 +10224,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/498.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/498.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/498.png",
-    "evolution": null
+    "evolution": 499
   },
   "499": {
     "id": 499,
@@ -10242,7 +10245,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/499.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/499.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/499.png",
-    "evolution": null
+    "evolution": 500
   },
   "500": {
     "id": 500,
@@ -10283,7 +10286,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/501.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/501.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/501.png",
-    "evolution": null
+    "evolution": 502
   },
   "502": {
     "id": 502,
@@ -10303,7 +10306,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/502.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/502.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/502.png",
-    "evolution": null
+    "evolution": 503
   },
   "503": {
     "id": 503,
@@ -10343,7 +10346,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/504.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/504.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/504.png",
-    "evolution": null
+    "evolution": 505
   },
   "505": {
     "id": 505,
@@ -10383,7 +10386,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/506.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/506.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/506.png",
-    "evolution": null
+    "evolution": 507
   },
   "507": {
     "id": 507,
@@ -10403,7 +10406,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/507.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/507.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/507.png",
-    "evolution": null
+    "evolution": 508
   },
   "508": {
     "id": 508,
@@ -10443,7 +10446,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/509.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/509.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/509.png",
-    "evolution": null
+    "evolution": 510
   },
   "510": {
     "id": 510,
@@ -10483,7 +10486,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/511.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/511.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/511.png",
-    "evolution": null
+    "evolution": 512
   },
   "512": {
     "id": 512,
@@ -10523,7 +10526,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/513.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/513.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/513.png",
-    "evolution": null
+    "evolution": 514
   },
   "514": {
     "id": 514,
@@ -10563,7 +10566,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/515.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/515.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/515.png",
-    "evolution": null
+    "evolution": 516
   },
   "516": {
     "id": 516,
@@ -10603,7 +10606,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/517.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/517.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/517.png",
-    "evolution": null
+    "evolution": 518
   },
   "518": {
     "id": 518,
@@ -10644,7 +10647,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/519.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/519.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/519.png",
-    "evolution": null
+    "evolution": 520
   },
   "520": {
     "id": 520,
@@ -10665,7 +10668,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/520.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/520.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/520.png",
-    "evolution": null
+    "evolution": 521
   },
   "521": {
     "id": 521,
@@ -10706,7 +10709,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/522.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/522.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/522.png",
-    "evolution": null
+    "evolution": 523
   },
   "523": {
     "id": 523,
@@ -10746,7 +10749,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/524.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/524.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/524.png",
-    "evolution": null
+    "evolution": 525
   },
   "525": {
     "id": 525,
@@ -10766,7 +10769,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/525.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/525.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/525.png",
-    "evolution": null
+    "evolution": 526
   },
   "526": {
     "id": 526,
@@ -10807,7 +10810,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/527.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/527.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/527.png",
-    "evolution": null
+    "evolution": 528
   },
   "528": {
     "id": 528,
@@ -10848,7 +10851,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/529.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/529.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/529.png",
-    "evolution": null
+    "evolution": 530
   },
   "530": {
     "id": 530,
@@ -10909,7 +10912,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/532.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/532.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/532.png",
-    "evolution": null
+    "evolution": 533
   },
   "533": {
     "id": 533,
@@ -10929,7 +10932,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/533.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/533.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/533.png",
-    "evolution": null
+    "evolution": 534
   },
   "534": {
     "id": 534,
@@ -10969,7 +10972,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/535.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/535.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/535.png",
-    "evolution": null
+    "evolution": 536
   },
   "536": {
     "id": 536,
@@ -10990,7 +10993,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/536.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/536.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/536.png",
-    "evolution": null
+    "evolution": 537
   },
   "537": {
     "id": 537,
@@ -11072,7 +11075,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/540.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/540.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/540.png",
-    "evolution": null
+    "evolution": 541
   },
   "541": {
     "id": 541,
@@ -11093,7 +11096,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/541.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/541.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/541.png",
-    "evolution": null
+    "evolution": 542
   },
   "542": {
     "id": 542,
@@ -11135,7 +11138,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/543.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/543.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/543.png",
-    "evolution": null
+    "evolution": 544
   },
   "544": {
     "id": 544,
@@ -11156,7 +11159,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/544.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/544.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/544.png",
-    "evolution": null
+    "evolution": 545
   },
   "545": {
     "id": 545,
@@ -11198,7 +11201,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/546.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/546.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/546.png",
-    "evolution": null
+    "evolution": 547
   },
   "547": {
     "id": 547,
@@ -11239,7 +11242,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/548.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/548.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/548.png",
-    "evolution": null
+    "evolution": 549
   },
   "549": {
     "id": 549,
@@ -11300,7 +11303,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/551.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/551.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/551.png",
-    "evolution": null
+    "evolution": 552
   },
   "552": {
     "id": 552,
@@ -11321,7 +11324,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/552.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/552.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/552.png",
-    "evolution": null
+    "evolution": 553
   },
   "553": {
     "id": 553,
@@ -11362,7 +11365,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/554.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/554.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/554.png",
-    "evolution": null
+    "evolution": 555
   },
   "555": {
     "id": 555,
@@ -11423,7 +11426,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/557.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/557.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/557.png",
-    "evolution": null
+    "evolution": 558
   },
   "558": {
     "id": 558,
@@ -11465,7 +11468,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/559.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/559.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/559.png",
-    "evolution": null
+    "evolution": 560
   },
   "560": {
     "id": 560,
@@ -11527,7 +11530,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/562.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/562.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/562.png",
-    "evolution": null
+    "evolution": 563
   },
   "563": {
     "id": 563,
@@ -11568,7 +11571,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/564.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/564.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/564.png",
-    "evolution": null
+    "evolution": 565
   },
   "565": {
     "id": 565,
@@ -11610,7 +11613,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/566.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/566.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/566.png",
-    "evolution": null
+    "evolution": 567
   },
   "567": {
     "id": 567,
@@ -11651,7 +11654,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/568.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/568.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/568.png",
-    "evolution": null
+    "evolution": 569
   },
   "569": {
     "id": 569,
@@ -11731,7 +11734,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/572.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/572.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/572.png",
-    "evolution": null
+    "evolution": 573
   },
   "573": {
     "id": 573,
@@ -11771,7 +11774,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/574.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/574.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/574.png",
-    "evolution": null
+    "evolution": 575
   },
   "575": {
     "id": 575,
@@ -11791,7 +11794,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/575.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/575.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/575.png",
-    "evolution": null
+    "evolution": 576
   },
   "576": {
     "id": 576,
@@ -11831,7 +11834,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/577.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/577.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/577.png",
-    "evolution": null
+    "evolution": 578
   },
   "578": {
     "id": 578,
@@ -11851,7 +11854,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/578.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/578.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/578.png",
-    "evolution": null
+    "evolution": 579
   },
   "579": {
     "id": 579,
@@ -11892,7 +11895,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/580.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/580.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/580.png",
-    "evolution": null
+    "evolution": 581
   },
   "581": {
     "id": 581,
@@ -11933,7 +11936,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/582.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/582.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/582.png",
-    "evolution": null
+    "evolution": 583
   },
   "583": {
     "id": 583,
@@ -11953,7 +11956,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/583.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/583.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/583.png",
-    "evolution": null
+    "evolution": 584
   },
   "584": {
     "id": 584,
@@ -11994,7 +11997,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/585.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/585.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/585.png",
-    "evolution": null
+    "evolution": 586
   },
   "586": {
     "id": 586,
@@ -12056,7 +12059,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/588.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/588.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/588.png",
-    "evolution": null
+    "evolution": 589
   },
   "589": {
     "id": 589,
@@ -12098,7 +12101,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/590.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/590.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/590.png",
-    "evolution": null
+    "evolution": 591
   },
   "591": {
     "id": 591,
@@ -12140,7 +12143,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/592.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/592.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/592.png",
-    "evolution": null
+    "evolution": 593
   },
   "593": {
     "id": 593,
@@ -12202,7 +12205,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/595.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/595.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/595.png",
-    "evolution": null
+    "evolution": 596
   },
   "596": {
     "id": 596,
@@ -12244,7 +12247,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/597.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/597.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/597.png",
-    "evolution": null
+    "evolution": 598
   },
   "598": {
     "id": 598,
@@ -12285,7 +12288,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/599.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/599.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/599.png",
-    "evolution": null
+    "evolution": 600
   },
   "600": {
     "id": 600,
@@ -12305,7 +12308,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/600.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/600.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/600.png",
-    "evolution": null
+    "evolution": 601
   },
   "601": {
     "id": 601,
@@ -12345,7 +12348,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/602.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/602.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/602.png",
-    "evolution": null
+    "evolution": 603
   },
   "603": {
     "id": 603,
@@ -12365,7 +12368,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/603.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/603.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/603.png",
-    "evolution": null
+    "evolution": 604
   },
   "604": {
     "id": 604,
@@ -12405,7 +12408,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/605.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/605.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/605.png",
-    "evolution": null
+    "evolution": 606
   },
   "606": {
     "id": 606,
@@ -12446,7 +12449,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/607.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/607.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/607.png",
-    "evolution": null
+    "evolution": 608
   },
   "608": {
     "id": 608,
@@ -12467,7 +12470,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/608.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/608.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/608.png",
-    "evolution": null
+    "evolution": 609
   },
   "609": {
     "id": 609,
@@ -12508,7 +12511,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/610.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/610.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/610.png",
-    "evolution": null
+    "evolution": 611
   },
   "611": {
     "id": 611,
@@ -12528,7 +12531,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/611.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/611.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/611.png",
-    "evolution": null
+    "evolution": 612
   },
   "612": {
     "id": 612,
@@ -12568,7 +12571,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/613.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/613.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/613.png",
-    "evolution": null
+    "evolution": 614
   },
   "614": {
     "id": 614,
@@ -12628,7 +12631,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/616.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/616.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/616.png",
-    "evolution": null
+    "evolution": 617
   },
   "617": {
     "id": 617,
@@ -12689,7 +12692,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/619.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/619.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/619.png",
-    "evolution": null
+    "evolution": 620
   },
   "620": {
     "id": 620,
@@ -12750,7 +12753,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/622.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/622.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/622.png",
-    "evolution": null
+    "evolution": 623
   },
   "623": {
     "id": 623,
@@ -12792,7 +12795,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/624.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/624.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/624.png",
-    "evolution": null
+    "evolution": 625
   },
   "625": {
     "id": 625,
@@ -12813,7 +12816,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/625.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/625.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/625.png",
-    "evolution": null
+    "evolution": 983
   },
   "626": {
     "id": 626,
@@ -12854,7 +12857,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/627.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/627.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/627.png",
-    "evolution": null
+    "evolution": 628
   },
   "628": {
     "id": 628,
@@ -12896,7 +12899,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/629.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/629.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/629.png",
-    "evolution": null
+    "evolution": 630
   },
   "630": {
     "id": 630,
@@ -12979,7 +12982,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/633.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/633.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/633.png",
-    "evolution": null
+    "evolution": 634
   },
   "634": {
     "id": 634,
@@ -13000,7 +13003,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/634.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/634.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/634.png",
-    "evolution": null
+    "evolution": 635
   },
   "635": {
     "id": 635,
@@ -13042,7 +13045,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/636.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/636.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/636.png",
-    "evolution": null
+    "evolution": 637
   },
   "637": {
     "id": 637,
@@ -13334,7 +13337,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/650.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/650.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/650.png",
-    "evolution": null
+    "evolution": 651
   },
   "651": {
     "id": 651,
@@ -13354,7 +13357,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/651.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/651.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/651.png",
-    "evolution": null
+    "evolution": 652
   },
   "652": {
     "id": 652,
@@ -13395,7 +13398,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/653.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/653.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/653.png",
-    "evolution": null
+    "evolution": 654
   },
   "654": {
     "id": 654,
@@ -13415,7 +13418,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/654.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/654.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/654.png",
-    "evolution": null
+    "evolution": 655
   },
   "655": {
     "id": 655,
@@ -13456,7 +13459,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/656.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/656.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/656.png",
-    "evolution": null
+    "evolution": 657
   },
   "657": {
     "id": 657,
@@ -13476,7 +13479,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/657.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/657.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/657.png",
-    "evolution": null
+    "evolution": 658
   },
   "658": {
     "id": 658,
@@ -13517,7 +13520,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/659.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/659.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/659.png",
-    "evolution": null
+    "evolution": 660
   },
   "660": {
     "id": 660,
@@ -13559,7 +13562,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/661.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/661.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/661.png",
-    "evolution": null
+    "evolution": 662
   },
   "662": {
     "id": 662,
@@ -13580,7 +13583,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/662.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/662.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/662.png",
-    "evolution": null
+    "evolution": 663
   },
   "663": {
     "id": 663,
@@ -13621,7 +13624,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/664.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/664.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/664.png",
-    "evolution": null
+    "evolution": 665
   },
   "665": {
     "id": 665,
@@ -13641,7 +13644,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/665.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/665.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/665.png",
-    "evolution": null
+    "evolution": 666
   },
   "666": {
     "id": 666,
@@ -13683,7 +13686,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/667.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/667.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/667.png",
-    "evolution": null
+    "evolution": 668
   },
   "668": {
     "id": 668,
@@ -13744,7 +13747,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/670.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/670.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/670.png",
-    "evolution": null
+    "evolution": 671
   },
   "671": {
     "id": 671,
@@ -13784,7 +13787,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/672.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/672.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/672.png",
-    "evolution": null
+    "evolution": 673
   },
   "673": {
     "id": 673,
@@ -13824,7 +13827,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/674.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/674.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/674.png",
-    "evolution": null
+    "evolution": 675
   },
   "675": {
     "id": 675,
@@ -13885,7 +13888,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/677.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/677.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/677.png",
-    "evolution": null
+    "evolution": 678
   },
   "678": {
     "id": 678,
@@ -13926,7 +13929,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/679.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/679.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/679.png",
-    "evolution": null
+    "evolution": 680
   },
   "680": {
     "id": 680,
@@ -13947,7 +13950,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/680.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/680.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/680.png",
-    "evolution": null
+    "evolution": 681
   },
   "681": {
     "id": 681,
@@ -13988,7 +13991,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/682.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/682.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/682.png",
-    "evolution": null
+    "evolution": 683
   },
   "683": {
     "id": 683,
@@ -14028,7 +14031,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/684.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/684.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/684.png",
-    "evolution": null
+    "evolution": 685
   },
   "685": {
     "id": 685,
@@ -14069,7 +14072,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/686.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/686.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/686.png",
-    "evolution": null
+    "evolution": 687
   },
   "687": {
     "id": 687,
@@ -14111,7 +14114,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/688.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/688.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/688.png",
-    "evolution": null
+    "evolution": 689
   },
   "689": {
     "id": 689,
@@ -14153,7 +14156,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/690.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/690.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/690.png",
-    "evolution": null
+    "evolution": 691
   },
   "691": {
     "id": 691,
@@ -14194,7 +14197,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/692.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/692.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/692.png",
-    "evolution": null
+    "evolution": 693
   },
   "693": {
     "id": 693,
@@ -14235,7 +14238,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/694.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/694.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/694.png",
-    "evolution": null
+    "evolution": 695
   },
   "695": {
     "id": 695,
@@ -14277,7 +14280,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/696.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/696.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/696.png",
-    "evolution": null
+    "evolution": 697
   },
   "697": {
     "id": 697,
@@ -14319,7 +14322,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/698.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/698.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/698.png",
-    "evolution": null
+    "evolution": 699
   },
   "699": {
     "id": 699,
@@ -14443,7 +14446,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/704.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/704.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/704.png",
-    "evolution": null
+    "evolution": 705
   },
   "705": {
     "id": 705,
@@ -14463,7 +14466,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/705.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/705.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/705.png",
-    "evolution": null
+    "evolution": 706
   },
   "706": {
     "id": 706,
@@ -14525,7 +14528,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/708.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/708.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/708.png",
-    "evolution": null
+    "evolution": 709
   },
   "709": {
     "id": 709,
@@ -14567,7 +14570,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/710.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/710.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/710.png",
-    "evolution": null
+    "evolution": 711
   },
   "711": {
     "id": 711,
@@ -14608,7 +14611,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/712.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/712.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/712.png",
-    "evolution": null
+    "evolution": 713
   },
   "713": {
     "id": 713,
@@ -14649,7 +14652,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/714.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/714.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/714.png",
-    "evolution": null
+    "evolution": 715
   },
   "715": {
     "id": 715,
@@ -14816,7 +14819,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/722.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/722.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/722.png",
-    "evolution": null
+    "evolution": 723
   },
   "723": {
     "id": 723,
@@ -14837,7 +14840,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/723.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/723.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/723.png",
-    "evolution": null
+    "evolution": 724
   },
   "724": {
     "id": 724,
@@ -14878,7 +14881,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/725.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/725.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/725.png",
-    "evolution": null
+    "evolution": 726
   },
   "726": {
     "id": 726,
@@ -14898,7 +14901,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/726.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/726.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/726.png",
-    "evolution": null
+    "evolution": 727
   },
   "727": {
     "id": 727,
@@ -14939,7 +14942,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/728.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/728.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/728.png",
-    "evolution": null
+    "evolution": 729
   },
   "729": {
     "id": 729,
@@ -14959,7 +14962,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/729.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/729.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/729.png",
-    "evolution": null
+    "evolution": 730
   },
   "730": {
     "id": 730,
@@ -15001,7 +15004,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/731.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/731.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/731.png",
-    "evolution": null
+    "evolution": 732
   },
   "732": {
     "id": 732,
@@ -15022,7 +15025,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/732.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/732.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/732.png",
-    "evolution": null
+    "evolution": 733
   },
   "733": {
     "id": 733,
@@ -15063,7 +15066,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/734.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/734.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/734.png",
-    "evolution": null
+    "evolution": 735
   },
   "735": {
     "id": 735,
@@ -15103,7 +15106,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/736.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/736.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/736.png",
-    "evolution": null
+    "evolution": 737
   },
   "737": {
     "id": 737,
@@ -15124,7 +15127,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/737.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/737.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/737.png",
-    "evolution": null
+    "evolution": 738
   },
   "738": {
     "id": 738,
@@ -15165,7 +15168,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/739.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/739.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/739.png",
-    "evolution": null
+    "evolution": 740
   },
   "740": {
     "id": 740,
@@ -15228,7 +15231,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/742.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/742.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/742.png",
-    "evolution": null
+    "evolution": 743
   },
   "743": {
     "id": 743,
@@ -15269,7 +15272,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/744.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/744.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/744.png",
-    "evolution": null
+    "evolution": 745
   },
   "745": {
     "id": 745,
@@ -15330,7 +15333,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/747.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/747.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/747.png",
-    "evolution": null
+    "evolution": 748
   },
   "748": {
     "id": 748,
@@ -15371,7 +15374,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/749.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/749.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/749.png",
-    "evolution": null
+    "evolution": 750
   },
   "750": {
     "id": 750,
@@ -15412,7 +15415,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/751.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/751.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/751.png",
-    "evolution": null
+    "evolution": 752
   },
   "752": {
     "id": 752,
@@ -15453,7 +15456,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/753.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/753.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/753.png",
-    "evolution": null
+    "evolution": 754
   },
   "754": {
     "id": 754,
@@ -15494,7 +15497,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/755.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/755.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/755.png",
-    "evolution": null
+    "evolution": 756
   },
   "756": {
     "id": 756,
@@ -15536,7 +15539,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/757.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/757.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/757.png",
-    "evolution": null
+    "evolution": 758
   },
   "758": {
     "id": 758,
@@ -15578,7 +15581,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/759.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/759.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/759.png",
-    "evolution": null
+    "evolution": 760
   },
   "760": {
     "id": 760,
@@ -15619,7 +15622,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/761.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/761.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/761.png",
-    "evolution": null
+    "evolution": 762
   },
   "762": {
     "id": 762,
@@ -15639,7 +15642,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/762.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/762.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/762.png",
-    "evolution": null
+    "evolution": 763
   },
   "763": {
     "id": 763,
@@ -15741,7 +15744,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/767.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/767.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/767.png",
-    "evolution": null
+    "evolution": 768
   },
   "768": {
     "id": 768,
@@ -15783,7 +15786,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/769.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/769.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/769.png",
-    "evolution": null
+    "evolution": 770
   },
   "770": {
     "id": 770,
@@ -16051,7 +16054,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/782.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/782.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/782.png",
-    "evolution": null
+    "evolution": 783
   },
   "783": {
     "id": 783,
@@ -16072,7 +16075,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/783.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/783.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/783.png",
-    "evolution": null
+    "evolution": 784
   },
   "784": {
     "id": 784,
@@ -16217,7 +16220,10 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/790.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/790.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/790.png",
-    "evolution": [791, 792]
+    "evolution": [
+      791,
+      792
+    ]
   },
   "791": {
     "id": 791,
@@ -16487,7 +16493,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/803.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/803.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/803.png",
-    "evolution": null
+    "evolution": 804
   },
   "804": {
     "id": 804,
@@ -16630,7 +16636,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/810.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/810.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/810.png",
-    "evolution": null
+    "evolution": 811
   },
   "811": {
     "id": 811,
@@ -16650,7 +16656,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/811.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/811.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/811.png",
-    "evolution": null
+    "evolution": 812
   },
   "812": {
     "id": 812,
@@ -16690,7 +16696,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/813.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/813.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/813.png",
-    "evolution": null
+    "evolution": 814
   },
   "814": {
     "id": 814,
@@ -16710,7 +16716,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/814.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/814.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/814.png",
-    "evolution": null
+    "evolution": 815
   },
   "815": {
     "id": 815,
@@ -16750,7 +16756,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/816.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/816.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/816.png",
-    "evolution": null
+    "evolution": 817
   },
   "817": {
     "id": 817,
@@ -16770,7 +16776,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/817.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/817.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/817.png",
-    "evolution": null
+    "evolution": 818
   },
   "818": {
     "id": 818,
@@ -16850,7 +16856,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/821.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/821.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/821.png",
-    "evolution": null
+    "evolution": 822
   },
   "822": {
     "id": 822,
@@ -16870,7 +16876,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/822.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/822.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/822.png",
-    "evolution": null
+    "evolution": 823
   },
   "823": {
     "id": 823,
@@ -16911,7 +16917,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/824.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/824.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/824.png",
-    "evolution": null
+    "evolution": 825
   },
   "825": {
     "id": 825,
@@ -16932,7 +16938,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/825.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/825.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/825.png",
-    "evolution": null
+    "evolution": 826
   },
   "826": {
     "id": 826,
@@ -16973,7 +16979,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/827.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/827.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/827.png",
-    "evolution": null
+    "evolution": 828
   },
   "828": {
     "id": 828,
@@ -17013,7 +17019,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/829.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/829.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/829.png",
-    "evolution": null
+    "evolution": 830
   },
   "830": {
     "id": 830,
@@ -17053,7 +17059,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/831.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/831.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/831.png",
-    "evolution": null
+    "evolution": 832
   },
   "832": {
     "id": 832,
@@ -17093,7 +17099,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/833.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/833.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/833.png",
-    "evolution": null
+    "evolution": 834
   },
   "834": {
     "id": 834,
@@ -17134,7 +17140,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/835.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/835.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/835.png",
-    "evolution": null
+    "evolution": 836
   },
   "836": {
     "id": 836,
@@ -17174,7 +17180,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/837.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/837.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/837.png",
-    "evolution": null
+    "evolution": 838
   },
   "838": {
     "id": 838,
@@ -17195,7 +17201,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/838.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/838.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/838.png",
-    "evolution": null
+    "evolution": 839
   },
   "839": {
     "id": 839,
@@ -17237,7 +17243,11 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/840.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/840.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/840.png",
-    "evolution": null
+    "evolution": [
+      841,
+      842,
+      1011
+    ]
   },
   "841": {
     "id": 841,
@@ -17360,7 +17370,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/846.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/846.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/846.png",
-    "evolution": null
+    "evolution": 847
   },
   "847": {
     "id": 847,
@@ -17443,7 +17453,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/850.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/850.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/850.png",
-    "evolution": null
+    "evolution": 851
   },
   "851": {
     "id": 851,
@@ -17484,7 +17494,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/852.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/852.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/852.png",
-    "evolution": null
+    "evolution": 853
   },
   "853": {
     "id": 853,
@@ -17524,7 +17534,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/854.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/854.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/854.png",
-    "evolution": null
+    "evolution": 855
   },
   "855": {
     "id": 855,
@@ -17564,7 +17574,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/856.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/856.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/856.png",
-    "evolution": null
+    "evolution": 857
   },
   "857": {
     "id": 857,
@@ -17584,7 +17594,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/857.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/857.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/857.png",
-    "evolution": null
+    "evolution": 858
   },
   "858": {
     "id": 858,
@@ -17626,7 +17636,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/859.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/859.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/859.png",
-    "evolution": null
+    "evolution": 860
   },
   "860": {
     "id": 860,
@@ -17647,7 +17657,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/860.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/860.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/860.png",
-    "evolution": null
+    "evolution": 861
   },
   "861": {
     "id": 861,
@@ -17811,7 +17821,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/868.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/868.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/868.png",
-    "evolution": null
+    "evolution": 869
   },
   "869": {
     "id": 869,
@@ -17892,7 +17902,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/872.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/872.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/872.png",
-    "evolution": null
+    "evolution": 873
   },
   "873": {
     "id": 873,
@@ -18015,7 +18025,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/878.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/878.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/878.png",
-    "evolution": null
+    "evolution": 879
   },
   "879": {
     "id": 879,
@@ -18140,7 +18150,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/884.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/884.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/884.png",
-    "evolution": null
+    "evolution": 1018
   },
   "885": {
     "id": 885,
@@ -18161,7 +18171,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/885.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/885.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/885.png",
-    "evolution": null
+    "evolution": 886
   },
   "886": {
     "id": 886,
@@ -18182,7 +18192,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/886.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/886.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/886.png",
-    "evolution": null
+    "evolution": 887
   },
   "887": {
     "id": 887,
@@ -20759,7 +20769,7 @@
     "shinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/showdown/shiny/1011.gif",
     "fallbackSpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/1011.png",
     "fallbackShinySpriteUrl": "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/shiny/1011.png",
-    "evolution": null
+    "evolution": 1019
   },
   "1012": {
     "id": 1012,
