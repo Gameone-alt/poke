@@ -2217,6 +2217,7 @@ module.exports = {
   getUser,
   saveUser,
   addPokemon,
+  query,
   selectActivePokemon,
   addWin,
   claimDaily,
