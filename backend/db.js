@@ -94,6 +94,11 @@ function migrateLocalUser(u) {
   if (u.items.thunder_stone === undefined) u.items.thunder_stone = 0;
   if (u.items.leaf_stone === undefined) u.items.leaf_stone = 0;
   if (u.items.moon_stone === undefined) u.items.moon_stone = 0;
+  if (u.items.sun_stone === undefined) u.items.sun_stone = 0;
+  if (u.items.ice_stone === undefined) u.items.ice_stone = 0;
+  if (u.items.shiny_stone === undefined) u.items.shiny_stone = 0;
+  if (u.items.dusk_stone === undefined) u.items.dusk_stone = 0;
+  if (u.items.dawn_stone === undefined) u.items.dawn_stone = 0;
   if (!u.gymBadges) u.gymBadges = [];
   return u;
 }
@@ -493,7 +498,7 @@ async function getUser(streamerId, username, displayName = null) {
           xp: 0,
           level: 1,
           buddyInstanceId: null,
-          items: { fire_stone: 0, water_stone: 0, thunder_stone: 0, leaf_stone: 0, moon_stone: 0 },
+          items: { fire_stone: 0, water_stone: 0, thunder_stone: 0, leaf_stone: 0, moon_stone: 0, sun_stone: 0, ice_stone: 0, shiny_stone: 0, dusk_stone: 0, dawn_stone: 0 },
           gymBadges: [],
           inventory: [],
           activePokemonId: null,
@@ -509,7 +514,7 @@ async function getUser(streamerId, username, displayName = null) {
           xp: 0,
           level: 1,
           buddyInstanceId: null,
-          items: { fire_stone: 0, water_stone: 0, thunder_stone: 0, leaf_stone: 0, moon_stone: 0 },
+          items: { fire_stone: 0, water_stone: 0, thunder_stone: 0, leaf_stone: 0, moon_stone: 0, sun_stone: 0, ice_stone: 0, shiny_stone: 0, dusk_stone: 0, dawn_stone: 0 },
           gymBadges: [],
           inventory: [],
           activePokemonId: null,

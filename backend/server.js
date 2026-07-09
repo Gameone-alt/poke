@@ -154,8 +154,9 @@ app.get('/api/evolution/:pokemonId', (req, res) => {
     const origLower = poke.name.toLowerCase();
     const stoneRules = STONE_EVOLUTIONS[origLower];
     if (stoneRules) {
-      if (origLower === 'eevee') {
-        const stones = ['fire_stone', 'water_stone', 'thunder_stone'];
+      if (typeof stoneRules === 'object' && !stoneRules.stone) {
+        // Branched stone evolution (like Eevee, Gloom, Vulpix)
+        const stones = Object.keys(stoneRules);
         for (const st of stones) {
           const resultName = stoneRules[st];
           const resultPoke = findPokemonByName(resultName);
@@ -344,21 +345,40 @@ loadPokemonDb();
 
 const STONE_EVOLUTIONS = {
   pikachu: { stone: 'thunder_stone', result: 'raichu' },
+  magneton: { stone: 'thunder_stone', result: 'magnezone' },
   eevee: {
     fire_stone: 'flareon',
     water_stone: 'vaporeon',
     thunder_stone: 'jolteon',
-    leaf_stone: 'leafeon'
+    leaf_stone: 'leafeon',
+    ice_stone: 'glaceon'
   },
-  gloom: { stone: 'leaf_stone', result: 'vileplume' },
+  gloom: {
+    leaf_stone: 'vileplume',
+    sun_stone: 'bellossom'
+  },
+  weepinbell: { stone: 'leaf_stone', result: 'victreebel' },
   clefairy: { stone: 'moon_stone', result: 'clefable' },
   jigglypuff: { stone: 'moon_stone', result: 'wigglytuff' },
   nidorina: { stone: 'moon_stone', result: 'nidoqueen' },
   nidorino: { stone: 'moon_stone', result: 'nidoking' },
   growlithe: { stone: 'fire_stone', result: 'arcanine' },
-  vulpix: { stone: 'fire_stone', result: 'ninetales' },
+  vulpix: {
+    fire_stone: 'ninetales',
+    ice_stone: 'ninetales'
+  },
   shellder: { stone: 'water_stone', result: 'cloyster' },
-  staryu: { stone: 'water_stone', result: 'starmie' }
+  staryu: { stone: 'water_stone', result: 'starmie' },
+  poliwhirl: { stone: 'water_stone', result: 'poliwrath' },
+  sunkern: { stone: 'sun_stone', result: 'sunflora' },
+  petilil: { stone: 'sun_stone', result: 'lilligant' },
+  sandshrew: { stone: 'ice_stone', result: 'sandslash' },
+  togetic: { stone: 'shiny_stone', result: 'togekiss' },
+  roselia: { stone: 'shiny_stone', result: 'roserade' },
+  murkrow: { stone: 'dusk_stone', result: 'honchkrow' },
+  misdreavus: { stone: 'dusk_stone', result: 'mismagius' },
+  kirlia: { stone: 'dawn_stone', result: 'gallade' },
+  snorunt: { stone: 'dawn_stone', result: 'froslass' }
 };
 
 function findPokemonByName(name) {
@@ -2032,8 +2052,33 @@ async function processCommand(channelId, username, displayName, messageText, bas
       stoneType = 'moon_stone';
       pricePerItem = session.config.priceMoonStone !== undefined ? session.config.priceMoonStone : 150;
       itemLabel = '🌙 Moon Stone';
+    } else if (typeInput.includes('sun')) {
+      isStone = true;
+      stoneType = 'sun_stone';
+      pricePerItem = session.config.priceSunStone !== undefined ? session.config.priceSunStone : 150;
+      itemLabel = '☀️ Sun Stone';
+    } else if (typeInput.includes('ice')) {
+      isStone = true;
+      stoneType = 'ice_stone';
+      pricePerItem = session.config.priceIceStone !== undefined ? session.config.priceIceStone : 150;
+      itemLabel = '❄️ Ice Stone';
+    } else if (typeInput.includes('shiny')) {
+      isStone = true;
+      stoneType = 'shiny_stone';
+      pricePerItem = session.config.priceShinyStone !== undefined ? session.config.priceShinyStone : 150;
+      itemLabel = '✨ Shiny Stone';
+    } else if (typeInput.includes('dusk')) {
+      isStone = true;
+      stoneType = 'dusk_stone';
+      pricePerItem = session.config.priceDuskStone !== undefined ? session.config.priceDuskStone : 150;
+      itemLabel = '🔮 Dusk Stone';
+    } else if (typeInput.includes('dawn')) {
+      isStone = true;
+      stoneType = 'dawn_stone';
+      pricePerItem = session.config.priceDawnStone !== undefined ? session.config.priceDawnStone : 150;
+      itemLabel = '🌅 Dawn Stone';
     } else {
-      const msg = `❌ @${displayName}, unknown item. Available Pokéballs: pokeball, great, ultra, master. Available Stones: fire, water, thunder, leaf, moon.`;
+      const msg = `❌ @${displayName}, unknown item. Available Pokéballs: pokeball, great, ultra, master. Available Stones: fire, water, thunder, leaf, moon, sun, ice, shiny, dusk, dawn.`;
       io.to(channelId).emit('command_feedback', { username, text: msg });
       return msg;
     }
@@ -2090,8 +2135,13 @@ async function processCommand(channelId, username, displayName, messageText, bas
     else if (stoneInput.includes('thunder')) stoneKey = 'thunder_stone';
     else if (stoneInput.includes('leaf')) stoneKey = 'leaf_stone';
     else if (stoneInput.includes('moon')) stoneKey = 'moon_stone';
+    else if (stoneInput.includes('sun')) stoneKey = 'sun_stone';
+    else if (stoneInput.includes('ice')) stoneKey = 'ice_stone';
+    else if (stoneInput.includes('shiny')) stoneKey = 'shiny_stone';
+    else if (stoneInput.includes('dusk')) stoneKey = 'dusk_stone';
+    else if (stoneInput.includes('dawn')) stoneKey = 'dawn_stone';
     else {
-      const msg = `❌ @${displayName}, unknown stone. Available: fire_stone, water_stone, thunder_stone, leaf_stone, moon_stone.`;
+      const msg = `❌ @${displayName}, unknown stone. Available: fire_stone, water_stone, thunder_stone, leaf_stone, moon_stone, sun_stone, ice_stone, shiny_stone, dusk_stone, dawn_stone.`;
       io.to(channelId).emit('command_feedback', { username, text: msg });
       return msg;
     }
@@ -2105,6 +2155,7 @@ async function processCommand(channelId, username, displayName, messageText, bas
     
     const foundPoke = user.inventory.find(p => 
       p.name.toLowerCase().replace('✨ shiny ', '') === pokeQuery || 
+      p.instanceId === pokeQuery ||
       (p.originalName && p.originalName.toLowerCase() === pokeQuery) ||
       p.pokemonId.toString() === pokeQuery
     );
@@ -2590,7 +2641,7 @@ async function processCommand(channelId, username, displayName, messageText, bas
         let stoneItem = '';
         const stoneChance = session.config.raidDropStoneChance !== undefined ? Number(session.config.raidDropStoneChance) : 0.15;
         if (Math.random() < stoneChance) {
-          const stones = ['fire_stone', 'water_stone', 'thunder_stone', 'leaf_stone', 'moon_stone'];
+          const stones = ['fire_stone', 'water_stone', 'thunder_stone', 'leaf_stone', 'moon_stone', 'sun_stone', 'ice_stone', 'shiny_stone', 'dusk_stone', 'dawn_stone'];
           stoneItem = stones[Math.floor(Math.random() * stones.length)];
         }
         

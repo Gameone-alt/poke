@@ -161,6 +161,19 @@
       text-align: center;
     }
 
+    .stone-pill:hover {
+      background: rgba(255, 255, 255, 0.08) !important;
+      border-color: rgba(255, 255, 255, 0.15) !important;
+    }
+    .stone-pill.active {
+      animation: pulse-stone 2s infinite ease-in-out;
+    }
+    @keyframes pulse-stone {
+      0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.3); }
+      70% { box-shadow: 0 0 0 6px rgba(56, 189, 248, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+    }
+
     .stat-label {
       font-size: 11px;
       text-transform: uppercase;
@@ -955,11 +968,16 @@
           <div><span style="font-size: 18px; margin-right: 6px; vertical-align: middle; display: inline-block;">🟣</span> Master Ball: <strong id="balls-master">0</strong></div>
         </div>
         <div class="stat-box" style="grid-column: span 2; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; font-size: 13px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color); color: var(--text-muted); text-align: left;">
-          <div><span style="font-size: 18px; margin-right: 6px; vertical-align: middle; display: inline-block;">🔥</span> Fire Stone: <strong id="stone-fire">0</strong></div>
-          <div><span style="font-size: 18px; margin-right: 6px; vertical-align: middle; display: inline-block;">💧</span> Water Stone: <strong id="stone-water">0</strong></div>
-          <div><span style="font-size: 18px; margin-right: 6px; vertical-align: middle; display: inline-block;">⚡</span> Thunder Stone: <strong id="stone-thunder">0</strong></div>
-          <div><span style="font-size: 18px; margin-right: 6px; vertical-align: middle; display: inline-block;">🍃</span> Leaf Stone: <strong id="stone-leaf">0</strong></div>
-          <div><span style="font-size: 18px; margin-right: 6px; vertical-align: middle; display: inline-block;">🌙</span> Moon Stone: <strong id="stone-moon">0</strong></div>
+          <div class="stone-pill" data-stone="fire_stone" style="cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: all 0.2s; border: 1px solid transparent;"><span style="font-size: 18px; margin-right: 6px; vertical-align: middle; display: inline-block;">🔥</span> Fire Stone: <strong id="stone-fire">0</strong></div>
+          <div class="stone-pill" data-stone="water_stone" style="cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: all 0.2s; border: 1px solid transparent;"><span style="font-size: 18px; margin-right: 6px; vertical-align: middle; display: inline-block;">💧</span> Water Stone: <strong id="stone-water">0</strong></div>
+          <div class="stone-pill" data-stone="thunder_stone" style="cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: all 0.2s; border: 1px solid transparent;"><span style="font-size: 18px; margin-right: 6px; vertical-align: middle; display: inline-block;">⚡</span> Thunder Stone: <strong id="stone-thunder">0</strong></div>
+          <div class="stone-pill" data-stone="leaf_stone" style="cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: all 0.2s; border: 1px solid transparent;"><span style="font-size: 18px; margin-right: 6px; vertical-align: middle; display: inline-block;">🍃</span> Leaf Stone: <strong id="stone-leaf">0</strong></div>
+          <div class="stone-pill" data-stone="moon_stone" style="cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: all 0.2s; border: 1px solid transparent;"><span style="font-size: 18px; margin-right: 6px; vertical-align: middle; display: inline-block;">🌙</span> Moon Stone: <strong id="stone-moon">0</strong></div>
+          <div class="stone-pill" data-stone="sun_stone" style="cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: all 0.2s; border: 1px solid transparent;"><span style="font-size: 18px; margin-right: 6px; vertical-align: middle; display: inline-block;">☀️</span> Sun Stone: <strong id="stone-sun">0</strong></div>
+          <div class="stone-pill" data-stone="ice_stone" style="cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: all 0.2s; border: 1px solid transparent;"><span style="font-size: 18px; margin-right: 6px; vertical-align: middle; display: inline-block;">❄️</span> Ice Stone: <strong id="stone-ice">0</strong></div>
+          <div class="stone-pill" data-stone="shiny_stone" style="cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: all 0.2s; border: 1px solid transparent;"><span style="font-size: 18px; margin-right: 6px; vertical-align: middle; display: inline-block;">✨</span> Shiny Stone: <strong id="stone-shiny">0</strong></div>
+          <div class="stone-pill" data-stone="dusk_stone" style="cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: all 0.2s; border: 1px solid transparent;"><span style="font-size: 18px; margin-right: 6px; vertical-align: middle; display: inline-block;">🔮</span> Dusk Stone: <strong id="stone-dusk">0</strong></div>
+          <div class="stone-pill" data-stone="dawn_stone" style="cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: all 0.2s; border: 1px solid transparent;"><span style="font-size: 18px; margin-right: 6px; vertical-align: middle; display: inline-block;">🌅</span> Dawn Stone: <strong id="stone-dawn">0</strong></div>
         </div>
       </div>
     </div>

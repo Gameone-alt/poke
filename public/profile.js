@@ -18,6 +18,20 @@ let cachedUserData = null;
 let globalPokemonList = [];
 let activeRegion = 'all';
 let activeType = 'all';
+let activeSelectedStone = null;
+
+const STONE_COMPATIBILITY = {
+  fire_stone: ['vulpix', 'growlithe', 'eevee'],
+  water_stone: ['poliwhirl', 'shellder', 'staryu', 'eevee'],
+  thunder_stone: ['pikachu', 'magneton', 'eevee'],
+  leaf_stone: ['gloom', 'weepinbell', 'eevee'],
+  moon_stone: ['nidorino', 'nidorina', 'clefairy', 'jigglypuff'],
+  sun_stone: ['gloom', 'sunkern', 'petilil'],
+  ice_stone: ['sandshrew', 'vulpix', 'eevee'],
+  shiny_stone: ['togetic', 'roselia'],
+  dusk_stone: ['murkrow', 'misdreavus'],
+  dawn_stone: ['kirlia', 'snorunt']
+};
 
 // Filtering and sorting state variables
 let searchTerm = '';
@@ -145,6 +159,39 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+
+  // Hook stone pills for inventory filtering/use
+  const stonePills = document.querySelectorAll('.stone-pill');
+  stonePills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      const stone = pill.getAttribute('data-stone');
+      
+      // If already active, toggle off
+      if (activeSelectedStone === stone) {
+        activeSelectedStone = null;
+        pill.style.background = 'transparent';
+        pill.style.borderColor = 'transparent';
+        pill.style.color = 'var(--text-muted)';
+      } else {
+        // Toggle all off first
+        stonePills.forEach(p => {
+          p.style.background = 'transparent';
+          p.style.borderColor = 'transparent';
+          p.style.color = 'var(--text-muted)';
+        });
+        
+        // Toggle this on
+        activeSelectedStone = stone;
+        pill.style.background = 'rgba(56, 189, 248, 0.12)';
+        pill.style.borderColor = 'rgba(56, 189, 248, 0.3)';
+        pill.style.color = '#38bdf8';
+      }
+      
+      if (cachedUserData) {
+        renderTrainerProfile(cachedUserData);
+      }
+    });
+  });
 });
 
 function renderTrainerProfile(user) {
@@ -182,6 +229,11 @@ function renderTrainerProfile(user) {
     document.getElementById('stone-thunder').textContent = user.items.thunder_stone || 0;
     document.getElementById('stone-leaf').textContent = user.items.leaf_stone || 0;
     document.getElementById('stone-moon').textContent = user.items.moon_stone || 0;
+    document.getElementById('stone-sun').textContent = user.items.sun_stone || 0;
+    document.getElementById('stone-ice').textContent = user.items.ice_stone || 0;
+    document.getElementById('stone-shiny').textContent = user.items.shiny_stone || 0;
+    document.getElementById('stone-dusk').textContent = user.items.dusk_stone || 0;
+    document.getElementById('stone-dawn').textContent = user.items.dawn_stone || 0;
   }
 
   // Render Pokemon cards
@@ -190,6 +242,14 @@ function renderTrainerProfile(user) {
 
   // Apply Search & Filters
   let filtered = [...user.inventory];
+
+  if (activeSelectedStone) {
+    const compatiblePokes = STONE_COMPATIBILITY[activeSelectedStone] || [];
+    filtered = filtered.filter(p => {
+      const origLower = p.originalName ? p.originalName.toLowerCase().trim() : p.name.toLowerCase().replace('✨ shiny ', '').trim();
+      return compatiblePokes.includes(origLower);
+    });
+  }
 
   if (searchTerm) {
     filtered = filtered.filter(poke => 
@@ -335,7 +395,11 @@ function renderTrainerProfile(user) {
 
     card.style.cursor = 'pointer';
     card.addEventListener('click', () => {
-      showEvolutionTree(poke.pokemonId);
+      if (activeSelectedStone) {
+        useStoneOnPokemon(activeSelectedStone, poke);
+      } else {
+        showEvolutionTree(poke.pokemonId);
+      }
     });
 
     grid.appendChild(card);
@@ -672,6 +736,16 @@ function refreshTrainerData(channel, username, apiBase) {
         if (sl) sl.textContent = data.items.leaf_stone || 0;
         const sm = document.getElementById('stone-moon');
         if (sm) sm.textContent = data.items.moon_stone || 0;
+        const s_sun = document.getElementById('stone-sun');
+        if (s_sun) s_sun.textContent = data.items.sun_stone || 0;
+        const s_ice = document.getElementById('stone-ice');
+        if (s_ice) s_ice.textContent = data.items.ice_stone || 0;
+        const s_shiny = document.getElementById('stone-shiny');
+        if (s_shiny) s_shiny.textContent = data.items.shiny_stone || 0;
+        const s_dusk = document.getElementById('stone-dusk');
+        if (s_dusk) s_dusk.textContent = data.items.dusk_stone || 0;
+        const s_dawn = document.getElementById('stone-dawn');
+        if (s_dawn) s_dawn.textContent = data.items.dawn_stone || 0;
       }
       
       document.querySelectorAll('.pokemon-card').forEach(card => {
@@ -732,4 +806,41 @@ function refreshTrainerData(channel, username, apiBase) {
       });
     })
     .catch(err => console.error('Error refreshing trainer profile:', err));
+}
+
+function useStoneOnPokemon(stone, poke) {
+  const cleanStoneName = stone.toUpperCase().replace('_', ' ');
+  const confirmEvolve = confirm(`Would you like to use 1x ${cleanStoneName} to evolve your ${poke.name}?`);
+  if (!confirmEvolve) return;
+  
+  const pathParts = window.location.pathname.split('/');
+  const urlParams = new URLSearchParams(window.location.search);
+  let channel = pathParts[2] || 'simulator';
+  let username = pathParts[3];
+  if (pathParts[1] !== 'trainer' || !username) {
+    channel = urlParams.get('channel') || 'simulator';
+    username = urlParams.get('username') || urlParams.get('user');
+  }
+  const backend = urlParams.get('backend') || '';
+  const apiBase = backend.replace(/\/$/, '');
+
+  fetch(`${apiBase}/api/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      channelId: channel,
+      username: username,
+      messageText: `!use ${stone} ${poke.instanceId}`
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.reply) {
+      alert(data.reply);
+      window.location.reload();
+    }
+  })
+  .catch(err => {
+    alert('Failed to execute evolution: ' + err.message);
+  });
 }
