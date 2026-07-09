@@ -2464,7 +2464,9 @@ function setupChampionshipLayoutEditor() {
     const scaleInput = (wId === 'drag-champ-bracket') ? champBracketScaleInput : champArenaScaleInput;
     const posSelect = (wId === 'drag-champ-bracket') ? champBracketPositionSelect : champArenaPositionSelect;
     const leftInput = (wId === 'drag-champ-bracket') ? champBracketLeftInput : champArenaLeftInput;
+    const rightInput = (wId === 'drag-champ-bracket') ? champBracketRightInput : champArenaRightInput;
     const topInput = (wId === 'drag-champ-bracket') ? champBracketTopInput : champArenaTopInput;
+    const bottomInput = (wId === 'drag-champ-bracket') ? champBracketBottomInput : champArenaBottomInput;
 
     const scale = scaleInput ? parseFloat(scaleInput.value) : 1.0;
     
@@ -2472,31 +2474,42 @@ function setupChampionshipLayoutEditor() {
     el.style.width = `${720 * scale}px`;
     el.style.height = `${405 * scale}px`;
 
-    const pos = posSelect ? posSelect.value : 'center';
-    let topVal = '0px';
-    let leftVal = '0px';
+    // Clear styles
+    el.style.left = '';
+    el.style.right = '';
+    el.style.top = '';
+    el.style.bottom = '';
+    el.style.transform = '';
 
-    if (pos === 'custom' || (leftInput && leftInput.value) || (topInput && topInput.value)) {
-      leftVal = (leftInput && leftInput.value) ? leftInput.value : '0px';
-      topVal = (topInput && topInput.value) ? topInput.value : '0px';
+    const pos = posSelect ? posSelect.value : 'center';
+
+    if (pos === 'custom') {
+      el.style.left = (leftInput && leftInput.value) ? leftInput.value : 'auto';
+      el.style.right = (rightInput && rightInput.value) ? rightInput.value : 'auto';
+      el.style.top = (topInput && topInput.value) ? topInput.value : 'auto';
+      el.style.bottom = (bottomInput && bottomInput.value) ? bottomInput.value : 'auto';
     } else {
-      if (pos === 'top') { topVal = '0px'; leftVal = '0px'; }
-      else if (pos === 'bottom') { topVal = '0px'; leftVal = '0px'; }
-      else { // center
-        topVal = '0px';
-        leftVal = '0px';
+      if (pos === 'top') {
+        el.style.top = '0px';
+        el.style.left = '50%';
+        el.style.transform = 'translateX(-50%)';
+      } else if (pos === 'bottom') {
+        el.style.bottom = '0px';
+        el.style.left = '50%';
+        el.style.transform = 'translateX(-50%)';
+      } else { // center
+        el.style.top = '50%';
+        el.style.left = '50%';
+        el.style.transform = 'translate(-50%, -50%)';
       }
     }
-
-    el.style.left = leftVal;
-    el.style.top = topVal;
   };
 
   // Bind scale/position inputs change to update preview box
-  [champBracketScaleInput, champBracketPositionSelect, champBracketLeftInput, champBracketTopInput].forEach(inp => {
+  [champBracketScaleInput, champBracketPositionSelect, champBracketLeftInput, champBracketRightInput, champBracketTopInput, champBracketBottomInput].forEach(inp => {
     if (inp) inp.addEventListener('input', () => syncPreviewBox('drag-champ-bracket'));
   });
-  [champArenaScaleInput, champArenaPositionSelect, champArenaLeftInput, champArenaTopInput].forEach(inp => {
+  [champArenaScaleInput, champArenaPositionSelect, champArenaLeftInput, champArenaRightInput, champArenaTopInput, champArenaBottomInput].forEach(inp => {
     if (inp) inp.addEventListener('input', () => syncPreviewBox('drag-champ-arena'));
   });
 

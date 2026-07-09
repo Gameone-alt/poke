@@ -1092,83 +1092,7 @@
                 </div>
               </div>
 
-              <h4>📐 Tournament Layout Configuration</h4>
-              
-              <!-- Bracket View Position & Scale -->
-              <strong style="color: #fff; font-size: 13px; display: block; margin-top: 15px; margin-bottom: 8px;">📊 Bracket View Layout</strong>
-              <div class="form-row">
-                <div class="form-group" style="flex: 1;">
-                  <label for="champ-bracket-position">Position Preset</label>
-                  <select id="champ-bracket-position" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
-                    <option value="center">Center Screen Preset</option>
-                    <option value="top">Top Preset</option>
-                    <option value="bottom">Bottom Preset</option>
-                    <option value="custom">Custom Position</option>
-                  </select>
-                </div>
-                <div class="form-group" style="flex: 1;">
-                  <label>Bracket Scale: <strong id="lbl-scale-champ-bracket" style="color: var(--color-primary);">1.0</strong>x</label>
-                  <input type="range" id="champ-bracket-scale" min="0.3" max="2.0" step="0.05" value="1.0" style="width: 100%; cursor: pointer;" oninput="document.getElementById('lbl-scale-champ-bracket').textContent = this.value">
-                </div>
-              </div>
 
-              <!-- Bracket custom coords -->
-              <div class="form-row custom-position-row" id="champ-bracket-custom-pos-row" style="display: none; gap: 10px; margin-bottom: 15px;">
-                <div class="form-group" style="flex: 1;">
-                  <label for="champ-bracket-left" style="font-size: 11px;">Left</label>
-                  <input type="text" id="champ-bracket-left" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-                </div>
-                <div class="form-group" style="flex: 1;">
-                  <label for="champ-bracket-right" style="font-size: 11px;">Right</label>
-                  <input type="text" id="champ-bracket-right" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-                </div>
-                <div class="form-group" style="flex: 1;">
-                  <label for="champ-bracket-top" style="font-size: 11px;">Top</label>
-                  <input type="text" id="champ-bracket-top" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-                </div>
-                <div class="form-group" style="flex: 1;">
-                  <label for="champ-bracket-bottom" style="font-size: 11px;">Bottom</label>
-                  <input type="text" id="champ-bracket-bottom" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-                </div>
-              </div>
-
-              <!-- Battle Arena Position & Scale -->
-              <strong style="color: #fff; font-size: 13px; display: block; margin-top: 20px; margin-bottom: 8px;">⚔️ Fight Arena Layout</strong>
-              <div class="form-row">
-                <div class="form-group" style="flex: 1;">
-                  <label for="champ-arena-position">Position Preset</label>
-                  <select id="champ-arena-position" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
-                    <option value="center">Center Screen Preset</option>
-                    <option value="top">Top Preset</option>
-                    <option value="bottom">Bottom Preset</option>
-                    <option value="custom">Custom Position</option>
-                  </select>
-                </div>
-                <div class="form-group" style="flex: 1;">
-                  <label>Arena Scale: <strong id="lbl-scale-champ-arena" style="color: var(--color-primary);">1.0</strong>x</label>
-                  <input type="range" id="champ-arena-scale" min="0.3" max="2.0" step="0.05" value="1.0" style="width: 100%; cursor: pointer;" oninput="document.getElementById('lbl-scale-champ-arena').textContent = this.value">
-                </div>
-              </div>
-
-              <!-- Arena custom coords -->
-              <div class="form-row custom-position-row" id="champ-arena-custom-pos-row" style="display: none; gap: 10px; margin-bottom: 15px;">
-                <div class="form-group" style="flex: 1;">
-                  <label for="champ-arena-left" style="font-size: 11px;">Left</label>
-                  <input type="text" id="champ-arena-left" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-                </div>
-                <div class="form-group" style="flex: 1;">
-                  <label for="champ-arena-right" style="font-size: 11px;">Right</label>
-                  <input type="text" id="champ-arena-right" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-                </div>
-                <div class="form-group" style="flex: 1;">
-                  <label for="champ-arena-top" style="font-size: 11px;">Top</label>
-                  <input type="text" id="champ-arena-top" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-                </div>
-                <div class="form-group" style="flex: 1;">
-                  <label for="champ-arena-bottom" style="font-size: 11px;">Bottom</label>
-                  <input type="text" id="champ-arena-bottom" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
-                </div>
-              </div>
 
               <h4>🎁 Prize Distribution Configuration</h4>
               
@@ -1227,32 +1151,182 @@
               </div>
 
               <h4 style="margin-top: 30px; border-top: 1px dashed var(--border-color); padding-top: 20px;">📐 Championship Visual Layout Editor</h4>
-              <p style="margin-bottom: 15px; font-size: 13px; color: var(--text-muted);">
-                Drag the bracket and fight arena boxes inside the preview screen to visually position them on your stream overlay. The inputs and sliders above will update in real time!
+              <p style="margin-bottom: 20px; font-size: 13px; color: var(--text-muted);">
+                Drag the components in the OBS screen preview to visually position them on your stream overlay. Use the sidebar controls on the right to toggle presets and adjust scales!
               </p>
 
-              <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-color); max-width: 720px;">
-                <label for="champ-layout-widget-selector" style="font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 0; white-space: nowrap;">🎯 Select Component to Drag:</label>
-                <select id="champ-layout-widget-selector" style="flex: 1; padding: 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; font-size: 13px; cursor: pointer; outline: none; font-family: inherit;">
-                  <option value="">-- Select component --</option>
-                  <option value="drag-champ-bracket">📊 Tournament Bracket</option>
-                  <option value="drag-champ-arena">⚔️ Fight Arena</option>
-                </select>
-              </div>
-
-              <!-- screen preview box (720x405) -->
-              <div id="champ-layout-screen-preview" style="position: relative; width: 720px; height: 405px; background: #0b0f19; border: 2px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); margin-bottom: 25px; user-select: none;">
-                <!-- Grid backdrop -->
-                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px); background-size: 20px 20px; pointer-events: none;"></div>
+              <!-- SIDE-BY-SIDE LAYOUT -->
+              <div style="display: flex; gap: 25px; align-items: flex-start; overflow-x: auto; padding-bottom: 15px;">
                 
-                <!-- Draggable Tournament Bracket -->
-                <div id="drag-champ-bracket" style="position: absolute; width: 720px; height: 405px; background: rgba(251, 191, 36, 0.15); border: 2px dashed #fbbf24; color: #fff; cursor: move; border-radius: 8px; font-weight: bold; font-size: 11px; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; text-shadow: 0 1px 4px #000;">
-                  <span>📊 Tournament Bracket</span>
+                <!-- LEFT SIDE: Screen Preview Canvas (720x405) -->
+                <div style="width: 720px; flex-shrink: 0;">
+                  
+                  <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <label for="champ-layout-widget-selector" style="font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 0; white-space: nowrap;">🎯 Select Component to Drag:</label>
+                    <select id="champ-layout-widget-selector" style="flex: 1; padding: 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; font-size: 13px; cursor: pointer; outline: none; font-family: inherit;">
+                      <option value="">-- Select component --</option>
+                      <option value="drag-champ-bracket">📊 Tournament Bracket</option>
+                      <option value="drag-champ-arena">⚔️ Fight Arena</option>
+                    </select>
+                  </div>
+
+                  <div id="champ-layout-screen-preview" style="position: relative; width: 720px; height: 405px; background: #0b0f19; border: 2px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); user-select: none;">
+                    <!-- Grid backdrop -->
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px); background-size: 20px 20px; pointer-events: none;"></div>
+                    
+                    <!-- Draggable Tournament Bracket (with mini bracket details!) -->
+                    <div id="drag-champ-bracket" style="position: absolute; width: 720px; height: 405px; background: rgba(251, 191, 36, 0.08); border: 2px dashed #fbbf24; color: #fff; cursor: move; border-radius: 8px; z-index: 10; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; padding: 10px;">
+                      <!-- Mini Bracket Layout Diagram Inside Draggable Box -->
+                      <div style="display: flex; justify-content: space-between; width: 100%; height: 100%; pointer-events: none; opacity: 0.85;">
+                        <!-- Left Columns -->
+                        <div style="display: flex; justify-content: space-between; width: 38%; height: 100%;">
+                          <div style="display: flex; flex-direction: column; justify-content: space-around; height: 100%;">
+                            <div style="width: 25px; height: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 2px;"></div>
+                            <div style="width: 25px; height: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 2px;"></div>
+                            <div style="width: 25px; height: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 2px;"></div>
+                            <div style="width: 25px; height: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 2px;"></div>
+                          </div>
+                          <div style="display: flex; flex-direction: column; justify-content: space-around; height: 100%;">
+                            <div style="width: 25px; height: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 2px;"></div>
+                            <div style="width: 25px; height: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 2px;"></div>
+                          </div>
+                          <div style="display: flex; flex-direction: column; justify-content: space-around; height: 100%;">
+                            <div style="width: 25px; height: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 2px;"></div>
+                          </div>
+                        </div>
+                        
+                        <!-- Center Header & Finals -->
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 24%; height: 100%; text-align: center;">
+                          <div style="font-size: 7px; color: #fbbf24; font-weight: bold; margin-bottom: 5px; text-transform: uppercase;">Bracket Header</div>
+                          <div style="width: 45px; height: 16px; background: rgba(251,191,36,0.2); border: 1px solid #fbbf24; border-radius: 3px; font-size: 5px; display: flex; align-items: center; justify-content: center; margin-bottom: 5px;">Finals</div>
+                          <div style="font-size: 5px; color: #10b981; font-weight: bold; margin-top: 5px;">👑 Champion</div>
+                        </div>
+                        
+                        <!-- Right Columns -->
+                        <div style="display: flex; flex-direction: row-reverse; justify-content: space-between; width: 38%; height: 100%;">
+                          <div style="display: flex; flex-direction: column; justify-content: space-around; height: 100%;">
+                            <div style="width: 25px; height: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 2px;"></div>
+                            <div style="width: 25px; height: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 2px;"></div>
+                            <div style="width: 25px; height: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 2px;"></div>
+                            <div style="width: 25px; height: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 2px;"></div>
+                          </div>
+                          <div style="display: flex; flex-direction: column; justify-content: space-around; height: 100%;">
+                            <div style="width: 25px; height: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 2px;"></div>
+                            <div style="width: 25px; height: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 2px;"></div>
+                          </div>
+                          <div style="display: flex; flex-direction: column; justify-content: space-around; height: 100%;">
+                            <div style="width: 25px; height: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 2px;"></div>
+                          </div>
+                        </div>
+                      </div>
+                      <div style="font-size: 8px; font-weight: bold; text-align: center; margin-top: -15px; color: #fbbf24; pointer-events: none;">📊 Tournament Bracket View</div>
+                    </div>
+
+                    <!-- Draggable Fight Arena -->
+                    <div id="drag-champ-arena" style="position: absolute; width: 720px; height: 405px; background: rgba(239, 68, 68, 0.08); border: 2px dashed #ef4444; color: #fff; cursor: move; border-radius: 8px; z-index: 10; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; padding: 10px;">
+                      <!-- Fight Arena Layout Preview Elements -->
+                      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; height: 100%; pointer-events: none; padding: 0 40px; box-sizing: border-box;">
+                        <!-- Left Fighter Block -->
+                        <div style="width: 110px; height: 150px; background: rgba(59,130,246,0.15); border: 1px solid #3b82f6; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 7px; color: #94a3b8; gap: 5px;">
+                          <span>🔵 Player 1</span>
+                          <div style="width: 45px; height: 45px; border: 1px dashed rgba(255,255,255,0.2); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 6px;">GIF</div>
+                        </div>
+
+                        <!-- VS Middle Text -->
+                        <div style="font-size: 14px; color: #ef4444; font-weight: bold; text-shadow: 0 0 5px rgba(239,68,68,0.5);">VS</div>
+
+                        <!-- Right Fighter Block -->
+                        <div style="width: 110px; height: 150px; background: rgba(236,72,153,0.15); border: 1px solid #ec4899; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 7px; color: #94a3b8; gap: 5px;">
+                          <span>🔴 Player 2</span>
+                          <div style="width: 45px; height: 45px; border: 1px dashed rgba(255,255,255,0.2); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 6px;">GIF</div>
+                        </div>
+                      </div>
+                      <div style="font-size: 8px; font-weight: bold; text-align: center; margin-top: -15px; color: #ef4444; pointer-events: none;">⚔️ Championship Fight Arena</div>
+                    </div>
+                  </div>
                 </div>
 
-                <!-- Draggable Fight Arena -->
-                <div id="drag-champ-arena" style="position: absolute; width: 720px; height: 405px; background: rgba(239, 68, 68, 0.15); border: 2px dashed #ef4444; color: #fff; cursor: move; border-radius: 8px; font-weight: bold; font-size: 11px; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; text-shadow: 0 1px 4px #000;">
-                  <span>⚔️ Fight Arena</span>
+                <!-- RIGHT SIDE: Sidebar Controls for Bracket and Arena -->
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 20px; background: rgba(255,255,255,0.02); padding: 15px 20px; border-radius: 12px; border: 1px solid var(--border-color); min-width: 320px;">
+                  
+                  <!-- Section A: Bracket controls -->
+                  <div>
+                    <h4 style="margin-top: 0; color: #fbbf24; border-bottom: 1px solid rgba(251, 191, 36, 0.2); padding-bottom: 6px; font-size: 12px; text-transform: uppercase;">📊 Bracket View Sidebar</h4>
+                    
+                    <div class="form-group" style="margin-bottom: 12px;">
+                      <label for="champ-bracket-position" style="font-size: 11px;">Position Preset</label>
+                      <select id="champ-bracket-position" style="background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border-color); color: #fff; padding: 6px 10px; border-radius: 6px; font-family: inherit; font-size: 12px; width: 100%;">
+                        <option value="center">Center Screen Preset</option>
+                        <option value="top">Top Preset</option>
+                        <option value="bottom">Bottom Preset</option>
+                        <option value="custom">Custom Position</option>
+                      </select>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                      <label style="font-size: 11px; display: flex; justify-content: space-between;">Scale: <strong id="lbl-scale-champ-bracket" style="color: var(--color-primary);">1.0x</strong></label>
+                      <input type="range" id="champ-bracket-scale" min="0.3" max="2.0" step="0.05" value="1.0" style="width: 100%; cursor: pointer;" oninput="document.getElementById('lbl-scale-champ-bracket').textContent = this.value + 'x'">
+                    </div>
+
+                    <div class="form-row custom-position-row" id="champ-bracket-custom-pos-row" style="display: none; gap: 8px;">
+                      <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                        <label for="champ-bracket-left" style="font-size: 10px;">Left</label>
+                        <input type="text" id="champ-bracket-left" placeholder="auto" style="padding: 5px 8px; font-size: 11px;">
+                      </div>
+                      <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                        <label for="champ-bracket-right" style="font-size: 10px;">Right</label>
+                        <input type="text" id="champ-bracket-right" placeholder="auto" style="padding: 5px 8px; font-size: 11px;">
+                      </div>
+                      <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                        <label for="champ-bracket-top" style="font-size: 10px;">Top</label>
+                        <input type="text" id="champ-bracket-top" placeholder="auto" style="padding: 5px 8px; font-size: 11px;">
+                      </div>
+                      <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                        <label for="champ-bracket-bottom" style="font-size: 10px;">Bottom</label>
+                        <input type="text" id="champ-bracket-bottom" placeholder="auto" style="padding: 5px 8px; font-size: 11px;">
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Section B: Arena controls -->
+                  <div>
+                    <h4 style="margin-top: 10px; color: #ef4444; border-bottom: 1px solid rgba(239, 68, 68, 0.2); padding-bottom: 6px; font-size: 12px; text-transform: uppercase;">⚔️ Fight Arena Sidebar</h4>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                      <label for="champ-arena-position" style="font-size: 11px;">Position Preset</label>
+                      <select id="champ-arena-position" style="background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border-color); color: #fff; padding: 6px 10px; border-radius: 6px; font-family: inherit; font-size: 12px; width: 100%;">
+                        <option value="center">Center Screen Preset</option>
+                        <option value="top">Top Preset</option>
+                        <option value="bottom">Bottom Preset</option>
+                        <option value="custom">Custom Position</option>
+                      </select>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                      <label style="font-size: 11px; display: flex; justify-content: space-between;">Scale: <strong id="lbl-scale-champ-arena" style="color: var(--color-primary);">1.0x</strong></label>
+                      <input type="range" id="champ-arena-scale" min="0.3" max="2.0" step="0.05" value="1.0" style="width: 100%; cursor: pointer;" oninput="document.getElementById('lbl-scale-champ-arena').textContent = this.value + 'x'">
+                    </div>
+
+                    <div class="form-row custom-position-row" id="champ-arena-custom-pos-row" style="display: none; gap: 8px;">
+                      <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                        <label for="champ-arena-left" style="font-size: 10px;">Left</label>
+                        <input type="text" id="champ-arena-left" placeholder="auto" style="padding: 5px 8px; font-size: 11px;">
+                      </div>
+                      <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                        <label for="champ-arena-right" style="font-size: 10px;">Right</label>
+                        <input type="text" id="champ-arena-right" placeholder="auto" style="padding: 5px 8px; font-size: 11px;">
+                      </div>
+                      <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                        <label for="champ-arena-top" style="font-size: 10px;">Top</label>
+                        <input type="text" id="champ-arena-top" placeholder="auto" style="padding: 5px 8px; font-size: 11px;">
+                      </div>
+                      <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                        <label for="champ-arena-bottom" style="font-size: 10px;">Bottom</label>
+                        <input type="text" id="champ-arena-bottom" placeholder="auto" style="padding: 5px 8px; font-size: 11px;">
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
               </div>
 
