@@ -283,7 +283,12 @@ function renderTrainerProfile(user) {
     const isBuddyB = b.instanceId === user.buddyInstanceId ? 1 : 0;
     if (isBuddyA !== isBuddyB) return isBuddyB - isBuddyA;
 
-    if (sortBy === 'cp') {
+    if (sortBy === 'pokedex') {
+      if (a.pokemonId !== b.pokemonId) {
+        return (a.pokemonId || 0) - (b.pokemonId || 0);
+      }
+      return b.caughtAt - a.caughtAt;
+    } else if (sortBy === 'cp') {
       const isLegendaryA = a.isLegendary || (a.catchRate !== undefined && a.catchRate <= 0.1);
       const isLegendaryB = b.isLegendary || (b.catchRate !== undefined && b.catchRate <= 0.1);
       return calculateCP(b.baseStats, b.wins, isLegendaryB, b.fusionCount) - calculateCP(a.baseStats, a.wins, isLegendaryA, a.fusionCount);
