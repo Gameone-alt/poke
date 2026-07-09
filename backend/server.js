@@ -40,6 +40,32 @@ app.use((req, res, next) => {
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use(express.json());
 
+// Real-time console error logging helper
+const errorLogPath = path.join(__dirname, 'error.log');
+const originalConsoleError = console.error;
+console.error = function(...args) {
+  originalConsoleError.apply(console, args);
+  try {
+    const time = new Date().toISOString();
+    const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+    fs.appendFileSync(errorLogPath, `[${time}] ${message}\n`, 'utf8');
+  } catch (e) {}
+};
+
+app.get('/api/debug-errors', (req, res) => {
+  try {
+    if (fs.existsSync(errorLogPath)) {
+      const logs = fs.readFileSync(errorLogPath, 'utf8');
+      res.setHeader('Content-Type', 'text/plain');
+      res.status(200).send(logs);
+    } else {
+      res.status(200).send('No errors recorded yet.');
+    }
+  } catch (err) {
+    res.status(500).send('Failed to read logs: ' + err.message);
+  }
+});
+
 // Health check endpoint for Render
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', uptime: process.uptime() });
@@ -321,7 +347,8 @@ const STONE_EVOLUTIONS = {
   eevee: {
     fire_stone: 'flareon',
     water_stone: 'vaporeon',
-    thunder_stone: 'jolteon'
+    thunder_stone: 'jolteon',
+    leaf_stone: 'leafeon'
   },
   gloom: { stone: 'leaf_stone', result: 'vileplume' },
   clefairy: { stone: 'moon_stone', result: 'clefable' },
@@ -1445,7 +1472,7 @@ async function processCommand(channelId, username, displayName, messageText, bas
 
     const foundPokeA = challenger.inventory.find(p => 
       p.name.toLowerCase().replace('✨ shiny ', '') === pokemonQuery || 
-      p.originalName.toLowerCase() === pokemonQuery
+      (p.originalName && p.originalName.toLowerCase() === pokemonQuery)
     );
 
     if (!foundPokeA) {
@@ -1597,7 +1624,7 @@ async function processCommand(channelId, username, displayName, messageText, bas
 
     const foundPokeB = opponentUser.inventory.find(p => 
       p.name.toLowerCase().replace('✨ shiny ', '') === pokemonQuery || 
-      p.originalName.toLowerCase() === pokemonQuery
+      (p.originalName && p.originalName.toLowerCase() === pokemonQuery)
     );
 
     if (!foundPokeB) {
@@ -1658,7 +1685,7 @@ async function processCommand(channelId, username, displayName, messageText, bas
       const queryPoke = parts.slice(1).join(' ').toLowerCase().trim();
       targetPoke = user.inventory.find(p => 
         p.name.toLowerCase().replace('✨ shiny ', '') === queryPoke || 
-        p.originalName.toLowerCase() === queryPoke
+        (p.originalName && p.originalName.toLowerCase() === queryPoke)
       );
     }
     
@@ -2078,7 +2105,7 @@ async function processCommand(channelId, username, displayName, messageText, bas
     
     const foundPoke = user.inventory.find(p => 
       p.name.toLowerCase().replace('✨ shiny ', '') === pokeQuery || 
-      p.originalName.toLowerCase() === pokeQuery ||
+      (p.originalName && p.originalName.toLowerCase() === pokeQuery) ||
       p.pokemonId.toString() === pokeQuery
     );
     
@@ -2160,7 +2187,7 @@ async function processCommand(channelId, username, displayName, messageText, bas
       
       const foundPoke = user.inventory.find(p => 
         p.name.toLowerCase() === pokeQuery || 
-        p.originalName.toLowerCase() === pokeQuery || 
+        (p.originalName && p.originalName.toLowerCase() === pokeQuery) || 
         p.pokemonId.toString() === pokeQuery
       );
       
@@ -2325,7 +2352,7 @@ async function processCommand(channelId, username, displayName, messageText, bas
     // Search user inventory by name
     const foundPoke = user.inventory.find(p => 
       p.name.toLowerCase().replace('✨ shiny ', '') === queryPoke || 
-      p.originalName.toLowerCase() === queryPoke
+      (p.originalName && p.originalName.toLowerCase() === queryPoke)
     );
 
     if (!foundPoke) {
@@ -2383,7 +2410,7 @@ async function processCommand(channelId, username, displayName, messageText, bas
     const user = await db.getUser(channelId, username, displayName);
     const targetPoke = user.inventory.find(p => 
       p.name.toLowerCase().replace('✨ shiny ', '') === queryPoke || 
-      p.originalName.toLowerCase() === queryPoke
+      (p.originalName && p.originalName.toLowerCase() === queryPoke)
     );
 
     if (!targetPoke) {
@@ -2693,7 +2720,7 @@ async function processCommand(channelId, username, displayName, messageText, bas
 
     const found = user.inventory.find(p => 
       p.name.toLowerCase().replace('✨ shiny ', '') === query || 
-      p.originalName.toLowerCase() === query ||
+      (p.originalName && p.originalName.toLowerCase() === query) ||
       p.pokemonId.toString() === query
     );
 
