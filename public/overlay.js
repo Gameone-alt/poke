@@ -431,13 +431,36 @@ function applyConfig(config) {
   }
 
   // 6. Custom CSS Overrides Injection
+  // 6. Custom CSS Overrides Injection
   let styleTag = document.getElementById('custom-theme-css');
   if (!styleTag) {
     styleTag = document.createElement('style');
     styleTag.id = 'custom-theme-css';
     document.head.appendChild(styleTag);
   }
-  styleTag.textContent = config.customCss || '';
+  
+  const championshipThemeColor = config.championshipThemeColor || '#fbbf24';
+  const dynamicStyles = `
+    :root {
+      --championship-theme-color: ${championshipThemeColor};
+    }
+    .tournament-header {
+      color: var(--championship-theme-color) !important;
+      text-shadow: 0 0 10px var(--championship-theme-color) !important;
+    }
+    .finals-match-node .bracket-matchup {
+      border-color: var(--championship-theme-color) !important;
+      box-shadow: 0 0 20px var(--championship-theme-color) !important;
+    }
+  `;
+  styleTag.textContent = (config.customCss || '') + dynamicStyles;
+
+  // 7. Championship header title text override
+  const tournamentHeader = document.querySelector('.tournament-header');
+  if (tournamentHeader) {
+    const headerText = config.championshipHeader || 'STREAM CHAMPIONSHIP';
+    tournamentHeader.innerHTML = `🏆 ${headerText} 🏆`;
+  }
 
   // Helper helper to position overlay components
   function positionInnerWidget(el, pos, scale, left, right, top, bottom, defaultTop, defaultLeft) {
@@ -2821,7 +2844,7 @@ socket.on('championship_match_end', (data) => {
   
   setTimeout(() => {
     if (battleArena) battleArena.classList.add('hidden');
-    renderChampionshipBracket(currentTournamentState, data.roundIdx + 1, data.matchIdx + 1);
+    renderChampionshipBracket(currentTournamentState, data.roundIdx, data.matchIdx + 1);
   }, 2000);
 });
 
@@ -2839,6 +2862,17 @@ socket.on('championship_ended', (data) => {
   }
 
   playSound(sfxEvolve);
+
+  // Automatically hide the tournament screen after the configured winner screen duration
+  const durationSeconds = (currentOverlayConfig && currentOverlayConfig.championshipWinnerScreenDuration !== undefined)
+    ? currentOverlayConfig.championshipWinnerScreenDuration
+    : 30;
+
+  setTimeout(() => {
+    const overlay = document.getElementById('championship-overlay');
+    if (overlay) overlay.classList.add('hidden');
+    if (trophy) trophy.classList.add('hidden');
+  }, durationSeconds * 1000);
 });
 
 socket.on('championship_cancelled', () => {

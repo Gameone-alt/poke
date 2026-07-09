@@ -2865,19 +2865,22 @@ async function processCommand(channelId, username, displayName, messageText, bas
       session.activeChampionship.players.set(username.toLowerCase(), {
         username: username.toLowerCase(),
         displayName: displayName,
-        team: team.map(p => ({
-          instanceId: p.instanceId,
-          pokemonId: p.pokemonId,
-          name: p.name,
-          types: p.types,
-          baseStats: { ...p.baseStats },
-          currentHp: p.currentHp,
-          maxHp: p.baseStats.hp,
-          wins: p.wins || 0,
-          shiny: p.shiny,
-          spriteUrl: p.shiny ? p.shinySpriteUrl || p.spriteUrl : p.spriteUrl,
-          fallbackSpriteUrl: p.shiny ? p.fallbackShinySpriteUrl || p.fallbackSpriteUrl : p.fallbackSpriteUrl
-        }))
+        team: team.map(p => {
+          const staticPoke = pokemonDb[p.pokemonId.toString()] || {};
+          return {
+            instanceId: p.instanceId,
+            pokemonId: p.pokemonId,
+            name: p.name,
+            types: p.types,
+            baseStats: { ...p.baseStats },
+            currentHp: p.currentHp,
+            maxHp: p.baseStats.hp,
+            wins: p.wins || 0,
+            shiny: p.shiny,
+            spriteUrl: p.shiny ? staticPoke.shinySpriteUrl || staticPoke.spriteUrl : staticPoke.spriteUrl,
+            fallbackSpriteUrl: p.shiny ? staticPoke.fallbackShinySpriteUrl || staticPoke.fallbackSpriteUrl : staticPoke.fallbackSpriteUrl
+          };
+        })
       });
 
       const msg = isUpdate 
@@ -3595,6 +3598,8 @@ function simulateRelayFightTicks(channelId, match) {
   
   let nextActionType = 'hit';
   let faintedPlayer = null;
+  let lastAttacker = null;
+  let lastPairing = '';
 
   const fightInterval = setInterval(() => {
     const currentChamp = session.activeChampionship;
@@ -3613,6 +3618,11 @@ function simulateRelayFightTicks(channelId, match) {
         roundIdx: currentChamp.currentRound,
         matchIdx: currentChamp.currentMatch,
         winner: { username: winner.username, displayName: winner.displayName }
+      });
+
+      io.to(channelId).emit('championship_bracket_update', {
+        bracket: currentChamp.bracket,
+        currentRound: currentChamp.currentRound
       });
 
       sendGameLog(channelId, 'system', `🏆 Match result: @${winner.displayName} defeats @${loser.displayName}!`);
@@ -3640,7 +3650,26 @@ function simulateRelayFightTicks(channelId, match) {
       return;
     }
 
-    const attacker = Math.random() < 0.5 ? 'p1' : 'p2';
+    const currentPairing = `${idx1}_${idx2}`;
+    let attacker;
+    if (currentPairing !== lastPairing) {
+      // First turn of this face-off! Choose based on speed:
+      const speed1 = poke1.baseStats.speed || 50;
+      const speed2 = poke2.baseStats.speed || 50;
+      if (speed1 > speed2) {
+        attacker = 'p1';
+      } else if (speed2 > speed1) {
+        attacker = 'p2';
+      } else {
+        attacker = Math.random() < 0.5 ? 'p1' : 'p2';
+      }
+      lastPairing = currentPairing;
+    } else {
+      // Subsequent turns: alternate!
+      attacker = lastAttacker === 'p1' ? 'p2' : 'p1';
+    }
+    lastAttacker = attacker;
+
     const activeAttacker = attacker === 'p1' ? poke1 : poke2;
     const activeDefender = attacker === 'p1' ? poke2 : poke1;
 

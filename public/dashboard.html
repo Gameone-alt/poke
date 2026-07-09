@@ -1069,6 +1069,27 @@
                   <input type="number" id="champ-duration" min="1" max="60" value="5">
                   <small>Duration viewers have to register their teams using <code>!join tournament</code>.</small>
                 </div>
+                <div class="form-group">
+                  <label for="champ-winner-duration">Winner Screen Duration (Seconds)</label>
+                  <input type="number" id="champ-winner-duration" min="5" max="300" value="30">
+                  <small>How long the championship ending podium/trophy screen remains visible on overlay.</small>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="champ-header">Tournament Header Text</label>
+                  <input type="text" id="champ-header" value="STREAM CHAMPIONSHIP" placeholder="e.g. STREAM CHAMPIONSHIP">
+                  <small>Customize the title text shown on the tournament overlay screen.</small>
+                </div>
+                <div class="form-group">
+                  <label for="champ-theme-color">Tournament Theme Color</label>
+                  <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="color" id="champ-theme-color" value="#fbbf24" style="width: 50px; height: 38px; padding: 0; border: none; border-radius: 6px; cursor: pointer;">
+                    <input type="text" id="champ-theme-color-hex" value="#fbbf24" style="flex: 1; padding: 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; font-family: inherit;" oninput="document.getElementById('champ-theme-color').value = this.value">
+                  </div>
+                  <small>Color for bracket lines, text glowing headers, and borders.</small>
+                </div>
               </div>
 
               <h4>🎁 Prize Distribution Configuration</h4>

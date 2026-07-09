@@ -344,7 +344,10 @@ async function runAutoMigrations() {
       ADD COLUMN IF NOT EXISTS loyalty_reward_masterballs INTEGER DEFAULT 0,
       ADD COLUMN IF NOT EXISTS buddy_roamer_scale NUMERIC DEFAULT 1.0,
       ADD COLUMN IF NOT EXISTS trade_timeout_seconds INTEGER DEFAULT 60,
-      ADD COLUMN IF NOT EXISTS daily_battle_limit INTEGER DEFAULT 5;
+      ADD COLUMN IF NOT EXISTS daily_battle_limit INTEGER DEFAULT 5,
+      ADD COLUMN IF NOT EXISTS championship_winner_screen_duration INTEGER DEFAULT 30,
+      ADD COLUMN IF NOT EXISTS championship_header VARCHAR(100) DEFAULT 'STREAM CHAMPIONSHIP',
+      ADD COLUMN IF NOT EXISTS championship_theme_color VARCHAR(20) DEFAULT '#fbbf24';
     `);
 
     // Add columns to inventories table
@@ -1451,7 +1454,10 @@ async function getStreamerConfig(streamerId) {
     loyaltyRewardMasterballs: row.loyalty_reward_masterballs !== null && row.loyalty_reward_masterballs !== undefined ? Number(row.loyalty_reward_masterballs) : 0,
     buddyRoamerScale: row.buddy_roamer_scale !== null && row.buddy_roamer_scale !== undefined ? Number(row.buddy_roamer_scale) : 1.0,
     tradeTimeoutSeconds: row.trade_timeout_seconds !== null && row.trade_timeout_seconds !== undefined ? Number(row.trade_timeout_seconds) : 60,
-    dailyBattleLimit: row.daily_battle_limit !== null && row.daily_battle_limit !== undefined ? Number(row.daily_battle_limit) : 5
+    dailyBattleLimit: row.daily_battle_limit !== null && row.daily_battle_limit !== undefined ? Number(row.daily_battle_limit) : 5,
+    championshipWinnerScreenDuration: row.championship_winner_screen_duration !== null && row.championship_winner_screen_duration !== undefined ? Number(row.championship_winner_screen_duration) : 30,
+    championshipHeader: row.championship_header || 'STREAM CHAMPIONSHIP',
+    championshipThemeColor: row.championship_theme_color || '#fbbf24'
   };
 }
 
@@ -1521,8 +1527,11 @@ async function saveStreamerConfig(streamerId, config) {
          loyalty_reward_masterballs = $123,
          buddy_roamer_scale = $124,
          trade_timeout_seconds = $125,
-         daily_battle_limit = $126
-     WHERE channel_id = $127`,
+         daily_battle_limit = $126,
+         championship_winner_screen_duration = $127,
+         championship_header = $128,
+         championship_theme_color = $129
+     WHERE channel_id = $130`,
     [
       config.videoId || '',
       config.spawnIntervalMs,
@@ -1650,6 +1659,9 @@ async function saveStreamerConfig(streamerId, config) {
       config.buddyRoamerScale !== undefined ? config.buddyRoamerScale : 1.0,
       config.tradeTimeoutSeconds !== undefined ? config.tradeTimeoutSeconds : 60,
       config.dailyBattleLimit !== undefined ? config.dailyBattleLimit : 5,
+      config.championshipWinnerScreenDuration !== undefined ? config.championshipWinnerScreenDuration : 30,
+      config.championshipHeader || 'STREAM CHAMPIONSHIP',
+      config.championshipThemeColor || '#fbbf24',
       streamer
     ]
   );

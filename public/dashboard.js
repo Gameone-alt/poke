@@ -266,6 +266,24 @@ if (battleTypeSelect) {
 const spawnTargetInput = document.getElementById('spawn-target');
 const btnSaveTarget = document.getElementById('btn-save-target');
 
+// Championship layout customizer inputs
+const champWinnerDurationInput = document.getElementById('champ-winner-duration');
+const champHeaderInput = document.getElementById('champ-header');
+const champThemeColorInput = document.getElementById('champ-theme-color');
+const champThemeColorTextInput = document.getElementById('champ-theme-color-hex');
+
+if (champThemeColorInput && champThemeColorTextInput) {
+  champThemeColorInput.addEventListener('input', () => {
+    champThemeColorTextInput.value = champThemeColorInput.value;
+  });
+  champThemeColorTextInput.addEventListener('input', () => {
+    const val = champThemeColorTextInput.value.trim();
+    if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+      champThemeColorInput.value = val;
+    }
+  });
+}
+
 // Sync color inputs
 if (primaryColorInput && primaryColorTextInput) {
   primaryColorInput.addEventListener('input', () => {
@@ -334,6 +352,13 @@ function populateConfig(config) {
   showBuddyOnChatInput.checked = config.showBuddyOnChat !== false;
   buddyChatDurationInput.value = config.buddyChatDuration !== undefined ? config.buddyChatDuration : 15;
   buddyRoamerScaleInput.value = config.buddyRoamerScale !== undefined ? config.buddyRoamerScale : 1.0;
+
+  if (champWinnerDurationInput) champWinnerDurationInput.value = config.championshipWinnerScreenDuration !== undefined ? config.championshipWinnerScreenDuration : 30;
+  if (champHeaderInput) champHeaderInput.value = config.championshipHeader || 'STREAM CHAMPIONSHIP';
+  if (champThemeColorInput) {
+    champThemeColorInput.value = config.championshipThemeColor || '#fbbf24';
+    if (champThemeColorTextInput) champThemeColorTextInput.value = config.championshipThemeColor || '#fbbf24';
+  }
 
   // Custom offsets
   spawnCardLeftInput.value = config.spawnCardLeft || '';
@@ -590,6 +615,10 @@ function compileConfigObject() {
     showBuddyOnChat: showBuddyOnChatInput.checked,
     buddyChatDuration: parseInt(buddyChatDurationInput.value, 10) || 15,
     buddyRoamerScale: parseFloat(buddyRoamerScaleInput.value) || 1.0,
+    
+    championshipWinnerScreenDuration: champWinnerDurationInput ? parseInt(champWinnerDurationInput.value, 10) : 30,
+    championshipHeader: champHeaderInput ? champHeaderInput.value.trim() : 'STREAM CHAMPIONSHIP',
+    championshipThemeColor: champThemeColorInput ? champThemeColorInput.value : '#fbbf24',
     
     // Custom positioning offsets
     spawnCardLeft: spawnCardLeftInput.value.trim(),
@@ -873,6 +902,10 @@ function appendSimChat(author, text, isSystem = false, username = null) {
 
 // Listen to command feedback (whispers / errors)
 socket.on('command_feedback', (data) => {
+  if (!data.username) {
+    alert(data.text);
+    return;
+  }
   const activeUser = simUserSelect.value;
   // Print bot reply if it targets the currently selected simulator user
   if (data.username === activeUser) {
