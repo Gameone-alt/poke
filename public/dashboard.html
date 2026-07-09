@@ -1092,6 +1092,84 @@
                 </div>
               </div>
 
+              <h4>📐 Tournament Layout Configuration</h4>
+              
+              <!-- Bracket View Position & Scale -->
+              <strong style="color: #fff; font-size: 13px; display: block; margin-top: 15px; margin-bottom: 8px;">📊 Bracket View Layout</strong>
+              <div class="form-row">
+                <div class="form-group" style="flex: 1;">
+                  <label for="champ-bracket-position">Position Preset</label>
+                  <select id="champ-bracket-position" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
+                    <option value="center">Center Screen Preset</option>
+                    <option value="top">Top Preset</option>
+                    <option value="bottom">Bottom Preset</option>
+                    <option value="custom">Custom Position</option>
+                  </select>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                  <label>Bracket Scale: <strong id="lbl-scale-champ-bracket" style="color: var(--color-primary);">1.0</strong>x</label>
+                  <input type="range" id="champ-bracket-scale" min="0.3" max="2.0" step="0.05" value="1.0" style="width: 100%; cursor: pointer;" oninput="document.getElementById('lbl-scale-champ-bracket').textContent = this.value">
+                </div>
+              </div>
+
+              <!-- Bracket custom coords -->
+              <div class="form-row custom-position-row" id="champ-bracket-custom-pos-row" style="display: none; gap: 10px; margin-bottom: 15px;">
+                <div class="form-group" style="flex: 1;">
+                  <label for="champ-bracket-left" style="font-size: 11px;">Left</label>
+                  <input type="text" id="champ-bracket-left" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                  <label for="champ-bracket-right" style="font-size: 11px;">Right</label>
+                  <input type="text" id="champ-bracket-right" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                  <label for="champ-bracket-top" style="font-size: 11px;">Top</label>
+                  <input type="text" id="champ-bracket-top" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                  <label for="champ-bracket-bottom" style="font-size: 11px;">Bottom</label>
+                  <input type="text" id="champ-bracket-bottom" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                </div>
+              </div>
+
+              <!-- Battle Arena Position & Scale -->
+              <strong style="color: #fff; font-size: 13px; display: block; margin-top: 20px; margin-bottom: 8px;">⚔️ Fight Arena Layout</strong>
+              <div class="form-row">
+                <div class="form-group" style="flex: 1;">
+                  <label for="champ-arena-position">Position Preset</label>
+                  <select id="champ-arena-position" style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; font-size: 13px;">
+                    <option value="center">Center Screen Preset</option>
+                    <option value="top">Top Preset</option>
+                    <option value="bottom">Bottom Preset</option>
+                    <option value="custom">Custom Position</option>
+                  </select>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                  <label>Arena Scale: <strong id="lbl-scale-champ-arena" style="color: var(--color-primary);">1.0</strong>x</label>
+                  <input type="range" id="champ-arena-scale" min="0.3" max="2.0" step="0.05" value="1.0" style="width: 100%; cursor: pointer;" oninput="document.getElementById('lbl-scale-champ-arena').textContent = this.value">
+                </div>
+              </div>
+
+              <!-- Arena custom coords -->
+              <div class="form-row custom-position-row" id="champ-arena-custom-pos-row" style="display: none; gap: 10px; margin-bottom: 15px;">
+                <div class="form-group" style="flex: 1;">
+                  <label for="champ-arena-left" style="font-size: 11px;">Left</label>
+                  <input type="text" id="champ-arena-left" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                  <label for="champ-arena-right" style="font-size: 11px;">Right</label>
+                  <input type="text" id="champ-arena-right" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                  <label for="champ-arena-top" style="font-size: 11px;">Top</label>
+                  <input type="text" id="champ-arena-top" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                  <label for="champ-arena-bottom" style="font-size: 11px;">Bottom</label>
+                  <input type="text" id="champ-arena-bottom" placeholder="auto" style="padding: 6px 10px; font-size: 12px;">
+                </div>
+              </div>
+
               <h4>🎁 Prize Distribution Configuration</h4>
               
               <!-- 1st Place -->

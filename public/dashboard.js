@@ -272,6 +272,25 @@ const champHeaderInput = document.getElementById('champ-header');
 const champThemeColorInput = document.getElementById('champ-theme-color');
 const champThemeColorTextInput = document.getElementById('champ-theme-color-hex');
 
+const champBracketPositionSelect = document.getElementById('champ-bracket-position');
+const champBracketCustomPosRow = document.getElementById('champ-bracket-custom-pos-row');
+const champBracketLeftInput = document.getElementById('champ-bracket-left');
+const champBracketRightInput = document.getElementById('champ-bracket-right');
+const champBracketTopInput = document.getElementById('champ-bracket-top');
+const champBracketBottomInput = document.getElementById('champ-bracket-bottom');
+const champBracketScaleInput = document.getElementById('champ-bracket-scale');
+
+const champArenaPositionSelect = document.getElementById('champ-arena-position');
+const champArenaCustomPosRow = document.getElementById('champ-arena-custom-pos-row');
+const champArenaLeftInput = document.getElementById('champ-arena-left');
+const champArenaRightInput = document.getElementById('champ-arena-right');
+const champArenaTopInput = document.getElementById('champ-arena-top');
+const champArenaBottomInput = document.getElementById('champ-arena-bottom');
+const champArenaScaleInput = document.getElementById('champ-arena-scale');
+
+setupCustomPosToggle(champBracketPositionSelect, champBracketCustomPosRow);
+setupCustomPosToggle(champArenaPositionSelect, champArenaCustomPosRow);
+
 if (champThemeColorInput && champThemeColorTextInput) {
   champThemeColorInput.addEventListener('input', () => {
     champThemeColorTextInput.value = champThemeColorInput.value;
@@ -359,6 +378,36 @@ function populateConfig(config) {
     champThemeColorInput.value = config.championshipThemeColor || '#fbbf24';
     if (champThemeColorTextInput) champThemeColorTextInput.value = config.championshipThemeColor || '#fbbf24';
   }
+
+  // Bracket View Layout
+  if (champBracketPositionSelect) {
+    champBracketPositionSelect.value = config.championshipBracketPosition || 'center';
+    champBracketPositionSelect.dispatchEvent(new Event('change'));
+  }
+  if (champBracketScaleInput) {
+    champBracketScaleInput.value = config.championshipBracketScale !== undefined ? config.championshipBracketScale : 1.0;
+    const lbl = document.getElementById('lbl-scale-champ-bracket');
+    if (lbl) lbl.textContent = champBracketScaleInput.value;
+  }
+  if (champBracketLeftInput) champBracketLeftInput.value = config.championshipBracketLeft || '';
+  if (champBracketRightInput) champBracketRightInput.value = config.championshipBracketRight || '';
+  if (champBracketTopInput) champBracketTopInput.value = config.championshipBracketTop || '';
+  if (champBracketBottomInput) champBracketBottomInput.value = config.championshipBracketBottom || '';
+
+  // Arena Layout
+  if (champArenaPositionSelect) {
+    champArenaPositionSelect.value = config.championshipArenaPosition || 'center';
+    champArenaPositionSelect.dispatchEvent(new Event('change'));
+  }
+  if (champArenaScaleInput) {
+    champArenaScaleInput.value = config.championshipArenaScale !== undefined ? config.championshipArenaScale : 1.0;
+    const lbl = document.getElementById('lbl-scale-champ-arena');
+    if (lbl) lbl.textContent = champArenaScaleInput.value;
+  }
+  if (champArenaLeftInput) champArenaLeftInput.value = config.championshipArenaLeft || '';
+  if (champArenaRightInput) champArenaRightInput.value = config.championshipArenaRight || '';
+  if (champArenaTopInput) champArenaTopInput.value = config.championshipArenaTop || '';
+  if (champArenaBottomInput) champArenaBottomInput.value = config.championshipArenaBottom || '';
 
   // Custom offsets
   spawnCardLeftInput.value = config.spawnCardLeft || '';
@@ -619,6 +668,20 @@ function compileConfigObject() {
     championshipWinnerScreenDuration: champWinnerDurationInput ? parseInt(champWinnerDurationInput.value, 10) : 30,
     championshipHeader: champHeaderInput ? champHeaderInput.value.trim() : 'STREAM CHAMPIONSHIP',
     championshipThemeColor: champThemeColorInput ? champThemeColorInput.value : '#fbbf24',
+    
+    championshipBracketPosition: champBracketPositionSelect ? champBracketPositionSelect.value : 'center',
+    championshipBracketLeft: champBracketLeftInput ? champBracketLeftInput.value.trim() : '',
+    championshipBracketRight: champBracketRightInput ? champBracketRightInput.value.trim() : '',
+    championshipBracketTop: champBracketTopInput ? champBracketTopInput.value.trim() : '',
+    championshipBracketBottom: champBracketBottomInput ? champBracketBottomInput.value.trim() : '',
+    championshipBracketScale: champBracketScaleInput ? parseFloat(champBracketScaleInput.value) : 1.0,
+
+    championshipArenaPosition: champArenaPositionSelect ? champArenaPositionSelect.value : 'center',
+    championshipArenaLeft: champArenaLeftInput ? champArenaLeftInput.value.trim() : '',
+    championshipArenaRight: champArenaRightInput ? champArenaRightInput.value.trim() : '',
+    championshipArenaTop: champArenaTopInput ? champArenaTopInput.value.trim() : '',
+    championshipArenaBottom: champArenaBottomInput ? champArenaBottomInput.value.trim() : '',
+    championshipArenaScale: champArenaScaleInput ? parseFloat(champArenaScaleInput.value) : 1.0,
     
     // Custom positioning offsets
     spawnCardLeft: spawnCardLeftInput.value.trim(),

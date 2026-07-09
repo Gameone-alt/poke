@@ -549,6 +549,41 @@ function applyConfig(config) {
       '35%'
     );
   }
+
+  // 9. Championship Bracket & Arena Layout Positioning / Scaling
+  const champBracketView = document.getElementById('championship-bracket-view');
+  if (champBracketView) {
+    champBracketView.style.width = '1920px';
+    champBracketView.style.height = '1080px';
+    positionInnerWidget(
+      champBracketView,
+      config.championshipBracketPosition || 'center',
+      config.championshipBracketScale !== undefined ? config.championshipBracketScale : 1.0,
+      config.championshipBracketLeft,
+      config.championshipBracketRight,
+      config.championshipBracketTop,
+      config.championshipBracketBottom,
+      '0px',
+      '0px'
+    );
+  }
+
+  const champBattleArena = document.getElementById('championship-battle-arena');
+  if (champBattleArena) {
+    champBattleArena.style.width = '1920px';
+    champBattleArena.style.height = '1080px';
+    positionInnerWidget(
+      champBattleArena,
+      config.championshipArenaPosition || 'center',
+      config.championshipArenaScale !== undefined ? config.championshipArenaScale : 1.0,
+      config.championshipArenaLeft,
+      config.championshipArenaRight,
+      config.championshipArenaTop,
+      config.championshipArenaBottom,
+      '0px',
+      '0px'
+    );
+  }
 }
 
 // Render Pokemon Type Badges

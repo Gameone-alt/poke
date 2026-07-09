@@ -347,7 +347,19 @@ async function runAutoMigrations() {
       ADD COLUMN IF NOT EXISTS daily_battle_limit INTEGER DEFAULT 5,
       ADD COLUMN IF NOT EXISTS championship_winner_screen_duration INTEGER DEFAULT 30,
       ADD COLUMN IF NOT EXISTS championship_header VARCHAR(100) DEFAULT 'STREAM CHAMPIONSHIP',
-      ADD COLUMN IF NOT EXISTS championship_theme_color VARCHAR(20) DEFAULT '#fbbf24';
+      ADD COLUMN IF NOT EXISTS championship_theme_color VARCHAR(20) DEFAULT '#fbbf24',
+      ADD COLUMN IF NOT EXISTS championship_bracket_position VARCHAR(20) DEFAULT 'center',
+      ADD COLUMN IF NOT EXISTS championship_bracket_left VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS championship_bracket_right VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS championship_bracket_top VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS championship_bracket_bottom VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS championship_bracket_scale NUMERIC DEFAULT 1.0,
+      ADD COLUMN IF NOT EXISTS championship_arena_position VARCHAR(20) DEFAULT 'center',
+      ADD COLUMN IF NOT EXISTS championship_arena_left VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS championship_arena_right VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS championship_arena_top VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS championship_arena_bottom VARCHAR(20) DEFAULT '',
+      ADD COLUMN IF NOT EXISTS championship_arena_scale NUMERIC DEFAULT 1.0;
     `);
 
     // Add columns to inventories table
@@ -1457,7 +1469,19 @@ async function getStreamerConfig(streamerId) {
     dailyBattleLimit: row.daily_battle_limit !== null && row.daily_battle_limit !== undefined ? Number(row.daily_battle_limit) : 5,
     championshipWinnerScreenDuration: row.championship_winner_screen_duration !== null && row.championship_winner_screen_duration !== undefined ? Number(row.championship_winner_screen_duration) : 30,
     championshipHeader: row.championship_header || 'STREAM CHAMPIONSHIP',
-    championshipThemeColor: row.championship_theme_color || '#fbbf24'
+    championshipThemeColor: row.championship_theme_color || '#fbbf24',
+    championshipBracketPosition: row.championship_bracket_position || 'center',
+    championshipBracketLeft: row.championship_bracket_left || '',
+    championshipBracketRight: row.championship_bracket_right || '',
+    championshipBracketTop: row.championship_bracket_top || '',
+    championshipBracketBottom: row.championship_bracket_bottom || '',
+    championshipBracketScale: row.championship_bracket_scale !== null && row.championship_bracket_scale !== undefined ? Number(row.championship_bracket_scale) : 1.0,
+    championshipArenaPosition: row.championship_arena_position || 'center',
+    championshipArenaLeft: row.championship_arena_left || '',
+    championshipArenaRight: row.championship_arena_right || '',
+    championshipArenaTop: row.championship_arena_top || '',
+    championshipArenaBottom: row.championship_arena_bottom || '',
+    championshipArenaScale: row.championship_arena_scale !== null && row.championship_arena_scale !== undefined ? Number(row.championship_arena_scale) : 1.0
   };
 }
 
@@ -1530,8 +1554,20 @@ async function saveStreamerConfig(streamerId, config) {
          daily_battle_limit = $126,
          championship_winner_screen_duration = $127,
          championship_header = $128,
-         championship_theme_color = $129
-     WHERE channel_id = $130`,
+         championship_theme_color = $129,
+         championship_bracket_position = $130,
+         championship_bracket_left = $131,
+         championship_bracket_right = $132,
+         championship_bracket_top = $133,
+         championship_bracket_bottom = $134,
+         championship_bracket_scale = $135,
+         championship_arena_position = $136,
+         championship_arena_left = $137,
+         championship_arena_right = $138,
+         championship_arena_top = $139,
+         championship_arena_bottom = $140,
+         championship_arena_scale = $141
+     WHERE channel_id = $142`,
     [
       config.videoId || '',
       config.spawnIntervalMs,
@@ -1662,6 +1698,18 @@ async function saveStreamerConfig(streamerId, config) {
       config.championshipWinnerScreenDuration !== undefined ? config.championshipWinnerScreenDuration : 30,
       config.championshipHeader || 'STREAM CHAMPIONSHIP',
       config.championshipThemeColor || '#fbbf24',
+      config.championshipBracketPosition || 'center',
+      config.championshipBracketLeft || '',
+      config.championshipBracketRight || '',
+      config.championshipBracketTop || '',
+      config.championshipBracketBottom || '',
+      config.championshipBracketScale !== undefined ? config.championshipBracketScale : 1.0,
+      config.championshipArenaPosition || 'center',
+      config.championshipArenaLeft || '',
+      config.championshipArenaRight || '',
+      config.championshipArenaTop || '',
+      config.championshipArenaBottom || '',
+      config.championshipArenaScale !== undefined ? config.championshipArenaScale : 1.0,
       streamer
     ]
   );
