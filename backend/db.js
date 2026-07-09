@@ -963,42 +963,12 @@ async function addWin(streamerId, username, instanceId, staticPokemonDb) {
     if (!poke) return null;
     
     poke.wins += 1;
-    let evolved = false;
-    let oldName = poke.name;
-    let newName = poke.name;
-    
-    if (poke.wins >= 10) {
-      const staticPoke = staticPokemonDb[poke.pokemonId];
-      if (staticPoke && staticPoke.evolution) {
-        let evolutionId;
-        if (Array.isArray(staticPoke.evolution)) {
-          const randomIndex = Math.floor(Math.random() * staticPoke.evolution.length);
-          evolutionId = staticPoke.evolution[randomIndex];
-        } else {
-          evolutionId = staticPoke.evolution;
-        }
-        
-        const evolvedStatic = staticPokemonDb[evolutionId];
-        if (evolvedStatic) {
-          poke.pokemonId = evolvedStatic.id;
-          poke.originalName = evolvedStatic.name;
-          poke.name = poke.shiny ? `✨ Shiny ${evolvedStatic.name}` : evolvedStatic.name;
-          poke.types = evolvedStatic.types;
-          poke.baseStats = evolvedStatic.stats;
-          poke.currentStage += 1;
-          poke.wins = 0; // Reset wins
-          evolved = true;
-          newName = poke.name;
-        }
-      }
-    }
-    
     await saveUser(streamerId, user);
     return {
       pokemon: poke,
-      evolved,
-      oldName,
-      newName
+      evolved: false,
+      oldName: poke.name,
+      newName: poke.name
     };
   }
   
@@ -1011,71 +981,30 @@ async function addWin(streamerId, username, instanceId, staticPokemonDb) {
   
   const row = res.rows[0];
   let wins = row.wins + 1;
-  let evolved = false;
-  let oldName = row.pokemon_name;
-  let newName = row.pokemon_name;
-  let currentStage = row.current_stage;
-  let pokemonId = row.pokemon_id;
-  let pokemonName = row.pokemon_name;
-  let types = row.types;
-  let hp = row.base_hp;
-  let attack = row.base_atk;
-  let defense = row.base_def;
-  let speed = row.base_spd;
-  
-  if (wins >= 10) {
-    const staticPoke = staticPokemonDb[pokemonId];
-    if (staticPoke && staticPoke.evolution) {
-      let evolutionId;
-      if (Array.isArray(staticPoke.evolution)) {
-        const randomIndex = Math.floor(Math.random() * staticPoke.evolution.length);
-        evolutionId = staticPoke.evolution[randomIndex];
-      } else {
-        evolutionId = staticPoke.evolution;
-      }
-      
-      const evolvedStatic = staticPokemonDb[evolutionId];
-      if (evolvedStatic) {
-        pokemonId = evolvedStatic.id;
-        const cleanName = evolvedStatic.name;
-        pokemonName = row.shiny ? `✨ Shiny ${cleanName}` : cleanName;
-        newName = pokemonName;
-        types = evolvedStatic.types;
-        hp = evolvedStatic.stats.hp;
-        attack = evolvedStatic.stats.attack;
-        defense = evolvedStatic.stats.defense;
-        speed = evolvedStatic.stats.speed;
-        currentStage += 1;
-        wins = 0;
-        evolved = true;
-      }
-    }
-  }
   
   await query(
     `UPDATE inventories 
-     SET wins = $1, pokemon_id = $2, pokemon_name = $3, types = $4, 
-         base_hp = $5, base_atk = $6, base_def = $7, base_spd = $8, current_stage = $9
-     WHERE instance_id = $10`,
-    [wins, pokemonId, pokemonName, types, hp, attack, defense, speed, currentStage, instanceId]
+     SET wins = $1
+     WHERE instance_id = $2`,
+    [wins, instanceId]
   );
   
   return {
     pokemon: {
       instanceId,
-      pokemonId,
-      name: pokemonName,
-      originalName: pokemonName.replace('✨ Shiny ', ''),
-      types,
-      baseStats: { hp, attack, defense, speed },
+      pokemonId: row.pokemon_id,
+      name: row.pokemon_name,
+      originalName: row.pokemon_name.replace('✨ Shiny ', ''),
+      types: row.types,
+      baseStats: { hp: row.base_hp, attack: row.base_atk, defense: row.base_def, speed: row.base_spd },
       shiny: row.shiny,
       wins,
-      currentStage,
+      currentStage: row.current_stage,
       caughtAt: Number(row.caught_at)
     },
-    evolved,
-    oldName,
-    newName
+    evolved: false,
+    oldName: row.pokemon_name,
+    newName: row.pokemon_name
   };
 }
 

@@ -2145,6 +2145,101 @@ async function processCommand(channelId, username, displayName, messageText, bas
     return msg;
   }
 
+  // 8.6.4.5. Pokémon Manual Evolution: !evolve [pokemon_name]
+  if (cleanMsg.startsWith('!evolve') || cleanMsg.startsWith('evolve')) {
+    const parts = messageText.trim().split(/\s+/);
+    if (parts.length < 2) {
+      const msg = `❌ @${displayName}, please specify which Pokémon you want to evolve! Syntax: !evolve [pokemon_name]`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    
+    const pokeQuery = parts.slice(1).join(' ').toLowerCase().trim();
+    const user = await db.getUser(channelId, username, displayName);
+    
+    const foundPoke = user.inventory.find(p => 
+      p.name.toLowerCase() === pokeQuery || 
+      p.originalName.toLowerCase() === pokeQuery || 
+      p.pokemonId.toString() === pokeQuery
+    );
+    
+    if (!foundPoke) {
+      const msg = `❌ @${displayName}, you don't own a "${pokeQuery}" in your inventory!`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    
+    // Check if they have at least 10 wins
+    if ((foundPoke.wins || 0) < 10) {
+      const msg = `❌ @${displayName}, your ${foundPoke.name} needs at least 10 wins to evolve! (Current wins: ${foundPoke.wins || 0}/10)`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    
+    const staticPoke = pokemonDb[foundPoke.pokemonId.toString()];
+    if (!staticPoke || !staticPoke.evolution) {
+      const msg = `❌ @${displayName}, ${foundPoke.name} cannot be evolved further!`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    
+    // Pick target evolution
+    let evolutionId;
+    if (Array.isArray(staticPoke.evolution)) {
+      // If multiple forms, select random form!
+      const randomIndex = Math.floor(Math.random() * staticPoke.evolution.length);
+      evolutionId = staticPoke.evolution[randomIndex];
+    } else {
+      evolutionId = staticPoke.evolution;
+    }
+    
+    const evolvedStatic = pokemonDb[evolutionId.toString()];
+    if (!evolvedStatic) {
+      const msg = `❌ @${displayName}, server error finding evolution data.`;
+      io.to(channelId).emit('command_feedback', { username, text: msg });
+      return msg;
+    }
+    
+    const oldName = foundPoke.name;
+    const isShiny = foundPoke.shiny;
+    
+    // Perform evolution using evolvePokemon helper
+    const evolvedPoke = await db.evolvePokemon(channelId, username, foundPoke.instanceId, {
+      id: evolvedStatic.id,
+      name: evolvedStatic.name,
+      types: evolvedStatic.types,
+      baseStats: evolvedStatic.stats,
+      shiny: isShiny
+    });
+    
+    // Reset wins to 0
+    evolvedPoke.wins = 0;
+    // Save updated wins back to the database
+    if (db.useLocalFallback) {
+      await db.saveUser(channelId, user);
+    } else {
+      await db.query('UPDATE inventories SET wins = 0 WHERE instance_id = $1', [foundPoke.instanceId]);
+    }
+    
+    const newName = evolvedPoke.name;
+    const oldStatic = pokemonDb[foundPoke.pokemonId.toString()] || {};
+    
+    io.to(channelId).emit('pokemon_evolved', {
+      displayName,
+      oldName,
+      newName,
+      oldSpriteUrl: isShiny ? oldStatic.shinySpriteUrl : oldStatic.spriteUrl,
+      oldFallbackSpriteUrl: isShiny ? oldStatic.fallbackShinySpriteUrl : oldStatic.fallbackSpriteUrl,
+      spriteUrl: isShiny ? evolvedStatic.shinySpriteUrl : evolvedStatic.spriteUrl,
+      fallbackSpriteUrl: isShiny ? evolvedStatic.fallbackShinySpriteUrl : evolvedStatic.fallbackSpriteUrl,
+      isShiny: isShiny
+    });
+    
+    const msg = `✨ Evolution: @${displayName}'s ${oldName} evolved into ${newName} after reaching 10 wins!`;
+    sendGameLog(channelId, 'evolution', msg);
+    return msg;
+  }
+
   // 8.6.5. Pokémon Fusion: !fuse [pokemon_name]
   if (cleanMsg.startsWith('!fuse') || cleanMsg.startsWith('fuse')) {
     const parts = messageText.trim().split(/\s+/);
