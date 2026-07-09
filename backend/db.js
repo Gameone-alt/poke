@@ -2212,6 +2212,9 @@ async function getChampionshipLeaderboard(streamerId) {
 }
 
 module.exports = {
+  get useLocalFallback() {
+    return useLocalFallback;
+  },
   incrementChampionshipWin,
   getChampionshipLeaderboard,
   getUser,
