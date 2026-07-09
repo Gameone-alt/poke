@@ -1641,9 +1641,7 @@ body.raid-mode-active #battle-overlay {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(15, 23, 42, 0.85);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: radial-gradient(circle, rgba(15, 23, 42, 0.75) 0%, rgba(15, 23, 42, 0.25) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
