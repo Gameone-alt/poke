@@ -1578,50 +1578,159 @@ socket.on('battle_end', (data) => {
 socket.on('pokemon_evolved', (data) => {
   playSound(sfxEvolve);
   
-  evoSprite.src = getSafeSprite(data.spriteUrl, data.fallbackSpriteUrl);
-  evoDesc.innerHTML = `<span class="cmd-text">@${data.displayName}</span>'s ${data.oldName} evolved into <span class="cmd-text">${data.newName}</span>!`;
+  const oldSprite = getSafeSprite(data.oldSpriteUrl, data.oldFallbackSpriteUrl);
+  const newSprite = getSafeSprite(data.spriteUrl, data.fallbackSpriteUrl);
+  
+  evoSprite.src = oldSprite;
+  evoDesc.innerHTML = `<span class="cmd-text">@${data.displayName}</span>'s ${data.oldName} is evolving...`;
+  
+  // Reset elements
+  evoSprite.style.animation = 'none';
+  evoSprite.style.filter = 'none';
+  evoSprite.style.opacity = '1';
+  evoSprite.style.transform = 'scale(1)';
+  evolutionOverlay.style.opacity = '1';
   
   evolutionOverlay.classList.remove('hidden');
   
-  // Rotate shiny sparkles on the circle
-  let loopCount = 0;
-  const sparklesInterval = setInterval(() => {
-    if (!evolutionOverlay.classList.contains('hidden') && loopCount < 5) {
-      // Trigger spark bursts centered on evolution
-      triggerEvoSparkles();
-      loopCount++;
-    } else {
-      clearInterval(sparklesInterval);
+  // Stage 1: The flashing silhouette loop (classic Game Boy style)
+  let flashCount = 0;
+  let maxFlashes = 22;
+  let delay = 160;
+  
+  function triggerFlashCycle() {
+    if (flashCount >= maxFlashes) {
+      // Stage 2: Evolution blast!
+      triggerEvolutionBlast(newSprite, data);
+      return;
     }
-  }, 800);
-
-  setTimeout(() => {
-    evolutionOverlay.classList.add('hidden');
-  }, 4500);
+    
+    const isSilhouette = flashCount % 2 === 0;
+    evoSprite.style.filter = isSilhouette ? 'brightness(0) invert(1)' : 'none';
+    
+    const scaleVal = isSilhouette ? 1.25 : 0.75;
+    gsap.to(evoSprite, { scale: scaleVal, duration: delay / 1000, ease: 'power1.inOut' });
+    
+    flashCount++;
+    delay = Math.max(45, delay - 7); // Speed up morphing transition
+    
+    setTimeout(triggerFlashCycle, delay);
+  }
+  
+  setTimeout(triggerFlashCycle, 600);
 });
 
-function triggerEvoSparkles() {
+function triggerEvolutionBlast(newSprite, data) {
+  playSound(sfxSuccess || sfxSpawn);
+
+  gsap.to(evoSprite, { 
+    scale: 0.1, 
+    opacity: 0.1, 
+    duration: 0.1, 
+    onComplete: () => {
+      evoSprite.src = newSprite;
+      evoSprite.style.filter = 'none';
+      
+      gsap.to(evoSprite, {
+        scale: 1.3,
+        opacity: 1,
+        duration: 0.6,
+        ease: 'back.out(2.5)',
+        onComplete: () => {
+          evoSprite.style.animation = 'floatBounce 2.5s ease-in-out infinite';
+        }
+      });
+      
+      triggerCircularCelebration(data.isShiny);
+      
+      evoDesc.innerHTML = `<span class="cmd-text">@${data.displayName}</span>'s ${data.oldName} evolved into <span class="cmd-text" style="color: ${data.isShiny ? '#fbbf24' : '#c084fc'}; font-size: 23px; text-shadow: 0 0 10px rgba(168,85,247,0.5);">${data.newName}</span>!`;
+    }
+  });
+
+  setTimeout(() => {
+    gsap.to(evolutionOverlay, {
+      opacity: 0,
+      duration: 0.5,
+      onComplete: () => {
+        evolutionOverlay.classList.add('hidden');
+        evolutionOverlay.style.opacity = '1';
+      }
+    });
+  }, 5000);
+}
+
+function triggerCircularCelebration(isShiny) {
   const container = document.querySelector('.evo-circle');
   if (!container) return;
-  
-  for (let i = 0; i < 15; i++) {
+
+  const numParticles = 32;
+  const colors = isShiny 
+    ? ['#f59e0b', '#fbbf24', '#fef08a', '#ffffff']
+    : ['#a855f7', '#c084fc', '#e9d5ff', '#22d3ee', '#ffffff'];
+
+  for (let i = 0; i < numParticles; i++) {
     const particle = document.createElement('div');
-    particle.className = 'sparkle-particle';
-    const size = Math.random() * 10 + 5;
-    particle.style.width = `${size}px`;
-    particle.style.height = `${size}px`;
-    particle.style.left = `${Math.random() * 80 + 10}%`;
-    particle.style.top = `${Math.random() * 80 + 10}%`;
-    particle.style.backgroundColor = '#a855f7';
+    particle.style.width = `${Math.random() * 8 + 4}px`;
+    particle.style.height = `${Math.random() * 8 + 4}px`;
     particle.style.borderRadius = '50%';
     particle.style.position = 'absolute';
-    particle.style.boxShadow = '0 0 15px #c084fc';
-    particle.style.animation = `starBurstAnim 1s ease-out forwards`;
+    particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    particle.style.boxShadow = `0 0 10px ${particle.style.backgroundColor}`;
+    particle.style.zIndex = '12';
+    particle.style.left = '50%';
+    particle.style.top = '50%';
+    particle.style.transform = 'translate(-50%, -50%)';
+    
     container.appendChild(particle);
     
-    setTimeout(() => {
-      particle.remove();
-    }, 1000);
+    const angle = (i / numParticles) * Math.PI * 2 + (Math.random() - 0.5) * 0.2;
+    const distance = Math.random() * 130 + 80;
+    const destX = Math.cos(angle) * distance;
+    const destY = Math.sin(angle) * distance;
+    
+    gsap.to(particle, {
+      x: destX,
+      y: destY,
+      scale: 0.1,
+      opacity: 0,
+      duration: 1.2 + Math.random() * 0.4,
+      ease: 'power3.out',
+      onComplete: () => {
+        particle.remove();
+      }
+    });
+  }
+
+  if (isShiny) {
+    for (let i = 0; i < 12; i++) {
+      const star = document.createElement('div');
+      star.textContent = '✨';
+      star.style.position = 'absolute';
+      star.style.fontSize = `${Math.random() * 14 + 10}px`;
+      star.style.zIndex = '15';
+      star.style.left = '50%';
+      star.style.top = '50%';
+      
+      container.appendChild(star);
+      
+      const angle = Math.random() * Math.PI * 2;
+      const distance = Math.random() * 95 + 30;
+      const destX = Math.cos(angle) * distance;
+      const destY = Math.sin(angle) * distance;
+      
+      gsap.to(star, {
+        x: destX,
+        y: destY,
+        rotation: Math.random() * 360,
+        opacity: 0,
+        scale: 0.4,
+        duration: 1.5,
+        ease: 'power2.out',
+        onComplete: () => {
+          star.remove();
+        }
+      });
+    }
   }
 }
 

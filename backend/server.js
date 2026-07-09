@@ -984,8 +984,11 @@ async function runBattle(channelId, playerA, playerB, onComplete) {
           displayName: playerA.displayName,
           oldName: evoResult.oldName,
           newName: evoResult.newName,
-          spriteUrl: pokeA.shiny ? pokemonDb[pokeA.pokemonId]?.shinySpriteUrl : pokemonDb[pokeA.pokemonId]?.spriteUrl,
-          fallbackSpriteUrl: pokeA.shiny ? pokemonDb[pokeA.pokemonId]?.fallbackShinySpriteUrl : pokemonDb[pokeA.pokemonId]?.fallbackSpriteUrl
+          oldSpriteUrl: pokeA.shiny ? pokemonDb[pokeA.pokemonId.toString()]?.shinySpriteUrl : pokemonDb[pokeA.pokemonId.toString()]?.spriteUrl,
+          oldFallbackSpriteUrl: pokeA.shiny ? pokemonDb[pokeA.pokemonId.toString()]?.fallbackShinySpriteUrl : pokemonDb[pokeA.pokemonId.toString()]?.fallbackSpriteUrl,
+          spriteUrl: evoResult.pokemon.shiny ? pokemonDb[evoResult.pokemon.pokemonId.toString()]?.shinySpriteUrl : pokemonDb[evoResult.pokemon.pokemonId.toString()]?.spriteUrl,
+          fallbackSpriteUrl: evoResult.pokemon.shiny ? pokemonDb[evoResult.pokemon.pokemonId.toString()]?.fallbackShinySpriteUrl : pokemonDb[evoResult.pokemon.pokemonId.toString()]?.fallbackSpriteUrl,
+          isShiny: evoResult.pokemon.shiny
         });
       }
     } else {
@@ -1020,8 +1023,11 @@ async function runBattle(channelId, playerA, playerB, onComplete) {
             displayName: playerB.displayName,
             oldName: evoResult.oldName,
             newName: evoResult.newName,
-            spriteUrl: pokeB.shiny ? pokemonDb[pokeB.pokemonId]?.shinySpriteUrl : pokemonDb[pokeB.pokemonId]?.spriteUrl,
-            fallbackSpriteUrl: pokeB.shiny ? pokemonDb[pokeB.pokemonId]?.fallbackShinySpriteUrl : pokemonDb[pokeB.pokemonId]?.fallbackSpriteUrl
+            oldSpriteUrl: pokeB.shiny ? pokemonDb[pokeB.pokemonId.toString()]?.shinySpriteUrl : pokemonDb[pokeB.pokemonId.toString()]?.spriteUrl,
+            oldFallbackSpriteUrl: pokeB.shiny ? pokemonDb[pokeB.pokemonId.toString()]?.fallbackShinySpriteUrl : pokemonDb[pokeB.pokemonId.toString()]?.fallbackSpriteUrl,
+            spriteUrl: evoResult.pokemon.shiny ? pokemonDb[evoResult.pokemon.pokemonId.toString()]?.shinySpriteUrl : pokemonDb[evoResult.pokemon.pokemonId.toString()]?.spriteUrl,
+            fallbackSpriteUrl: evoResult.pokemon.shiny ? pokemonDb[evoResult.pokemon.pokemonId.toString()]?.fallbackShinySpriteUrl : pokemonDb[evoResult.pokemon.pokemonId.toString()]?.fallbackSpriteUrl,
+            isShiny: evoResult.pokemon.shiny
           });
         }
       } else {
@@ -2122,12 +2128,16 @@ async function processCommand(channelId, username, displayName, messageText, bas
     
     const newName = evolvedPoke.name;
     
+    const oldStatic = pokemonDb[foundPoke.pokemonId.toString()] || {};
     io.to(channelId).emit('pokemon_evolved', {
       displayName,
       oldName,
       newName,
+      oldSpriteUrl: isShiny ? oldStatic.shinySpriteUrl : oldStatic.spriteUrl,
+      oldFallbackSpriteUrl: isShiny ? oldStatic.fallbackShinySpriteUrl : oldStatic.fallbackSpriteUrl,
       spriteUrl: isShiny ? evolvedStatic.shinySpriteUrl : evolvedStatic.spriteUrl,
-      fallbackSpriteUrl: isShiny ? evolvedStatic.fallbackShinySpriteUrl : evolvedStatic.fallbackSpriteUrl
+      fallbackSpriteUrl: isShiny ? evolvedStatic.fallbackShinySpriteUrl : evolvedStatic.fallbackSpriteUrl,
+      isShiny: isShiny
     });
     
     const msg = `✨ Evolution: @${displayName}'s ${oldName} evolved into ${newName} using a ${stoneKey.toUpperCase().replace('_', ' ')}!`;
