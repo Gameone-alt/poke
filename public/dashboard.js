@@ -509,6 +509,7 @@ function populateConfig(config) {
 
   // Initialize drag & drop layout editor settings
   setupLayoutEditor(config);
+  setupChampionshipLayoutEditor();
 }
 
 const btnForceSpawn = document.getElementById('btn-force-spawn');
@@ -2424,3 +2425,147 @@ socket.on('championship_ended', (data) => {
   if (matchupBox) matchupBox.textContent = `No active match.`;
   if (betsBody) betsBody.innerHTML = `<tr><td colspan="3" class="text-center muted" style="padding: 20px 0;">No active wagers.</td></tr>`;
 });
+
+function setupChampionshipLayoutEditor() {
+  const container = document.getElementById('champ-layout-screen-preview');
+  if (!container) return;
+
+  const selector = document.getElementById('champ-layout-widget-selector');
+  const bracketEl = document.getElementById('drag-champ-bracket');
+  const arenaEl = document.getElementById('drag-champ-arena');
+
+  // Highlight active element based on dropdown select
+  let activeElementId = "";
+  if (selector) {
+    selector.onchange = () => {
+      activeElementId = selector.value;
+      
+      // Update opacity/borders of preview elements
+      if (bracketEl) {
+        bracketEl.style.opacity = (activeElementId === 'drag-champ-bracket') ? '1' : '0.25';
+        bracketEl.style.borderStyle = (activeElementId === 'drag-champ-bracket') ? 'solid' : 'dashed';
+        bracketEl.style.zIndex = (activeElementId === 'drag-champ-bracket') ? '20' : '10';
+      }
+      if (arenaEl) {
+        arenaEl.style.opacity = (activeElementId === 'drag-champ-arena') ? '1' : '0.25';
+        arenaEl.style.borderStyle = (activeElementId === 'drag-champ-arena') ? 'solid' : 'dashed';
+        arenaEl.style.zIndex = (activeElementId === 'drag-champ-arena') ? '20' : '10';
+      }
+    };
+    selector.value = "";
+    selector.dispatchEvent(new Event('change'));
+  }
+
+  // Handle position/scale updates from sliders
+  const syncPreviewBox = (wId) => {
+    const el = (wId === 'drag-champ-bracket') ? bracketEl : arenaEl;
+    if (!el) return;
+
+    const scaleInput = (wId === 'drag-champ-bracket') ? champBracketScaleInput : champArenaScaleInput;
+    const posSelect = (wId === 'drag-champ-bracket') ? champBracketPositionSelect : champArenaPositionSelect;
+    const leftInput = (wId === 'drag-champ-bracket') ? champBracketLeftInput : champArenaLeftInput;
+    const topInput = (wId === 'drag-champ-bracket') ? champBracketTopInput : champArenaTopInput;
+
+    const scale = scaleInput ? parseFloat(scaleInput.value) : 1.0;
+    
+    // Scale box dimensions
+    el.style.width = `${720 * scale}px`;
+    el.style.height = `${405 * scale}px`;
+
+    const pos = posSelect ? posSelect.value : 'center';
+    let topVal = '0px';
+    let leftVal = '0px';
+
+    if (pos === 'custom' || (leftInput && leftInput.value) || (topInput && topInput.value)) {
+      leftVal = (leftInput && leftInput.value) ? leftInput.value : '0px';
+      topVal = (topInput && topInput.value) ? topInput.value : '0px';
+    } else {
+      if (pos === 'top') { topVal = '0px'; leftVal = '0px'; }
+      else if (pos === 'bottom') { topVal = '0px'; leftVal = '0px'; }
+      else { // center
+        topVal = '0px';
+        leftVal = '0px';
+      }
+    }
+
+    el.style.left = leftVal;
+    el.style.top = topVal;
+  };
+
+  // Bind scale/position inputs change to update preview box
+  [champBracketScaleInput, champBracketPositionSelect, champBracketLeftInput, champBracketTopInput].forEach(inp => {
+    if (inp) inp.addEventListener('input', () => syncPreviewBox('drag-champ-bracket'));
+  });
+  [champArenaScaleInput, champArenaPositionSelect, champArenaLeftInput, champArenaTopInput].forEach(inp => {
+    if (inp) inp.addEventListener('input', () => syncPreviewBox('drag-champ-arena'));
+  });
+
+  // Call initial syncs
+  setTimeout(() => {
+    syncPreviewBox('drag-champ-bracket');
+    syncPreviewBox('drag-champ-arena');
+  }, 200);
+
+  // Drag logic
+  [bracketEl, arenaEl].forEach(el => {
+    if (!el) return;
+
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let initialLeft = 0, initialTop = 0;
+
+    el.addEventListener('mousedown', (e) => {
+      if (activeElementId !== el.id) return; // Must select component in dropdown first
+
+      isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      initialLeft = el.offsetLeft;
+      initialTop = el.offsetTop;
+      e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+
+      let newLeft = initialLeft + dx;
+      let newTop = initialTop + dy;
+
+      // Limit boundary
+      const maxLeft = container.clientWidth - el.offsetWidth;
+      const maxTop = container.clientHeight - el.offsetHeight;
+
+      newLeft = Math.max(-el.offsetWidth / 2, Math.min(newLeft, container.clientWidth - el.offsetWidth / 2));
+      newTop = Math.max(-el.offsetHeight / 2, Math.min(newTop, container.clientHeight - el.offsetHeight / 2));
+
+      const pctLeft = ((newLeft / container.clientWidth) * 100).toFixed(1) + '%';
+      const pctTop = ((newTop / container.clientHeight) * 100).toFixed(1) + '%';
+
+      el.style.left = pctLeft;
+      el.style.top = pctTop;
+
+      // Sync to inputs
+      const posSelect = (el.id === 'drag-champ-bracket') ? champBracketPositionSelect : champArenaPositionSelect;
+      const leftInput = (el.id === 'drag-champ-bracket') ? champBracketLeftInput : champArenaLeftInput;
+      const topInput = (el.id === 'drag-champ-bracket') ? champBracketTopInput : champArenaTopInput;
+      const rightInput = (el.id === 'drag-champ-bracket') ? champBracketRightInput : champArenaRightInput;
+      const bottomInput = (el.id === 'drag-champ-bracket') ? champBracketBottomInput : champArenaBottomInput;
+
+      if (posSelect) {
+        posSelect.value = 'custom';
+        posSelect.dispatchEvent(new Event('change'));
+      }
+      if (leftInput) leftInput.value = pctLeft;
+      if (topInput) topInput.value = pctTop;
+      if (rightInput) rightInput.value = 'auto';
+      if (bottomInput) bottomInput.value = 'auto';
+    });
+
+    document.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+  });
+}

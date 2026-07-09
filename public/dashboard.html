@@ -1226,6 +1226,36 @@
                 </div>
               </div>
 
+              <h4 style="margin-top: 30px; border-top: 1px dashed var(--border-color); padding-top: 20px;">📐 Championship Visual Layout Editor</h4>
+              <p style="margin-bottom: 15px; font-size: 13px; color: var(--text-muted);">
+                Drag the bracket and fight arena boxes inside the preview screen to visually position them on your stream overlay. The inputs and sliders above will update in real time!
+              </p>
+
+              <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-color); max-width: 720px;">
+                <label for="champ-layout-widget-selector" style="font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 0; white-space: nowrap;">🎯 Select Component to Drag:</label>
+                <select id="champ-layout-widget-selector" style="flex: 1; padding: 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; font-size: 13px; cursor: pointer; outline: none; font-family: inherit;">
+                  <option value="">-- Select component --</option>
+                  <option value="drag-champ-bracket">📊 Tournament Bracket</option>
+                  <option value="drag-champ-arena">⚔️ Fight Arena</option>
+                </select>
+              </div>
+
+              <!-- screen preview box (720x405) -->
+              <div id="champ-layout-screen-preview" style="position: relative; width: 720px; height: 405px; background: #0b0f19; border: 2px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); margin-bottom: 25px; user-select: none;">
+                <!-- Grid backdrop -->
+                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px); background-size: 20px 20px; pointer-events: none;"></div>
+                
+                <!-- Draggable Tournament Bracket -->
+                <div id="drag-champ-bracket" style="position: absolute; width: 720px; height: 405px; background: rgba(251, 191, 36, 0.15); border: 2px dashed #fbbf24; color: #fff; cursor: move; border-radius: 8px; font-weight: bold; font-size: 11px; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; text-shadow: 0 1px 4px #000;">
+                  <span>📊 Tournament Bracket</span>
+                </div>
+
+                <!-- Draggable Fight Arena -->
+                <div id="drag-champ-arena" style="position: absolute; width: 720px; height: 405px; background: rgba(239, 68, 68, 0.15); border: 2px dashed #ef4444; color: #fff; cursor: move; border-radius: 8px; font-weight: bold; font-size: 11px; display: flex; align-items: center; justify-content: center; z-index: 10; box-sizing: border-box; text-shadow: 0 1px 4px #000;">
+                  <span>⚔️ Fight Arena</span>
+                </div>
+              </div>
+
               <h4 style="margin-top: 25px;">⚡ Tournament Controls</h4>
               <div style="display: flex; gap: 12px; align-items: center; margin-top: 10px;">
                 <button type="button" class="btn btn-success" id="btn-start-champ" style="background: #10b981; color: #fff; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-family: inherit;">🏆 Start Registration</button>
