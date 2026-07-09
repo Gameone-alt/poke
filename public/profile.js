@@ -395,11 +395,7 @@ function renderTrainerProfile(user) {
 
     card.style.cursor = 'pointer';
     card.addEventListener('click', () => {
-      if (activeSelectedStone) {
-        useStoneOnPokemon(activeSelectedStone, poke);
-      } else {
-        showEvolutionTree(poke.pokemonId);
-      }
+      showEvolutionTree(poke.pokemonId);
     });
 
     grid.appendChild(card);
@@ -806,41 +802,4 @@ function refreshTrainerData(channel, username, apiBase) {
       });
     })
     .catch(err => console.error('Error refreshing trainer profile:', err));
-}
-
-function useStoneOnPokemon(stone, poke) {
-  const cleanStoneName = stone.toUpperCase().replace('_', ' ');
-  const confirmEvolve = confirm(`Would you like to use 1x ${cleanStoneName} to evolve your ${poke.name}?`);
-  if (!confirmEvolve) return;
-  
-  const pathParts = window.location.pathname.split('/');
-  const urlParams = new URLSearchParams(window.location.search);
-  let channel = pathParts[2] || 'simulator';
-  let username = pathParts[3];
-  if (pathParts[1] !== 'trainer' || !username) {
-    channel = urlParams.get('channel') || 'simulator';
-    username = urlParams.get('username') || urlParams.get('user');
-  }
-  const backend = urlParams.get('backend') || '';
-  const apiBase = backend.replace(/\/$/, '');
-
-  fetch(`${apiBase}/api/chat`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      channelId: channel,
-      username: username,
-      messageText: `!use ${stone} ${poke.instanceId}`
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.reply) {
-      alert(data.reply);
-      window.location.reload();
-    }
-  })
-  .catch(err => {
-    alert('Failed to execute evolution: ' + err.message);
-  });
 }
