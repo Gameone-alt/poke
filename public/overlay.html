@@ -138,14 +138,16 @@
     <!-- Evolution Notification Overlay (Centered Popup) -->
     <div id="evolution-overlay" class="hidden">
       <div class="evo-backdrop"></div>
-      <div class="evo-card">
-        <h2 class="evo-header">EVOLUTION SUCCESS!</h2>
-        <div class="evo-circle">
-          <div class="evo-glow-ring"></div>
-          <img id="evo-sprite" src="" alt="Evolved Sprite" onerror="handleImageError(this)">
-        </div>
-        <div class="evo-announcement" id="evo-desc">
-          @Player's Ivysaur evolved into Venusaur!
+      <div id="evo-card-scale-wrapper" style="transform-origin: center center;">
+        <div class="evo-card">
+          <h2 class="evo-header">EVOLUTION SUCCESS!</h2>
+          <div class="evo-circle">
+            <div class="evo-glow-ring"></div>
+            <img id="evo-sprite" src="" alt="Evolved Sprite" onerror="handleImageError(this)">
+          </div>
+          <div class="evo-announcement" id="evo-desc">
+            @Player's Ivysaur evolved into Venusaur!
+          </div>
         </div>
       </div>
     </div>

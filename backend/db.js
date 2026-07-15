@@ -359,7 +359,8 @@ async function runAutoMigrations() {
       ADD COLUMN IF NOT EXISTS championship_arena_right VARCHAR(20) DEFAULT '',
       ADD COLUMN IF NOT EXISTS championship_arena_top VARCHAR(20) DEFAULT '',
       ADD COLUMN IF NOT EXISTS championship_arena_bottom VARCHAR(20) DEFAULT '',
-      ADD COLUMN IF NOT EXISTS championship_arena_scale NUMERIC DEFAULT 1.0;
+      ADD COLUMN IF NOT EXISTS championship_arena_scale NUMERIC DEFAULT 1.0,
+      ADD COLUMN IF NOT EXISTS evolution_scale NUMERIC DEFAULT 1.0;
     `);
 
     // Add columns to inventories table
@@ -1481,7 +1482,8 @@ async function getStreamerConfig(streamerId) {
     championshipArenaRight: row.championship_arena_right || '',
     championshipArenaTop: row.championship_arena_top || '',
     championshipArenaBottom: row.championship_arena_bottom || '',
-    championshipArenaScale: row.championship_arena_scale !== null && row.championship_arena_scale !== undefined ? Number(row.championship_arena_scale) : 1.0
+    championshipArenaScale: row.championship_arena_scale !== null && row.championship_arena_scale !== undefined ? Number(row.championship_arena_scale) : 1.0,
+    evolutionScale: row.evolution_scale !== null && row.evolution_scale !== undefined ? Number(row.evolution_scale) : 1.0
   };
 }
 
@@ -1566,8 +1568,9 @@ async function saveStreamerConfig(streamerId, config) {
          championship_arena_right = $138,
          championship_arena_top = $139,
          championship_arena_bottom = $140,
-         championship_arena_scale = $141
-     WHERE channel_id = $142`,
+         championship_arena_scale = $141,
+         evolution_scale = $142
+     WHERE channel_id = $143`,
     [
       config.videoId || '',
       config.spawnIntervalMs,
@@ -1710,6 +1713,7 @@ async function saveStreamerConfig(streamerId, config) {
       config.championshipArenaTop || '',
       config.championshipArenaBottom || '',
       config.championshipArenaScale !== undefined ? config.championshipArenaScale : 1.0,
+      config.evolutionScale !== undefined ? config.evolutionScale : 1.0,
       streamer
     ]
   );

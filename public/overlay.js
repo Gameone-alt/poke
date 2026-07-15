@@ -550,6 +550,13 @@ function applyConfig(config) {
     );
   }
 
+  // 8.5 Evolution Card Scale
+  const evoCardScaleWrapper = document.getElementById('evo-card-scale-wrapper');
+  if (evoCardScaleWrapper) {
+    const esc = config.evolutionScale !== undefined ? config.evolutionScale : 1.0;
+    evoCardScaleWrapper.style.transform = `scale(${esc})`;
+  }
+
   // 9. Championship Bracket & Arena Layout Positioning / Scaling
   const champBracketView = document.getElementById('championship-bracket-view');
   if (champBracketView) {
@@ -1679,7 +1686,7 @@ socket.on('pokemon_evolved', (data) => {
 });
 
 function triggerEvolutionBlast(newSprite, data) {
-  playSound(sfxSuccess || sfxSpawn);
+  playSound(sfxCatchSuccess || sfxSpawn);
 
   gsap.to(evoSprite, { 
     scale: 0.1, 

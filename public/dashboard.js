@@ -144,6 +144,7 @@ const customCssInput = document.getElementById('custom-css');
 const showBuddyOnChatInput = document.getElementById('show-buddy-on-chat');
 const buddyChatDurationInput = document.getElementById('buddy-chat-duration');
 const buddyRoamerScaleInput = document.getElementById('buddy-roamer-scale');
+const evolutionScaleInput = document.getElementById('evolution-scale');
 
 // Custom Economy inputs
 const coinsCaptureNormalInput = document.getElementById('coins-capture-normal');
@@ -371,6 +372,7 @@ function populateConfig(config) {
   showBuddyOnChatInput.checked = config.showBuddyOnChat !== false;
   buddyChatDurationInput.value = config.buddyChatDuration !== undefined ? config.buddyChatDuration : 15;
   buddyRoamerScaleInput.value = config.buddyRoamerScale !== undefined ? config.buddyRoamerScale : 1.0;
+  if (evolutionScaleInput) evolutionScaleInput.value = config.evolutionScale !== undefined ? config.evolutionScale : 1.0;
 
   if (champWinnerDurationInput) champWinnerDurationInput.value = config.championshipWinnerScreenDuration !== undefined ? config.championshipWinnerScreenDuration : 30;
   if (champHeaderInput) champHeaderInput.value = config.championshipHeader || 'STREAM CHAMPIONSHIP';
@@ -665,6 +667,7 @@ function compileConfigObject() {
     showBuddyOnChat: showBuddyOnChatInput.checked,
     buddyChatDuration: parseInt(buddyChatDurationInput.value, 10) || 15,
     buddyRoamerScale: parseFloat(buddyRoamerScaleInput.value) || 1.0,
+    evolutionScale: evolutionScaleInput ? parseFloat(evolutionScaleInput.value) : 1.0,
     
     championshipWinnerScreenDuration: champWinnerDurationInput ? parseInt(champWinnerDurationInput.value, 10) : 30,
     championshipHeader: champHeaderInput ? champHeaderInput.value.trim() : 'STREAM CHAMPIONSHIP',
